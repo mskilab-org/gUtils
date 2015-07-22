@@ -4,8 +4,7 @@ Title: R package providing additional capabilities and speed for GenomicRanges
 Version: 0.1
 Maintainer: Marcin Imielinski <mimielinski@nygenome.org>
 Authors@R: c(person(given = "Marcin", family = "Imielinski", role = c("aut",
-    'cre')), person(given = "Jeremiah", family = "Wala", role = c("aut",
-    "cre"), email = "jwala@broadinstitute.org"))
+    'cre')), person(given = "Jeremiah", family = "Wala", role = c("aut"), email = "jwala@broadinstitute.org"))
 Description: R package providing additional capabilities and speed for
     GenomicRanges operations
 Depends:
