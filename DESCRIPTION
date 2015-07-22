@@ -1,0 +1,18 @@
+Package: gUtils
+Title: R package providing additional capabilities and speed for GenomicRanges
+    operations
+Version: 0.1
+Authors@R: c(person(given = "Marcin", family = "Imielinski", role = c("aut",
+    'cre')), person(given = "Jeremiah", family = "Wala", role = c("aut",
+    "cre"), email = "jwala@broadinstitute.org"))
+Description: R package providing additional capabilities and speed for
+    GenomicRanges operations
+Depends:
+    R (>= 3.1.0),
+    GenomicRanges (>= 1.8),
+    data.table (>= 1.9)
+Imports:
+    data.table,
+    GenomicRanges
+License: GNU GPLv3
+LazyData: true
