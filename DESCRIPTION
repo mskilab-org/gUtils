@@ -1,18 +1,30 @@
 Package: gUtils
-Title: R package providing additional capabilities and speed for GenomicRanges
-    operations
+Title: R Package Providing Additional Capabilities and Speed for GenomicRanges
+    Operations
 Version: 0.1
-Maintainer: Marcin Imielinski <mimielinski@nygenome.org>
-Authors@R: c(person(given = "Marcin", family = "Imielinski", email = "mimielinski@nygenome.org", role = c("aut",
-    'cre')), person(given = "Jeremiah", family = "Wala", role = c("aut"), email = "jwala@broadinstitute.org"))
+Authors@R: c(person(given = "Jeremiah", family = "Wala", role = c("aut",
+    'cre'), email = "jwala@broadinstitute.org"), person(given = "Marcin",
+    family = "Imielinski", role = c("aut"), email =
+    "marcin@broadinstitute.org"))
 Description: R package providing additional capabilities and speed for
-    GenomicRanges operations
+    GenomicRanges operations.
 Depends:
-    R (>= 3.1.0),
-    GenomicRanges (>= 1.8),
-    data.table (>= 1.9)
+    R (>= 3.1.0)
 Imports:
-    data.table,
-    GenomicRanges
-License: GNU GPLv3
+    data.table (>= 1.9),
+    Rsamtools (>= 1.18),
+    BSgenome (>= 1.34),
+    IRanges (>= 2.0),
+    GenomicRanges (>= 1.18),
+    rtracklayer (>= 1.26),
+    Biostrings (>= 2.34),
+    abind (>= 1.4),
+    Matrix (>= 1.1),
+    VariantAnnotation (>= 1.12),
+    bitops (>= 1.0),
+    igraph (>= 0.7),
+    methods
+Suggests:
+    parallel
+License: GPL-2
 LazyData: true

@@ -1,0 +1,8 @@
+language: r
+sudo: required
+
+bioc_packages:
+ - GenomicRanges
+
+env:
+ - "_R_CHECK_FORCE_SUGGESTS_=0"

@@ -1,0 +1,18 @@
+* text eol=lf
+
+*.c text eol=lf
+*.h text eol=lf
+*.R text eol=lf
+*.py text eol=lf
+*.perl text eol=lf
+*.sh text eol=lf
+
+*.rds binary
+*.RData binary
+*.o binary
+*.so binary
+*.rda binary
+
+
+*.png binary
+*.pdf binary
