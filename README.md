@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/jwalabroad/gUtils.svg?branch=master)](https://travis-ci.org/jwalabroad/gUtils)
+[![Build Status](https://travis-ci.org/mskilab/gUtils.svg?branch=master)](https://travis-ci.org/mskilab/gUtils)
 [![Documentation Status](https://readthedocs.org/projects/gutils/badge/?version=latest)](https://readthedocs.org/projects/gutils/?badge=latest)
 
 
@@ -8,9 +8,8 @@ gUtils
 Set of utility functions for use with GenomicRanges and RSamtools in R.
 
 
-**License:** [GNU GPLv3][license]
-
 Installation
+<<<<<<< HEAD
 -----------
 
 1. Install dependent packages and latest Bioconductor (if you haven't already)
