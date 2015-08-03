@@ -6572,7 +6572,17 @@ setMethod("%|%", signature(gr = "GRanges"), function(gr, df) {
 })
 
 
-
+#' @name %+%
+#' @title Nudge GRanges right
+#' @description
+#' Operator to shift GRanges right "sh" bases
+#' 
+#' @return shifted granges
+#' @import GenomicRanges
+#' @rdname gr.nudge
+#' @exportMethod %+%
+#' @export
+#' @author Marcin Imielinski
 setGeneric('%+%', function(gr, ...) standardGeneric('%+%'))
 setMethod("%+%", signature(gr = "GRanges"), function(gr, sh) {
     end(gr) = end(gr)+sh
@@ -6580,12 +6590,63 @@ setMethod("%+%", signature(gr = "GRanges"), function(gr, sh) {
     return(gr)
 })
 
+#' @name %-%
+#' @title Shift GRanges left
+#' @description
+#' Operator to shift GRanges left "sh" bases
+#'
+#' df %!% c('string.*to.*match', 'another.string.to.match')
+#' 
+#' @return shifted granges
+#' @import GenomicRanges
+#' @rdname gr.nudge
+#' @exportMethod %-%
+#' @export
+#' @author Marcin Imielinski
 setGeneric('%-%', function(gr, ...) standardGeneric('%-%'))
 setMethod("%-%", signature(gr = "GRanges"), function(gr, sh) {
     start(gr) = start(gr)-sh
     end(gr) = end(gr)-sh
     return(gr)
 })
+
+
+#' @name %*%
+#' @title gr.findoverlaps 
+#' @description
+#' Shortcut for gr.findoverlaps (standard arguments)
+#'
+#' gr1 %*% gr2
+#' 
+#' @return new granges containing every pairwise intersection of ranges in gr1 and gr2 with a join of the corresponding  metadata
+#' @rdname grfo
+#' @exportMethod %*%
+#' @export
+#' @author Marcin Imielinski
+#setGeneric('%*%', function(x, ...) standardGeneric('%*%'))
+setMethod("%*%", signature(x = "GRanges"), function(x, y) {
+    gr = gr.findoverlaps(x, y, qcol = names(values(x)), scol = names(values(y)))
+    return(gr)
+})
+
+
+#' @name %^%
+#' @title gr.in
+#' @description
+#' Shortcut for gr.in (standard arguments)
+#'
+#' gr1 %^% gr2
+#' 
+#' @return logical vector of length gr1 which is TRUE at entry i only if gr1[i] intersects at least one interval in gr2
+#' @rdname gr.in
+#' @exportMethod %^%
+#' @export 
+#' @author Marcin Imielinski
+setGeneric('%^%', function(x, ...) standardGeneric('%^%'))
+setMethod("%^%", signature(x = "GRanges"), function(x, y) {
+    return(gr.in(x, y))
+})
+
 
 .toggle_grfo = function()
     {
