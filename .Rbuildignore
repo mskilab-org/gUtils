@@ -1,0 +1,10 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+^\.travis\.yml$
+^/\.gitattributes$
+^/\.git
+^/\.gitignore
+circos
+batch.R
+^.*\tar.gz$
+rtdocs
