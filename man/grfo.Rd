@@ -2,20 +2,31 @@
 % Please edit documentation in R/gUtils.R
 \docType{methods}
 \name{\%*\%}
+\alias{\%**\%}
 \alias{\%*\%}
-\title{gr.findoverlaps}
+\title{gr.findoverlaps (strand agnostic)}
 \usage{
 \S4method{\%*\%}{GRanges,ANY}(x, y)
+
+x \%**\% ...
 }
 \value{
+new granges containing every pairwise intersection of ranges in gr1 and gr2 with a join of the corresponding metadata (strand agnostic)
+
 new granges containing every pairwise intersection of ranges in gr1 and gr2 with a join of the corresponding  metadata
 }
 \description{
 Shortcut for gr.findoverlaps (standard arguments)
 
 gr1 %*% gr2
+
+Shortcut for gr.findoverlaps
+
+gr1 %**% gr2
 }
 \author{
+Marcin Imielinski
+
 Marcin Imielinski
 }
 

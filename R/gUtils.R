@@ -41,6 +41,7 @@ globalVariables(c("V1", "V2", "V3", "len", "chr", "bin", "count", "rowid", "bin1
                   "qname", "reads", "last.line", "uix", "id", "i.start", "i.end", "sn", "subject.id", "query.id",
                   "CIRCOS.DIR"))
 
+
 #' Get GRanges corresponding to beginning of range
 #'
 #' Alternative to \code{flank} that will provide start positions *within* intervals
@@ -2306,8 +2307,9 @@ gr.tile.map = function(query, subject, mc.cores = 1, verbose = FALSE)
     return(out)
   }
 
-
-#' gr.in
+#' @name gr.in
+#' @title gr.in
+#' @description
 #'
 #' faster implementation of GRanges %over%  (uses gr.findoverlaps)
 #'
@@ -2318,7 +2320,6 @@ gr.tile.map = function(query, subject, mc.cores = 1, verbose = FALSE)
 #' @param subject \code{GRanges} of subject
 #' @param by column name in query and subject that we additionally control for a match (passed on to gr.findoverlaps)
 #' @param ... params to send to \code{\link{gr.findoverlaps}}
-#' @name gr.in
 #' @export
 gr.in = function(query, subject, by = NULL, pintersect=FALSE,...)
   {
@@ -2328,7 +2329,6 @@ gr.in = function(query, subject, by = NULL, pintersect=FALSE,...)
 
     return(out)    
    }
-
 
 # gr.duplicated
 #
@@ -6612,13 +6612,13 @@ setMethod("%-%", signature(gr = "GRanges"), function(gr, sh) {
 
 
 #' @name %*%
-#' @title gr.findoverlaps 
+#' @title gr.findoverlaps (strand agnostic)
 #' @description
 #' Shortcut for gr.findoverlaps (standard arguments)
 #'
 #' gr1 %*% gr2
 #' 
-#' @return new granges containing every pairwise intersection of ranges in gr1 and gr2 with a join of the corresponding  metadata
+#' @return new granges containing every pairwise intersection of ranges in gr1 and gr2 with a join of the corresponding metadata (strand agnostic)
 #' @rdname grfo
 #' @exportMethod %*%
 #' @export
@@ -6637,7 +6637,7 @@ setMethod("%*%", signature(x = "GRanges"), function(x, y) {
 #'
 #' gr1 %^% gr2
 #' 
-#' @return logical vector of length gr1 which is TRUE at entry i only if gr1[i] intersects at least one interval in gr2
+#' @return logical vector of length gr1 which is TRUE at entry i only if gr1[i] intersects at least one interval in gr2 (strand agnostic)
 #' @rdname gr.in
 #' @exportMethod %^%
 #' @export 
@@ -6648,22 +6648,185 @@ setMethod("%^%", signature(x = "GRanges"), function(x, y) {
 })
 
 
-#' @name %#%
-#' @title gr.val shortcut to get mean values of subject "x" meta data fields in query "y"
+#' @name %$% 
+#' @title gr.val shortcut to get mean values of subject "x" meta data fields in query "y" (strand agnostic)
 #' @description
 #' Shortcut for gr.val (using val = names(values(y)))
 #'
-#' gr1 %#% gr2
+#' gr1 %$% gr2
 #' 
 #' @return logical vector of length gr1 which is TRUE at entry i only if gr1[i] intersects at least one interval in gr2
 #' @rdname gr.val
-#' @exportMethod %#%
+#' @exportMethod %$%
 #' @export 
 #' @author Marcin Imielinski
-setGeneric('%#%', function(x, ...) standardGeneric('%^%'))
-setMethod("%#%", signature(x = "GRanges"), function(x, y) {
+setGeneric('%$%', function(x, ...) standardGeneric('%$%'))
+setMethod("%$%", signature(x = "GRanges"), function(x, y) {
     return(gr.val(x, y, val = names(values(y))))
 })
+
+
+#' @name %&%
+#' @title gr.intersect shortcut
+#' @description
+#' Shortcut for gr.intersect
+#'
+#' gr1 %&% gr2
+#' 
+#' @return granges representing intersection of input intervals
+#' @rdname gr.intersect
+#' @exportMethod %&%
+#' @export 
+#' @author Marcin Imielinski
+setGeneric('%&%', function(x, ...) standardGeneric('%&%'))
+setMethod("%&%", signature(x = "GRanges"), function(x, y) {
+    return(reduce(gr.findoverlaps(x[, c()], y[, c()])))
+})
+
+
+#' @name %_%
+#' @title setdiff shortcut (strand agnostic)
+#' @description
+#' Shortcut for union
+#'
+#' gr1 %_% gr2
+#' 
+#' @return granges representing setdiff of input interval
+#' @rdname gr.setdiff
+#' @exportMethod %_%
+#' @export 
+#' @author Marcin Imielinski
+setGeneric('%_%', function(x, ...) standardGeneric('%_%'))
+setMethod("%_%", signature(x = "GRanges"), function(x, y) {
+    setdiff(gr.stripstrand(x[, c()]), gr.stripstrand(y[, c()]))
+})
+
+
+#' @name gr.union.unstranded
+#' @title union shortcut
+#' @description
+#' Shortcut for union
+#'
+#' gr1 %|% gr2
+#' 
+#' @return granges representing setdiff of input interval
+#' @rdname gr.union
+#' @exportMethod %|%
+#' @export 
+#' @author Marcin Imielinski
+setGeneric('%|%', function(x, ...) standardGeneric('%|%'))
+setMethod("%|%", signature(x = "GRanges"), function(x, y) {
+    return(reduce(grbind(gr.stripstrand(x[, c()]), gr.stripstrand(y[, c()]))))
+})
+
+#' @name %**%
+#' @title gr.findoverlaps (respects strand)
+#' @description
+#' Shortcut for gr.findoverlaps
+#'
+#' gr1 %**% gr2
+#' 
+#' @return new granges containing every pairwise intersection of ranges in gr1 and gr2 with a join of the corresponding  metadata
+#' @rdname grfo
+#' @exportMethod %**%
+#' @export
+#' @author Marcin Imielinski
+setGeneric('%**%', function(x, ...) standardGeneric('%**%'))
+setMethod("%**%", signature(x = "GRanges"), function(x, y) {
+    gr = gr.findoverlaps(x, y, qcol = names(values(x)), scol = names(values(y)), ignore.strand = FALSE)
+    return(gr)
+})
+
+
+#' @name %^^%
+#' @title gr.in shortcut (respects strand)
+#' @description
+#' Shortcut for gr.in 
+#'
+#' gr1 %^^% gr2
+#' 
+#' @return logical vector of length gr1 which is TRUE at entry i only if gr1[i] intersects at least one interval in gr2
+#' @rdname gr.in
+#' @exportMethod %^^%
+#' @export 
+#' @author Marcin Imielinski
+setGeneric('%^^%', function(x, ...) standardGeneric('%^^%'))
+setMethod("%^^%", signature(x = "GRanges"), function(x, y) {
+    return(gr.in(x, y, ignore.strand = FALSE))
+})
+
+
+#' @name %$$%
+#' @title gr.val shortcut to get mean values of subject "x" meta data fields in query "y" (respects strand)
+#' @description
+#' Shortcut for gr.val (using val = names(values(y)))
+#'
+#' gr1 %$$% gr2
+#' 
+#' @return logical vector of length gr1 which is TRUE at entry i only if gr1[i] intersects at least one interval in gr2
+#' @rdname gr.val
+#' @exportMethod %$$%
+#' @export 
+#' @author Marcin Imielinski
+setGeneric('%$$%', function(x, ...) standardGeneric('%$$%'))
+setMethod("%$$%", signature(x = "GRanges"), function(x, y) {
+    return(gr.val(x, y, val = names(values(y)), ignore.strand = FALSE))
+})
+
+
+#' @name %&&%
+#' @title gr.intersect shortcut (respects strand)
+#' @description
+#' Shortcut for gr.intersect
+#'
+#' gr1 %&&% gr2
+#' 
+#' @return granges representing intersection of input intervals
+#' @rdname gr.intersect
+#' @exportMethod %&&%
+#' @export 
+#' @author Marcin Imielinski
+setGeneric('%&&%', function(x, ...) standardGeneric('%&&%'))
+setMethod("%&&%", signature(x = "GRanges"), function(x, y) {
+    return(reduce(gr.findoverlaps(x[, c()], y[, c()], ignore.strand = FALSE)))
+})
+
+
+#' @name %__% 
+#' @title setdiff shortcut (respects strand)
+#' @description
+#' Shortcut for setdiff
+#'
+#' gr1 %__% gr2
+#' 
+#' @return granges representing setdiff of input interval
+#' @rdname gr.setdiff
+#' @exportMethod %__%
+#' @export 
+#' @author Marcin Imielinski
+setGeneric('%__%', function(x, ...) standardGeneric('%__%'))
+setMethod("%__%", signature(x = "GRanges"), function(x, y) {
+    setdiff(x[, c()], y[, c()])
+})
+
+
+#' @name gr.union.stranded
+#' @title setdiff shortcut (respects strand)
+#' @description
+#' Shortcut for setdiff
+#'
+#' gr1 %||% gr2
+#' 
+#' @return granges representing setdiff of input interval
+#' @rdname gr.union
+#' @exportMethod %||%
+#' @export 
+#' @author Marcin Imielinski
+setGeneric('%||%', function(x, ...) standardGeneric('%||%'))
+setMethod("%||%", signature(x = "GRanges"), function(x, y) {
+    return(reduce(grbind(x[, c()], y[, c()])))
+})
+
 
 
 .toggle_grfo = function()
