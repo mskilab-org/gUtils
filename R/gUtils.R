@@ -303,7 +303,6 @@ gr.round = function(Q, S, up = TRUE, parallel = FALSE)
 #'
 #' @param w Vector of widths (length of w determines length of output)
 #' @param genome Genome which can be a \code{GRanges}, \code{GRangesList}, or \code{Seqinfo} object. Default is "hg19" from the \code{\link{BSgenome}} package.
-#' @param seed [default NA] Optionally specify a seed for the RNG. Defualt behavior is random seed.
 #' @return \code{GRanges} with random intervals on the specifed "chromosomes"
 #' @note This function is currently quite slow, needs optimization
 #' @examples
@@ -312,11 +311,8 @@ gr.round = function(Q, S, up = TRUE, parallel = FALSE)
 #' ## Generate 5 non-overlapping regions of width 10 on hg19
 #' gr.rand(rep(10,5))}
 #' @export
-gr.rand = function(w, genome = Seqinfo(names(hg_seqlengths()), hg_seqlengths()), seed=NA)
+gr.rand = function(w, genome = Seqinfo(names(hg_seqlengths()), hg_seqlengths()))
   {
-
-    if (!is.na(seed))
-      set.seed(seed)
     
     if (!is(genome, 'Seqinfo'))
       genome = seqinfo(genome)
@@ -663,69 +659,6 @@ grbind = function(x, ...)
     return(out)     
   }
 
-#' Concatenate GRangesList 
-#'
-#' Concatenates \code{GRangesList} objects taking the union of their \code{mcols} features if they have non-overlapping features
-#'
-#' @param ... list of \code{GRangesList} object to bind
-#' @return Concatenated GRangesList 
-#' @examples
-#' ## Create some dummy data
-#' \dontrun{gr1 <- GRanges(1, IRanges(100,1000), my.gene='X', seqinfo=Seqinfo("1", 1000))
-#' gr2 <- GRanges(1, IRanges(200,2000), my.annot='Y', seqinfo=Seqinfo("1",2000))
-#' gr3 <- GRanges(2, IRanges(1,3000), my.annot='Z', seqinfo=Seqinfo("2",3000))
-#' grl1 <- GRangesList(grbind(gr1, gr2))
-#' grl2 <- GRangesList(grbind(gr1, gr3))
-#' ## Add unique annotation to just one \code{mcols}.
-#' mcols(gr1)$my.new.annot=1
-#' ## Concatenate
-#' grlbind(grl1, grl2)}
-#' @export
-grlbind = function(...)
-  {
-    ## TODO: make this work for when underlying grs do not have matching features
-    ## currently will loose gr level features
-    grls = list(...)
-
-    ## annoying acrobatics to reconcile gr and grl level features for heterogenous input gr / grls
-    grls.ul = lapply(grls, grl.unlist)
-    grls.ul.rb = do.call('grbind', grls.ul)
-    sp = unlist(lapply(1:length(grls), function(x) rep(x, length(grls.ul[[x]]))))
-    gix = split(grls.ul.rb$grl.ix, sp)
-    gjx = split(1:length(grls.ul.rb), sp)
-    grls.ul.rb$grl.iix = grls.ul.rb$grl.ix = NULL
-        
-    grls.vals = lapply(grls, function(x)
-      { if (ncol(values(x))>0)  return(as.data.frame(values(x))) else return(data.frame(dummy241421 = rep(NA, length(x))))})
-
-    grls.new = mapply(function(x,y) split(grls.ul.rb[x],y), gjx, gix)
-    
-    out = do.call('c', grls.new)
-
-    if (is.list(out))
-      {
-        if (length(grls.new)>1)
-          {
-            bla = c(grls.new[[1]], grls.new[[2]]) ## fix R ghost
-            out = do.call('c', grls.new)
-            if (is.list(out)) ## if still is list then do manual 'c'
-                {
-                   out = grls.new[[1]]
-                   for (i in 2:length(grls.new))
-                       out = c(out, grls.new[[i]])
-                }
-          }
-        else
-          out = grls.new[[1]]
-      }        
-    
-    out.val = do.call('rrbind', grls.vals)
-    out.val$dummy241421 = NULL
-    values(out) = out.val
-
-    return(out)      
-  }
-
 #' Add "chr" to GRanges seqlevels
 #'
 #' Adds "chr" to seqlevels of gr / grl object to make compatible with UCSC genome
@@ -771,15 +704,15 @@ streduce = function(gr, pad = 0, sort = TRUE)
     if (inherits(gr, 'GRangesList'))
       gr = unlist(gr)
 
-    if (any(is.na(seqlengths(gr))))
-      gr = gr.fix(gr)
+    #if (any(is.na(seqlengths(gr))))
+    #  gr = gr.fix(gr)
     
     #out = suppressWarnings(sort(reduce(gr.stripstrand(gr+pad))))
         out = suppressWarnings(sort(reduce(gr.stripstrand(gr.pad(gr, pad)))))
     suppressWarnings(start(out) <-pmax(1, start(out)))
 #    out <- gr.tfix(out)
-    end(out) = pmin(end(out), seqlengths(out)[as.character(seqnames(out))])
-
+    if (!is.na(seqlengths(out)[1]))
+      end(out) = pmin(end(out), seqlengths(out)[as.character(seqnames(out))])
 
     return(out)
   }
