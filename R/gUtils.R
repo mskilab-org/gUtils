@@ -118,7 +118,6 @@ gr.start = function(x, width = 1, force = FALSE, ignore.strand = TRUE, clip = FA
     return(out)    
   }
 
-###############
 #' Convert data.table to GRanges
 #'
 #' Takes as input a data.table which must have the fields: start, end, strand, seqnames.
@@ -5123,8 +5122,6 @@ setGeneric('%||%', function(x, ...) standardGeneric('%||%'))
 setMethod("%||%", signature(x = "GRanges"), function(x, y) {
     return(reduce(grbind(x[, c()], y[, c()])))
 })
-
-
 
 .toggle_grfo = function()
     {
