@@ -6631,7 +6631,7 @@ setMethod("%*%", signature(x = "GRanges"), function(x, y) {
 
 
 #' @name %^%
-#' @title gr.in
+#' @title gr.in shortcut
 #' @description
 #' Shortcut for gr.in (standard arguments)
 #'
@@ -6645,6 +6645,24 @@ setMethod("%*%", signature(x = "GRanges"), function(x, y) {
 setGeneric('%^%', function(x, ...) standardGeneric('%^%'))
 setMethod("%^%", signature(x = "GRanges"), function(x, y) {
     return(gr.in(x, y))
+})
+
+
+#' @name %#%
+#' @title gr.val shortcut to get mean values of subject "x" meta data fields in query "y"
+#' @description
+#' Shortcut for gr.val (using val = names(values(y)))
+#'
+#' gr1 %#% gr2
+#' 
+#' @return logical vector of length gr1 which is TRUE at entry i only if gr1[i] intersects at least one interval in gr2
+#' @rdname gr.val
+#' @exportMethod %#%
+#' @export 
+#' @author Marcin Imielinski
+setGeneric('%#%', function(x, ...) standardGeneric('%^%'))
+setMethod("%#%", signature(x = "GRanges"), function(x, y) {
+    return(gr.val(x, y, val = names(values(y))))
 })
 
 
