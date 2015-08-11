@@ -3190,6 +3190,7 @@ grl.span = function(grl, chr = NULL, ir = FALSE, keep.strand = TRUE)
 #' Assumes all grs in "x" are of equal length
 #' @param x GenomicRangesList object to pivot
 #' @name grl.pivot
+#' @export
 ################################
 grl.pivot = function(x)
   {
@@ -3537,6 +3538,61 @@ bam.cov.gr = function(bam, gr, bami = NULL, count.all = FALSE, isPaired = T, isP
 
   return(gr)
 }
+
+
+#' Trim a pile of GRanges
+#'
+#' trims pile of granges relative to the specified <local> coordinates of each range
+#' (ie the first coordinate of every gr is 1 and the last is width(gr))
+#' if end is larger than the width of the corresponding gr, then the corresponding output will only have end(gr) as its coordinate.
+#'
+#' this is a role not currently provided by the standard granges fxns
+#' (eg shift, reduce, restrict, shift, resize, flank etc)
+#' @param gr GRanges to trime
+#' @param starts number. Default 1
+#' @param ends number. Default 1
+#' @export
+gr.trim = function(gr, starts=1, ends=1, fromEnd=FALSE, ignore.strand = T)
+    {
+    starts = cbind(1:length(gr), starts)[, 2]
+    ends = cbind(1:length(gr), ends)[, 2]
+    
+    if (!ignore.strand)
+        {
+        ix = as.logical(strand(gr)=='-')
+        if (any(ix))
+            {
+            if (fromEnd)
+                {
+                tmp = starts[ix]
+                starts[ix] = ends[ix]
+                ends[ix] = tmp-1
+            }
+            else
+                {
+                starts[ix] = width(gr)[ix]-starts[ix]+1
+                ends[ix] = width(gr)[ix]-ends[ix]+1
+            }
+        }
+    }
+      
+    if (fromEnd) {
+      en = pmax(starts, end(gr)-ends);
+  } else {
+      ends = pmax(starts, ends);
+      ends = pmin(ends, width(gr));
+      en = start(gr) + ends - 1;
+  }
+    
+    st = start(gr)+starts-1;
+    st = pmin(st, en);
+            
+    out = GRanges(seqnames(gr), IRanges(st, en),
+                   seqlengths = seqlengths(gr), strand = strand(gr))
+    values(out) = values(gr)
+    return(out)
+}
+
 
 #' Quick way to get tiled coverage via piping to samtools (~10 CPU-hours for 100bp tiles, 5e8 read pairs)
 #'
