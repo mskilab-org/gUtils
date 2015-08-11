@@ -445,9 +445,9 @@ footprint = function(gr)
 #' @param strip.empty Don't know. Default FALSE
 #' @examples
 #' \dontrun{si <- Seqinfo(names(hg_seqlength(), hg_seqlengths()))
-#' si2gr(si)}
+#' seqinfo2gr(si)}
 #' @export
-si2gr <- seqinfo2gr <- function(si, strip.empty = FALSE)
+seqinfo2gr <- function(si, strip.empty = FALSE)
   {
     if (is(si, 'vector')) ## treat si as seqlengths if vector
       si = Seqinfo(seqlengths = si, seqnames = names(si))
@@ -469,6 +469,20 @@ si2gr <- seqinfo2gr <- function(si, strip.empty = FALSE)
     
     return(sigr)
   }
+
+
+#' Shortcut GRanges from Seqinfo
+#'
+#' Creates a genomic ranges from seqinfo object
+#' ie a pile of ranges spanning the genome
+#' @param si Seqinfo object
+#' @param strip.empty Don't know. Default FALSE
+#' @examples
+#' \dontrun{si <- Seqinfo(names(hg_seqlength(), hg_seqlengths()))
+#' si2gr(si)}
+#' @export
+si2gr <- function(...) seqinfo2gr(...)
+
 
 #' rle.query
 #'
@@ -2590,10 +2604,6 @@ grl.span = function(grl, chr = NULL, ir = FALSE, keep.strand = TRUE)
 #' @param x GenomicRangesList object to pivot
 #' @name grl.pivot
 #' @export
-<<<<<<< HEAD
-################################
-=======
->>>>>>> 0e68a220ce620202f3572d3a2d4d25c9a3b36fb1
 grl.pivot = function(x)
   {
     if (length(x) == 0)
@@ -2864,139 +2874,6 @@ read.bam = function(bam, intervals = NULL,## GRanges of intervals to retrieve
     return(out)
 }
 
-<<<<<<< HEAD
-#' Get coverage as GRanges from BAM 
-#'
-#' gets coverage from bam in supplied ranges using "countBam", returning gr with coverage counts in
-#' each of the provided ranges (different from bam.cov above) specified as $file, $records, and $nucleotides
-#' columns in the values field
-#' basically a wrapper for countBam with some standard settings for ScanBamParams
-#'
-#' @param bam Input bam file. Advisable to make "bam" a BamFile instance instead of a plain string, so that the index does not have to be reloaded.
-#' @param bami Input bam index file.
-#' @param gr GRanges of intervals to retrieve
-#' @param verbose Increase verbosity
-#' @param isPaired See documentation for \code{scanBamFlag}. Default NA
-#' @param isProperPair See documentation for \code{scanBamFlag}. Default NA
-#' @param isUnmappedQuery See documentation for \code{scanBamFlag}. Default NA
-#' @param hasUnmappedMate See documentation for \code{scanBamFlag}. Default NA
-#' @param isNotPassingQualityControls See documentation for \code{scanBamFlag}. Default NA
-#' @param isDuplicate See documentation for \code{scanBamFlag}. Default FALSE
-#' @param isValidVendorRead See documentation for \code{scanBamFlag}. Default TRUE
-#' @param mc.cores Number of cores in \code{mclapply} call.
-#' @param chunksize How many intervals to process per core. Default 10. 
-#' @param ... passed to \code{scanBamFlag}
-#' @return GRanges parallel to input GRanges, but with metadata filled in.
-#' @import GenomicRanges
-#' @import parallel
-#' @import Rsamtools
-#' @export
-bam.cov.gr = function(bam, gr, bami = NULL, count.all = FALSE, isPaired = T, isProperPair = T, isUnmappedQuery = F, hasUnmappedMate = F, isNotPassingQualityControls = F, isDuplicate = F, isValidVendorRead = T, mc.cores = 1, chunksize = 10, verbose = F, ...)
-{
-  if (is.character(bam))
-    if (!is.null(bami))
-      bam = BamFile(bam, bami)
-    else
-        {
-            if (file.exists(paste(bam, 'bai', sep = '.')))
-                bam = BamFile(bam, paste(bam, 'bai', sep = '.'))
-            else if (file.exists(gsub('.bam$', '.bai', bam)))
-                bam = BamFile(bam, paste(bam, 'bai', sep = '.'))
-            else
-                stop('BAM index not found, please find index and specify bam file argument as valid BamFile object')
-        }
-
-  keep = which(seqnames(gr) %in% seqlevels(bam))
-
-  if (length(keep)>0)
-      {
-        ix = c(keep[c(seq(1, length(keep), chunksize))], keep[length(keep)]+1);  ## prevent bam error from improper chromosomes 
-        chunk.id = unlist(lapply(1:(length(ix)-1), function(x) rep(x, ix[x+1]-ix[x])))
-        
-        gr.chunk = split(gr[keep], chunk.id[keep]);
-        if (count.all)
-            flag = scanBamFlag()
-        else
-            flag = scanBamFlag(isPaired = isPaired, isProperPair = isProperPair, isUnmappedQuery = isUnmappedQuery,
-                hasUnmappedMate = hasUnmappedMate, isNotPassingQualityControls = isNotPassingQualityControls,
-                isDuplicate = isDuplicate, ...)
-        out = do.call('rbind', mclapply(1:length(gr.chunk),
-          function(x) {
-            if (verbose)
-              cat(sprintf('Processing ranges %s to %s of %s, extracting %s bases\n', ix[x], ix[x+1]-1, length(keep), sum(width(gr.chunk[[x]]))))
-            countBam(bam, param = ScanBamParam(which = gr.chunk[[x]], flag = flag))
-          }, mc.cores = mc.cores));
-        
-                                        # have to fix the order (since RangesList conversion will mess it up) .. looking into better workarounds
-        
-        gr.tag = paste(as.character(seqnames(gr)), start(gr), end(gr));
-        out.tag = paste(out$space, out$start, out$end);
-        ix = match(gr.tag, out.tag);
-        values(gr) = cbind(as.data.frame(values(gr)), out[ix, c('file', 'records', 'nucleotides')])
-      }
-  else
-    values(gr) = cbind(as.data.frame(values(gr)), data.frame(file = rep(gsub('.*\\/([^\\/]+)$', '\\1', path(bam)), length(gr)), records = NA, nucleotides = NA))
-
-  return(gr)
-}
-
-
-#' Trim a pile of GRanges
-#'
-#' trims pile of granges relative to the specified <local> coordinates of each range
-#' (ie the first coordinate of every gr is 1 and the last is width(gr))
-#' if end is larger than the width of the corresponding gr, then the corresponding output will only have end(gr) as its coordinate.
-#'
-#' this is a role not currently provided by the standard granges fxns
-#' (eg shift, reduce, restrict, shift, resize, flank etc)
-#' @param gr GRanges to trime
-#' @param starts number. Default 1
-#' @param ends number. Default 1
-#' @export
-gr.trim = function(gr, starts=1, ends=1, fromEnd=FALSE, ignore.strand = T)
-    {
-    starts = cbind(1:length(gr), starts)[, 2]
-    ends = cbind(1:length(gr), ends)[, 2]
-    
-    if (!ignore.strand)
-        {
-        ix = as.logical(strand(gr)=='-')
-        if (any(ix))
-            {
-            if (fromEnd)
-                {
-                tmp = starts[ix]
-                starts[ix] = ends[ix]
-                ends[ix] = tmp-1
-            }
-            else
-                {
-                starts[ix] = width(gr)[ix]-starts[ix]+1
-                ends[ix] = width(gr)[ix]-ends[ix]+1
-            }
-        }
-    }
-      
-    if (fromEnd) {
-      en = pmax(starts, end(gr)-ends);
-  } else {
-      ends = pmax(starts, ends);
-      ends = pmin(ends, width(gr));
-      en = start(gr) + ends - 1;
-  }
-    
-    st = start(gr)+starts-1;
-    st = pmin(st, en);
-            
-    out = GRanges(seqnames(gr), IRanges(st, en),
-                   seqlengths = seqlengths(gr), strand = strand(gr))
-    values(out) = values(gr)
-    return(out)
-}
-
-
-=======
->>>>>>> 0e68a220ce620202f3572d3a2d4d25c9a3b36fb1
 #' Quick way to get tiled coverage via piping to samtools (~10 CPU-hours for 100bp tiles, 5e8 read pairs)
 #'
 #' Gets coverage for window size "window", pulling "chunksize" records at a time and incrementing bin
