@@ -118,7 +118,6 @@ gr.start = function(x, width = 1, force = FALSE, ignore.strand = TRUE, clip = FA
     return(out)    
   }
 
-###############
 #' Convert data.table to GRanges
 #'
 #' Takes as input a data.table which must have the fields: start, end, strand, seqnames.
@@ -298,14 +297,12 @@ gr.round = function(Q, S, up = TRUE, parallel = FALSE)
   }
 
 
-##################################################
 #' Generate random GRanges on genome
 #'
 #' Randomly generates non-overlapping GRanges with supplied widths on supplied genome
 #'
 #' @param w Vector of widths (length of w determines length of output)
 #' @param genome Genome which can be a \code{GRanges}, \code{GRangesList}, or \code{Seqinfo} object. Default is "hg19" from the \code{\link{BSgenome}} package.
-#' @param seed [default NA] Optionally specify a seed for the RNG. Defualt behavior is random seed.
 #' @return \code{GRanges} with random intervals on the specifed "chromosomes"
 #' @note This function is currently quite slow, needs optimization
 #' @examples
@@ -314,11 +311,8 @@ gr.round = function(Q, S, up = TRUE, parallel = FALSE)
 #' ## Generate 5 non-overlapping regions of width 10 on hg19
 #' gr.rand(rep(10,5))}
 #' @export
-gr.rand = function(w, genome = Seqinfo(names(hg_seqlengths()), hg_seqlengths()), seed=NA)
+gr.rand = function(w, genome = Seqinfo(names(hg_seqlengths()), hg_seqlengths()))
   {
-
-    if (!is.na(seed))
-      set.seed(seed)
     
     if (!is(genome, 'Seqinfo'))
       genome = seqinfo(genome)
@@ -360,7 +354,6 @@ gr.rand = function(w, genome = Seqinfo(names(hg_seqlengths()), hg_seqlengths()),
   }
 
 
-##########################
 #' Sample GRanges intervals
 #'
 #' Samples k intervals of length "len" from a pile of gr's.
@@ -666,69 +659,6 @@ grbind = function(x, ...)
     return(out)     
   }
 
-#' Concatenate GRangesList 
-#'
-#' Concatenates \code{GRangesList} objects taking the union of their \code{mcols} features if they have non-overlapping features
-#'
-#' @param ... list of \code{GRangesList} object to bind
-#' @return Concatenated GRangesList 
-#' @examples
-#' ## Create some dummy data
-#' \dontrun{gr1 <- GRanges(1, IRanges(100,1000), my.gene='X', seqinfo=Seqinfo("1", 1000))
-#' gr2 <- GRanges(1, IRanges(200,2000), my.annot='Y', seqinfo=Seqinfo("1",2000))
-#' gr3 <- GRanges(2, IRanges(1,3000), my.annot='Z', seqinfo=Seqinfo("2",3000))
-#' grl1 <- GRangesList(grbind(gr1, gr2))
-#' grl2 <- GRangesList(grbind(gr1, gr3))
-#' ## Add unique annotation to just one \code{mcols}.
-#' mcols(gr1)$my.new.annot=1
-#' ## Concatenate
-#' grlbind(grl1, grl2)}
-#' @export
-grlbind = function(...)
-  {
-    ## TODO: make this work for when underlying grs do not have matching features
-    ## currently will loose gr level features
-    grls = list(...)
-
-    ## annoying acrobatics to reconcile gr and grl level features for heterogenous input gr / grls
-    grls.ul = lapply(grls, grl.unlist)
-    grls.ul.rb = do.call('grbind', grls.ul)
-    sp = unlist(lapply(1:length(grls), function(x) rep(x, length(grls.ul[[x]]))))
-    gix = split(grls.ul.rb$grl.ix, sp)
-    gjx = split(1:length(grls.ul.rb), sp)
-    grls.ul.rb$grl.iix = grls.ul.rb$grl.ix = NULL
-        
-    grls.vals = lapply(grls, function(x)
-      { if (ncol(values(x))>0)  return(as.data.frame(values(x))) else return(data.frame(dummy241421 = rep(NA, length(x))))})
-
-    grls.new = mapply(function(x,y) split(grls.ul.rb[x],y), gjx, gix)
-    
-    out = do.call('c', grls.new)
-
-    if (is.list(out))
-      {
-        if (length(grls.new)>1)
-          {
-            bla = c(grls.new[[1]], grls.new[[2]]) ## fix R ghost
-            out = do.call('c', grls.new)
-            if (is.list(out)) ## if still is list then do manual 'c'
-                {
-                   out = grls.new[[1]]
-                   for (i in 2:length(grls.new))
-                       out = c(out, grls.new[[i]])
-                }
-          }
-        else
-          out = grls.new[[1]]
-      }        
-    
-    out.val = do.call('rrbind', grls.vals)
-    out.val$dummy241421 = NULL
-    values(out) = out.val
-
-    return(out)      
-  }
-
 #' Add "chr" to GRanges seqlevels
 #'
 #' Adds "chr" to seqlevels of gr / grl object to make compatible with UCSC genome
@@ -774,15 +704,15 @@ streduce = function(gr, pad = 0, sort = TRUE)
     if (inherits(gr, 'GRangesList'))
       gr = unlist(gr)
 
-    if (any(is.na(seqlengths(gr))))
-      gr = gr.fix(gr)
+    #if (any(is.na(seqlengths(gr))))
+    #  gr = gr.fix(gr)
     
     #out = suppressWarnings(sort(reduce(gr.stripstrand(gr+pad))))
         out = suppressWarnings(sort(reduce(gr.stripstrand(gr.pad(gr, pad)))))
     suppressWarnings(start(out) <-pmax(1, start(out)))
 #    out <- gr.tfix(out)
-    end(out) = pmin(end(out), seqlengths(out)[as.character(seqnames(out))])
-
+    if (!is.na(seqlengths(out)[1]))
+      end(out) = pmin(end(out), seqlengths(out)[as.character(seqnames(out))])
 
     return(out)
   }
@@ -1110,291 +1040,6 @@ gstring = parse.gr = function(...)
     return(unlist(parse.grl(...)))
   }
 
-#################
-#' ra_breaks
-#'
-#' takes in either file or data frame from dranger or snowman or path to BND / SV type vcf file
-#' and returns junctions in VCF format.
-#' 
-#' The default output is GRangesList each with a length two GRanges whose strands point AWAY from the break.  If get.loose = TRUE (only relevant for VCF)
-#'
-#' @param rafile dRanger or Snowman file to read in
-#' @param keep.features [Default TRUE] keep metadata features from VCF etc as metadata
-#' @param seqlengths Seqlengths to be used for this. Default \link{hg_seqlengths}
-#' @param chr.convert dummy
-#' @param snowman is this a snowman file. Default FALSE
-#' @param breakpointer is this a breakpointer file. Default FALSE
-#' @param seqlevels dummy
-#' @param get.loose [Default FALSE] if TRUE will return a list with fields $junctions and $loose.ends
-#' @name ra_breaks
-#' @importFrom VariantAnnotation readVcf info fixed
-#' @export
-ra_breaks = function(rafile, keep.features = TRUE, seqlengths = hg_seqlengths(), chr.convert = TRUE, snowman = FALSE,  breakpointer = FALSE, seqlevels = NULL,
-    get.loose = FALSE ## if TRUE will return a list with fields $junctions and $loose.ends
-  )
-  {
-      if (is.character(rafile))
-          {
-              if (grepl('(vcf$)|(vcf.gz$)', rafile))
-                  {
-                      vcf = readVcf(rafile, Seqinfo(seqnames = names(seqlengths), seqlengths = seqlengths))
-                      if (!('SVTYPE' %in% names(info(vcf)))) {
-                        warning('Vcf not in proper format.  Is this a rearrangement vcf?')
-                          return(GRangesList());
-                        }
-                      
-                      vgr = rowData(vcf) ## parse BND format
-
-                      ## no events
-                      if (length(vgr) == 0)
-                        return (GRangesList())
-
-                      ## fix mateids if not included
-                      if (!"MATEID"%in%colnames(mcols(vgr))) {
-                        nm <- vgr$MATEID <- names(vgr)
-                        ix <- grepl("1$",nm)
-                        vgr$MATEID[ix] = gsub("(.*?)(1)$", "\\12", nm[ix])
-                        vgr$MATEID[!ix] = gsub("(.*?)(2)$", "\\11", nm[!ix])
-                        vgr$SVTYPE="BND"
-                      }
-                      
-                      if (!any(c("MATEID", "SVTYPE") %in% colnames(mcols(vgr))))
-                        stop("MATEID or SVTYPE not included. Required")
-                      vgr$mateid = info(vcf)$MATEID
-                      vgr$svtype = info(vcf)$SVTYPE
-
-                      if (!is.null(info(vcf)$SCTG))
-                          vgr$SCTG = info(vcf)$SCTG
-                      
-                      if (sum(vgr$svtype == 'BND')==0)
-                          stop('Vcf not in proper format.  Will only process rearrangements in BND format')
-
-                      if (!all(vgr$svtype == 'BND'))
-                          warning(sprintf('%s rows of vcf do not have svtype BND, ignoring these'), sum(vgr$svtype != 'BND'))
-
-                      bix = which(vgr$svtype == "BND")
-                      vgr = vgr[bix]
-                      vgr$first = !grepl('^(\\]|\\[)', vgr$ALT) ## ? is this row the "first breakend" in the ALT string (i.e. does the ALT string not begin with a bracket)
-                      vgr$right = grepl('\\[', vgr$ALT) ## ? are the (sharp ends) of the brackets facing right or left
-                      vgr$coord = as.character(paste(seqnames(vgr), ':', start(vgr), sep = ''))
-                      vgr$mcoord = as.character(gsub('.*(\\[|\\])(.*\\:.*)(\\[|\\]).*', '\\2', vgr$ALT))
-                      vgr$mcoord = gsub('chr', '', vgr$mcoord)
-
-                      if (all(is.na(vgr$mateid)))
-                          if (!is.null(names(vgr)) & !any(duplicated(names(vgr))))
-                              {
-                                  warning('MATEID tag missing, guessing BND partner by parsing names of vgr')
-                                  vgr$mateid = paste(gsub('::\\d$', '', names(vgr)), (sapply(strsplit(names(vgr), '\\:\\:'), function(x) as.numeric(x[length(x)])))%%2 + 1, sep = '::')
-                              }
-                          else if (!is.null(vgr$SCTG))
-                              {
-                                  warning('MATEID tag missing, guessing BND partner from coordinates and SCTG')
-                                  ##require(igraph)
-                                  ucoord = unique(c(vgr$coord, vgr$mcoord))
-                                  vgr$mateid = paste(vgr$SCTG, vgr$mcoord, sep = '_')
-
-                                  if (any(duplicated(vgr$mateid)))
-                                      {
-                                          warning('DOUBLE WARNING! inferred mateids not unique, check VCF')
-                                          bix = bix[!duplicated(vgr$mateid)]
-                                          vgr = vgr[!duplicated(vgr$mateid)]
-                                      }
-                              }
-                          else
-                              stop('MATEID tag missing')
-
-                      vgr$mix = as.numeric(match(vgr$mateid, names(vgr)))
-
-                      pix = which(!is.na(vgr$mix))
-
-                      vgr.pair = vgr[pix]
-
-                      if (length(vgr.pair)==0)
-                          stop('No mates found despite nonzero number of BND rows in VCF')
-                      vgr.pair$mix = match(vgr.pair$mix, pix)
-                      vix = which(1:length(vgr.pair)<vgr.pair$mix )
-                      vgr.pair1 = vgr.pair[vix]
-                      vgr.pair2 = vgr.pair[vgr.pair1$mix]
-
-                      ## now need to reorient pairs so that the breakend strands are pointing away from the breakpoint
-                      
-                      ## if "first" and "right" then we set this entry "-" and the second entry "+"
-                      tmpix = vgr.pair1$first & vgr.pair1$right
-                      if (any(tmpix))
-                          {
-                              strand(vgr.pair1)[tmpix] = '-'
-                              strand(vgr.pair2)[tmpix] = '+'
-                          }
-
-                      ## if "first" and "left" then "-", "-"
-                      tmpix = vgr.pair1$first & !vgr.pair1$right
-                      if (any(tmpix))
-                          {
-                              strand(vgr.pair1)[tmpix] = '-'
-                              strand(vgr.pair2)[tmpix] = '-'
-                          }
-
-                      ## if "second" and "left" then "+", "-"
-                      tmpix = !vgr.pair1$first & !vgr.pair1$right
-                      if (any(tmpix))
-                          {
-                              strand(vgr.pair1)[tmpix] = '+'
-                              strand(vgr.pair2)[tmpix] = '-'
-                          }
-
-                      ## if "second" and "right" then "+", "+"
-                      tmpix = !vgr.pair1$first & vgr.pair1$right
-                      if (any(tmpix))
-                          {
-                              strand(vgr.pair1)[tmpix] = '+'
-                              strand(vgr.pair2)[tmpix] = '+'
-                          }
-
-                      pos1 = as.logical(strand(vgr.pair1)=='+') ## positive strand junctions shift left by one (ie so that they refer to the base preceding the break for these junctions
-                      if (any(pos1))
-                          {
-                              start(vgr.pair1)[pos1] = start(vgr.pair1)[pos1]-1
-                              end(vgr.pair1)[pos1] = end(vgr.pair1)[pos1]-1
-                          }
-
-                      pos2 = as.logical(strand(vgr.pair2)=='+') ## positive strand junctions shift left by one (ie so that they refer to the base preceding the break for these junctions
-                      if (any(pos2))
-                          {
-                              start(vgr.pair2)[pos2] = start(vgr.pair2)[pos2]-1
-                              end(vgr.pair2)[pos2] = end(vgr.pair2)[pos2]-1
-                          }
-                      ra = grl.pivot(GRangesList(vgr.pair1[, c()], vgr.pair2[, c()]))
-
-                      this.inf = info(vcf)[bix[pix[vix]], ]
-
-                      if (is.null(this.inf$POS))
-                          this.inf = cbind(data.frame(POS = ''), this.inf)
-                      if (is.null(this.inf$CHROM))
-                          this.inf = cbind(data.frame(CHROM = ''), this.inf)
-
-                      if (is.null(this.inf$MATL))
-                          this.inf = cbind(data.frame(MALT = ''), this.inf)
-                      
-                      this.inf$CHROM = seqnames(vgr.pair1)
-                      this.inf$POS = start(vgr.pair1)
-                      this.inf$MATECHROM = seqnames(vgr.pair2)
-                      this.inf$MATEPOS = start(vgr.pair2)
-                      this.inf$MALT = vgr.pair2$ALT
-                      
-                      values(ra) = cbind(fixed(vcf)[bix[pix[vix]],], this.inf)
-                      
-                      if (is.null(values(ra)$TIER))
-                          values(ra)$tier = ifelse(values(ra)$FILTER == "PASS", 2, 3) ## baseline tiering of PASS vs non PASS variants
-                      else
-                          values(ra)$tier = values(ra)$TIER
-
-                      if (!get.loose)
-                          return(ra)
-                      else
-                          {
-                              npix = is.na(vgr$mix)
-                              vgr.loose = vgr[npix, c()] ## these are possible "loose ends" that we will add to the segmentation
-                              values(vgr.loose) = cbind(fixed(vcf)[bix[npix], ], info(vcf)[bix[npix], ])
-
-                              return(list(junctions = ra, loose.ends = vgr.loose))
-                          }
-                  }
-              else
-                  rafile = read.delim(rafile)
-          }
-            
-     if (is.data.table(rafile))
-         {
-             rafile = as.data.frame(rafile)
-         }
-
-    if (nrow(rafile)==0)
-        {
-            out = GRangesList()
-            values(out) = rafile
-            return(out)
-        }
-  
-    if (snowman) ## flip breaks so that they are pointing away from junction
-      {
-        rafile$str1 = ifelse(rafile$strand1 == '+', '-', '+')
-        rafile$str2 = ifelse(rafile$strand2 == '+', '-', '+')
-      }
-      
-    if (!is.null(seqlevels)) ## convert seqlevels from notation in tab delim file to actual
-      {
-        rafile$chr1 = seqlevels[rafile$chr1]
-        rafile$chr2 = seqlevels[rafile$chr2]        
-      }
-
-     
-    if (is.null(rafile$str1))
-      rafile$str1 = rafile$strand1
-
-    if (is.null(rafile$str2))
-      rafile$str2 = rafile$strand2
-     if (!is.null(rafile$pos1) & !is.null(rafile$pos2))
-         {
-             if (breakpointer)
-                 {
-                     rafile$pos1 = rafile$T_BPpos1
-                     rafile$pos2 = rafile$T_BPpos2
-                 }
-             
-             if (!is.numeric(rafile$pos1))
-                 rafile$pos1 = as.numeric(rafile$pos1)
-
-             if (!is.numeric(rafile$pos2))
-                 rafile$pos2 = as.numeric(rafile$pos2)
-
-             ## clean the parenthesis from the string
-
-             rafile$str1 <- gsub('[()]', '', rafile$str1)
-             rafile$str2 <- gsub('[()]', '', rafile$str2)
-
-             if (is.character(rafile$str1) | is.factor(rafile$str1))
-                 rafile$str1 = gsub('0', '-', gsub('1', '+', rafile$str1))
-             
-             if (is.character(rafile$str2) | is.factor(rafile$str2))
-                 rafile$str2 = gsub('0', '-', gsub('1', '+', rafile$str2))
-             
-             if (is.numeric(rafile$str1))
-                 rafile$str1 = ifelse(rafile$str1>0, '+', '-')
-
-             if (is.numeric(rafile$str2))
-                 rafile$str2 = ifelse(rafile$str2>0, '+', '-')
-             
-             rafile$rowid = 1:nrow(rafile)
-
-             bad.ix = is.na(rafile$chr1) | is.na(rafile$chr2) | is.na(rafile$pos1) | is.na(rafile$pos2) | is.na(rafile$str1) | is.na(rafile$str2) | rafile$str1 == '*'| rafile$str2 == '*' | rafile$pos1<0 | rafile$pos2<0
-             
-             rafile = rafile[which(!bad.ix), ]
-             
-             if (nrow(rafile)==0)
-                 return(GRanges())
-             
-             seg = rbind(data.frame(chr = rafile$chr1, pos1 = rafile$pos1, pos2 = rafile$pos1, strand = rafile$str1, ra.index = rafile$rowid, ra.which = 1, stringsAsFactors = F),
-                 data.frame(chr = rafile$chr2, pos1 = rafile$pos2, pos2 = rafile$pos2, strand = rafile$str2, ra.index = rafile$rowid, ra.which = 2, stringsAsFactors = F))
-
-             if (chr.convert)
-                 seg$chr = gsub('25', 'M', gsub('24', 'Y', gsub('23', 'X', seg$chr)))
-             
-             out = seg2gr(seg, seqlengths = seqlengths)[, c('ra.index', 'ra.which')];
-             out = split(out, out$ra.index)
-         }
-     else if (!is.null(rafile$start1) & !is.null(rafile$start2) & !is.null(rafile$end1) & !is.null(rafile$end2))
-         {
-             ra1 = gr.flip(GRanges(rafile$chr1, IRanges(rafile$start1, rafile$end1), strand = rafile$str1))
-             ra2 = gr.flip(GRanges(rafile$chr2, IRanges(rafile$start2, rafile$end2), strand = rafile$str2))
-             out = grl.pivot(GRangesList(ra1, ra2))             
-         }
-     
-     
-     if (keep.features)
-         values(out) = rafile[, ]
-
-     return(out)
- }
 
 #' ra.overlaps
 #'
@@ -1799,8 +1444,7 @@ gr.flatmap = function(gr, windows, gap = 0, strand.agnostic = T, squeeze = F, xl
     return(list(grl.segs = grl.segs, window.segs = window.segs))
   }
 
-##############################
-#' affine.map
+#' Affinely maps 1D points
 #'
 #' affinely maps 1D points in vector x from interval xlim to interval ylim,
 #' ie takes points that lie in 
@@ -1820,7 +1464,7 @@ gr.flatmap = function(gr, windows, gap = 0, strand.agnostic = T, squeeze = F, xl
 #' @param clip.min Default \code{clip}
 #' @param clip.max Default \code{clip.max}
 #' if cap.max or cap.min == T then values outside of the range will be capped at min or max
-##############################
+#' @export
 affine.map = function(x, ylim = c(0,1), xlim = c(min(x), max(x)), cap = F, cap.min = cap, cap.max = cap, clip = T, clip.min = clip, clip.max = clip)
   {
   #  xlim[2] = max(xlim);
@@ -1845,7 +1489,7 @@ affine.map = function(x, ylim = c(0,1), xlim = c(min(x), max(x)), cap = F, cap.m
   }
 
 
-#' gr.findoverlaps
+#' Faster version of GRanges::findOverlaps
 #'
 #' (faster) replacement for GRanges version of findOverlaps
 #' returns granges of matches with two additional fields
@@ -2200,7 +1844,7 @@ gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE,
    }
 
 
-#' gr.match
+#' Faster implementatin of GenomicRangs::match 
 #'
 #' Faster implementation of GRanges match (uses gr.findoverlaps)
 #' returns indices of query in subject or NA if none found
@@ -2642,7 +2286,6 @@ gr.val = function(query, target, val = NULL,
     return(query)
   }
 
-####################################
 #' gr.dist
 #'
 #' computes pairwise distance between elements of two gr objects of length n and m
@@ -2677,262 +2320,22 @@ gr.dist = function(gr1, gr2 = NULL, ignore.strand = T, ...)
   return(out)
 }
 
-##############################
-#' alpha
+#' Provide transparency to colors
 #'
 #' takes provided colors and gives them the specified alpha (ie transparency) value
 #'
 #' @param col color string
 #' @param alpha alpha value between 0 and 1
+#' @return rgb color like the input, but with transparency added
 #' @export
-#############################
 alpha = function(col, alpha)
   {    
     col.rgb = col2rgb(col)
     return(rgb(red = col.rgb['red', ]/255, green = col.rgb['green', ]/255, blue = col.rgb['blue', ]/255, alpha = alpha))
   }
 
-#' Dumps rearrangemnts and cn data stored in GRanges into a simple circos format
+#' Filters GRangesList to only include ranges in the specified window
 #' 
-#' ra = GRangesList output of ra_breaks
-#' cn = outer ring of segment data
-#' cn.raw = outer ring of scatter data
-#' labels = GRanges of labels to draw in outer, outer ring
-#'
-#' the plotted field in cn and cn.raw is specified by data.field
-#' $col field of cn and cn.raw will specify color of segment / scatter point
-#' $col field of text 
-#' 
-#' if cn does not contain $col field then colors are automatically populated (blue for intervals with value below cn.low
-#' and red for intervals with values above cn.high)
-#'
-#' ra.col vector or $col field of ra (GRangesList value field) can specify colors (with ra.col taking precedence)
-#' @name gr2circos
-#' @export
-gr2circos = function(outdir, ra = NULL, cn = NULL, cn.raw = NULL, data.field = 'cn',
-  text = NULL, ## GRanges of text
-  text.field = 'label', ## the column of text from which to pull the label
-  text.size = 24,
-  text.r0 = 1.3, text.r1 = 1.5,    
-  ra.col = NULL,
-  karyotype.fn = paste(CIRCOS.DIR, 'data', 'karyotype.hg19.txt',  sep = '/'), png = T, svg = T,
-  cn.low = 1, cn.high = 1.6,
-  cn.line = FALSE, ## if true will draw line plot instead of bar
-  cn.cex = 1, ## thickness of line for CN
-  cn.ylim = NULL, cn.tick = 1, cn.r0 = 1.0, cn.r1 = 1.3,
-  chroms = NULL)
-  {        
-    # dump out seg data
-    # interval data is chr start end numval
-
-    if (!file.exists(Sys.getenv('CIRCOS_DIR')))
-      stop('Need to set CIRCOS_DIR environment variable with path to circos installation')
-    
-    cn.dat = c()
-
-    if (!is.null(chroms))
-      if (length(chroms)>1)
-        chroms = paste(chroms, collapse = ';')
-                   
-    if (!is.null(cn))
-      cn.dat = c(cn.dat, values(cn)[, data.field])
-
-    if (!is.null(cn.raw))
-      cn.dat = c(cn.dat, values(cn.raw)[, data.field])
-
-    if (is.null(cn.ylim))
-      {
-        cn.dat = cn.dat[!is.infinite(cn.dat)]
-        if (length(cn.dat)>1)
-          {
-            cn.d = diff(range(cn.dat, na.rm = T))
-            cn.ylim = c(min(cn.dat, na.rm = T) - 0.1*cn.d, max(cn.dat, na.rm = T) + 0.1*cn.d)
-            if (any(is.infinite(cn.ylim)))
-              browser()
-          }        
-        else
-          cn.ylim = c(0, 4)
-      }
-    else if (length(cn.ylim) != 2)
-      stop('cn.ylim must be length 2 vector specifying y limits of cn plot')
-    
-    data.dir = paste(outdir, 'data', sep = '/');
-    dir.create(data.dir, recursive = TRUE, showWarnings = FALSE)
-
-    circos.conf = readLines(paste(CIRCOS.DIR, 'circos.conf', sep = '/'))
-    circos.out.fn = paste(outdir, 'circos.conf', sep = '/')
-    
-    f = file(circos.out.fn, 'w')
-
-    if (!svg)
-      circos.conf = gsub('svg. = yes', 'svg* = no', circos.conf)
-    
-    if (!png)
-      circos.conf = gsub('png. = yes', 'png* = no', circos.conf)
-
-    if (!is.null(chroms))
-      {
-        circos.conf = c(paste('chromosomes = ', chroms), circos.conf)
-
-        if (any(grepl("\\-", chroms)))
-          circos.conf = gsub('\\$\\$CHROM.DISPLAY', 'yes', circos.conf)
-        else
-          circos.conf = gsub('\\$\\$CHROM.DISPLAY', 'no', circos.conf)
-      }
-    else
-      circos.conf = gsub('\\$\\$CHROM.DISPLAY', 'yes', circos.conf)
-        
-    circos.conf = gsub('\\$\\$CN.R0', cn.r0, circos.conf)
-    circos.conf = gsub('\\$\\$CN.R1', cn.r1, circos.conf)
-    circos.conf = gsub('\\$\\$TEXT.R0', text.r0, circos.conf)
-    circos.conf = gsub('\\$\\$TEXT.R1', text.r1, circos.conf)
-    circos.conf = gsub('\\$\\$TEXT.SIZE', text.size, circos.conf)
-    circos.conf = gsub('\\$\\$CN.MIN', cn.ylim[1], circos.conf)
-    circos.conf = gsub('\\$\\$CN.MAX', cn.ylim[2], circos.conf)
-    circos.conf = gsub('\\$\\$AXIS.SPACING', cn.tick, circos.conf)
-    circos.conf = gsub('\\$\\$CN.THICKNESS', cn.cex*3, circos.conf)
-    circos.conf = gsub('\\$\\$CN.TYPE', c('line', 'line')[as.numeric(cn.line)+1], circos.conf)
-    
-    writeLines(circos.conf, f)
-    close(f)
-
-    circos.conf = readLines(karyotype.fn)
-    writeLines(circos.conf, paste(outdir, 'data', 'karyotype.hg19.txt', sep = '/'))
-
-    tmp = read.delim(karyotype.fn, sep = ' ', header = F)
-    chroms = as.character(unique(tmp[,3][tmp[,1] == 'chr']))
-    
-    
-    if (!is.null(cn))
-      {
-        if (any(ix <- as.logical(!(seqnames(cn) %in% chroms))))
-          {
-            warning(sprintf('Removing segments in  these nonexistent chroms: %s.  \nTip: alter karyotype file to include these links',
-                            paste(setdiff(as.character(seqnames(cn)[ix], chroms)), collapse = ',')))
-            cn = cn[!ix]
-          }                          
-        
-        cn = cn[!is.na(values(cn)[, data.field])]
-        cn = cn[!is.infinite(values(cn)[, data.field])]
-                
-        if (is.null(cn$col))
-          cn$col = c('grey', 'blue', 'red')[1+ 1*as.numeric(values(cn)[, data.field]<cn.low) + 2*as.numeric(values(cn)[, data.field]>cn.high)]
-        
-        tmp.col = t(col2rgb(cn$col, alpha = TRUE))
-        cn$col = paste('(', paste(tmp.col[,1], tmp.col[,2], tmp.col[,3], tmp.col[,4]/255, sep = ','), ')', sep = '')
-        
-        if (cn.line)
-          write.table(data.frame(as.character(seqnames(cn)), start(cn), end(cn), values(cn)[, data.field], paste('color=', cn$col, ',stroke_color=', cn$col, sep = '')), paste(data.dir, 'cn.seg.txt', sep = '/'), col.names = F, sep = ' ', quote = F, row.names = F)
-        else
-          write.table(data.frame(as.character(seqnames(cn)), start(cn), end(cn), values(cn)[, data.field], paste('color=', cn$col, ',stroke_color=', cn$col, ',fill_color=', cn$col, sep = '')), paste(data.dir, 'cn.seg.txt', sep = '/'), col.names = F, sep = ' ', quote = F, row.names = F)
-      }
-    else      
-      writeLines(c(''), paste(data.dir, 'cn.seg.txt', sep = '/'))
-
-    if (!is.null(text))
-      {
-        if (any(ix <- as.logical(!(seqnames(text) %in% chroms))))
-          {
-            warning(sprintf('Removing text at these nonexistent chroms: %s.  \nTip: alter karyotype file to include these links',
-                            paste(setdiff(as.character(seqnames(text)[ix], chroms)), collapse = ',')))
-            text = text[!ix]
-          }                          
-        
-        if (is.null(text$col))
-          text$col = 'gray10'
-
-        if (is.null(text$font))
-          text$font = 'italic'
-
-        LEGAL.FONTS = c('light', 'normal', 'default', 'semibold', 'bold', 'italic', 'bolditalic', 'italicbold')
-        text$font[!(text$font %in% LEGAL.FONTS)] = 'default'
-                
-        tmp.col = t(col2rgb(text$col, alpha = TRUE))
-        text$col = paste('(', paste(tmp.col[,1], tmp.col[,2], tmp.col[,3], tmp.col[,4]/255, sep = ','), ')', sep = '')
-                       
-        write.table(data.frame(as.character(seqnames(text)), start(text), end(text), values(text)[, text.field], paste('color=', text$col, ',stroke_color=', text$col, ',fill_color=', text$col, ',label_font=', text$font, sep = '')), paste(data.dir, 'text.txt', sep = '/'), col.names = F, sep = ' ', quote = F, row.names = F)
-      }
-    else
-      writeLines('', paste(data.dir, 'text.txt', sep = '/'))
-
-    if (!is.null(cn.raw))
-      {
-        if (any(ix <- as.logical(!(seqnames(cn.raw) %in% chroms))))
-          {
-            warning(sprintf('Removing segments at these nonexistent chroms: %s.  \nTip: alter karyotype file to include these segments',
-                            paste(setdiff(as.character(seqnames(c.rawn)[ix], chroms)), collapse = ',')))
-            cn.raw = cn.raw[!ix]
-          }
-        
-        cn.raw = cn.raw[!is.na(values(cn.raw)[, data.field])]
-        cn.raw = cn.raw[!is.infinite(values(cn.raw)[, data.field])]
-
-        if (!is.null(cn.raw$col))
-          {
-            tmp.col = t(col2rgb(cn.raw$col, alpha = TRUE))
-            cn.raw$col = paste('(', paste(tmp.col[,1], tmp.col[,2], tmp.col[,3], tmp.col[,4]/255, sep = ','), ')', sep = '')
-          }
-        else
-          cn.raw$col = c('grey', 'blue', 'red')[1+ 1*as.numeric(values(cn.raw)[, data.field]<cn.low) + 2*as.numeric(values(cn.raw)[, data.field]>cn.high)]
-        
-        write.table(data.frame(as.character(seqnames(cn.raw)), start(cn.raw), end(cn.raw), values(cn.raw)[, data.field], paste('color=', cn.raw$col, ',stroke_color=', cn.raw$col, sep = '')), paste(data.dir, 'cn.raw.txt', sep = '/'), col.names = F, sep = ' ', quote = F, row.names = F)
-      }
-    else      
-      writeLines(c(''), paste(data.dir, 'cn.raw.txt', sep = '/'))
-    
-   # links are linkid chr start end color=col
-    if (!is.null(ra))
-      {
-        ra.og = ra;
-        ra = grl.pivot(ra)
-        
-        if (any(ix <- as.logical(!(seqnames(ra[[1]]) %in% chroms) | !(seqnames(ra[[2]]) %in% chroms))))
-          {
-            warning(sprintf('Removing links to / from these nonexistent chroms: %s.  \nTip: alter karyotype file to include these links',
-                            paste(setdiff(as.character(c(seqnames(ra[[1]][ix]), seqnames(ra[[2]][ix]))), chroms), collapse = ',')))
-            ra = grl.pivot(ra.og[!ix])
-            ra.og = ra.og[ix]
-          }                          
-        
-        if (is.null(ra.col))
-          if (is.null(values(ra.og)$ra.col))
-            ra.col = alpha(c('lightblue', 'purple'), 0.5)[1 + as.numeric(as.character(seqnames(ra[[1]])) != as.character(seqnames(ra[[2]])))]
-          else
-            ra.col = values(ra.og)$ra.col
-        
-
-        tmp.col = t(col2rgb(ra.col, alpha = T))        
-        ra.col = paste('(', paste(tmp.col[,1], tmp.col[,2], tmp.col[,3], tmp.col[,4]/255, sep = ','), ')', sep =  '')
-
-        if (length(unlist(ra))>0)
-          {
-            links = rbind(
-              data.frame(id  = paste('link', 1:length(ra[[1]]), sep = ''), chr = as.character(seqnames(ra[[1]])), pos1 = start(ra[[1]]), pos2 = end(ra[[1]])), 
-              data.frame(id  = paste('link', 1:length(ra[[2]]), sep = ''), chr = as.character(seqnames(ra[[2]])), pos1 = start(ra[[2]]), pos2 = end(ra[[2]]))
-              );
-            
-            links$col = paste('color=', ra.col, sep = '')
-            links$col[is.na(links$col)] = 'gray'
-            links = links[order(-as.numeric(links$id)), ]
-#            links = links[order(links$chr, links$pos1), ]
-
-            write.table(links, paste(data.dir, 'links.txt', sep = '/'), col.names = F, sep = ' ', quote = F, row.names = F)
-          }
-        else
-          writeLines('', paste(data.dir, 'links.txt', sep = '/'))
-      }
-    else
-      {
-        writeLines('', paste(data.dir, 'links.txt', sep = '/'))
-      }
-
-    cat(sprintf('Outputted CIRCOS plot data to directory %s.  To make plot, go into shell / cmd line, cd into directory %s, and type "circos" at the command line to produce svg and png versions of the plot\n', normalizePath(data.dir), normalizePath(outdir)))
-  }
-   
-
-#' grl.filter
-#'
-#' filters grl to only include ranges in the specified window
 #' (this is different from %in% which does not remove non matching ranges from the grls)
 #'
 #' does not return list in necessarily same order
@@ -3001,7 +2404,6 @@ grl.in = grl.allin = function(grl, windows, some = FALSE, only = FALSE)
     return(out)    
   }
 
-###################
 #' grl.split
 #'
 #' splits GRL's with respect to their seqnames and strand (default), returning
@@ -3013,7 +2415,7 @@ grl.in = grl.allin = function(grl, windows, some = FALSE, only = FALSE)
 #' @param strand Default TRUE
 #' @param values columns of values field in grl
 #' @name grl.split
-###################
+#' @export
 grl.split = function(grl, seqname = TRUE, strand = TRUE,
   values = c() # columns of values field in grl
   )
@@ -3052,13 +2454,12 @@ grl.split = function(grl, seqname = TRUE, strand = TRUE,
     return(out)
   }
 
-#######################
 #' grl.stripnames
 #'
 #' get rid of gr names inside a grl
 #' @param grl \link{GRangesList} to string names from
 #' @name grl.stripnames
-#######################
+#' @export
 grl.stripnames = function(grl)
   {
     ele = tryCatch(as.data.frame(grl)$element, error = function(e) e)    
@@ -3106,7 +2507,6 @@ grl.unlist = function(grl)
     return(out)
   }
 
-#########################
 #' grl.span
 #'
 #' Returns GRanges object representing the left / right extent of each GRL item.  In case of "chimeric" GRL items (ie that map
@@ -3121,7 +2521,7 @@ grl.unlist = function(grl)
 #' @param ir [Default FALSE]
 #' @param keep.strand [Default TRUE]
 #' @name grl.span
-########################
+#' @export
 grl.span = function(grl, chr = NULL, ir = FALSE, keep.strand = TRUE)
   {
     if (is.null(names(grl)))
@@ -3181,7 +2581,6 @@ grl.span = function(grl, chr = NULL, ir = FALSE, keep.strand = TRUE)
   }
 
 
-################################
 #' grl.pivot
 #'
 #' "pivots" grl object "x" by returning a new grl "y" whose
@@ -3191,7 +2590,10 @@ grl.span = function(grl, chr = NULL, ir = FALSE, keep.strand = TRUE)
 #' @param x GenomicRangesList object to pivot
 #' @name grl.pivot
 #' @export
+<<<<<<< HEAD
 ################################
+=======
+>>>>>>> 0e68a220ce620202f3572d3a2d4d25c9a3b36fb1
 grl.pivot = function(x)
   {
     if (length(x) == 0)
@@ -3200,13 +2602,11 @@ grl.pivot = function(x)
   }
 
 
-########################
 #' get.var.col
 #'
 #' simple function storing default
 #' variant color scheme
 #' @name get.var.col
-########################
 get.varcol = function()
   {
     VAR.COL = c('XA' = 'green', 'XG' = 'brown', 'XC' = 'blue', 'XT' = 'red', 'D'= alpha('lightblue', 0.4),
@@ -3464,6 +2864,7 @@ read.bam = function(bam, intervals = NULL,## GRanges of intervals to retrieve
     return(out)
 }
 
+<<<<<<< HEAD
 #' Get coverage as GRanges from BAM 
 #'
 #' gets coverage from bam in supplied ranges using "countBam", returning gr with coverage counts in
@@ -3594,6 +2995,8 @@ gr.trim = function(gr, starts=1, ends=1, fromEnd=FALSE, ignore.strand = T)
 }
 
 
+=======
+>>>>>>> 0e68a220ce620202f3572d3a2d4d25c9a3b36fb1
 #' Quick way to get tiled coverage via piping to samtools (~10 CPU-hours for 100bp tiles, 5e8 read pairs)
 #'
 #' Gets coverage for window size "window", pulling "chunksize" records at a time and incrementing bin
@@ -3615,7 +3018,7 @@ gr.trim = function(gr, starts=1, ends=1, fromEnd=FALSE, ignore.strand = T)
 #' @import Rsamtools
 #' @import data.table
 #' @export
-bam.cov.tile.st = function(bam.file, window = 1e2, chunksize = 1e5, min.mapq = 30, verbose = TRUE,
+bam.cov = function(bam.file, window = 1e2, chunksize = 1e5, min.mapq = 30, verbose = TRUE,
     max.tlen = 1e4, ## max insert size to consider
     st.flag = "-f 0x02 -F 0x10",
     fragments = TRUE,
@@ -3728,83 +3131,6 @@ bam.cov.tile.st = function(bam.file, window = 1e2, chunksize = 1e5, min.mapq = 3
     return(gr)
 }
 
-# Determines "covered" vs "noncovered" regions according to user specified quality threshold
-# Outputs GRanges object of covered regions
-#
-# Counts coverage in "window" bp of genome from BAM file "bam.file" using foghorn library
-# Writes bed file (.bed) and Granges file (.rds) to out.file path 
-#
-# @param bam.file character scalar input bam file
-# @param window specify window size
-# 
-## bam.cov.thresh = function(bam.file, thresh = 20, verbose = T, chunksize = 1e5)
-##   {
-##     require(Rsamtools)
-    
-##     sl = seqlengths(BamFile(bam.file))
-    
-##     if (file.exists(Sys.getenv('FOGHORN_PATH')))
-##       FOGHORN.PATH = Sys.getenv('FOGHORN_PATH')
-##     else if (file.exists('/home/unix/marcin/git/foghorn/bin/gcc-4.9.0/release/foghorn'))
-##       FOGHORN.PATH = '/home/unix/marcin/git/foghorn/bin/gcc-4.9.0/release/foghorn'
-##     else
-##       stop("Need to supply environment variable to foghorn installation dir. Env Var: FOGHORN_PATH")
-
-##     cmd = paste(FOGHORN.PATH, '-t coverage_distribution -i', bam.file, '-c')
-##     p = pipe(cmd, open = 'r')
-##     i = 0
-##     st = Sys.time()
-##     covered = FALSE
-##     last = 0;
-##     out = matrix(NA, nrow = 1e6, ncol = 3) ## initial matrix of start and end coordinates
-##     gsize = sum(as.numeric(sl))
-##     while (length(chunk <- readLines(p, chunksize))>0 & last<500)
-##       {
-##         chunk = matrix(as.numeric(unlist(strsplit(chunk, ','))), ncol = 3, byrow = T)
-##         for (i in 1:nrow(chunk))
-##           {
-##             if (chunk[i,2] == 1)
-##               {
-##                 covered = F
-##                 if (last>0) ## if last chromosome ended covered, then let's finish that interval
-##                   if (is.na(out[last, 3]))
-##                     out[last, 3] = sl[chunk[i,1]]
-##               }
-           
-##             if (chunk[i, 3]>=thresh)
-##               {
-##                 if (!covered)
-##                   {
-##                     covered = T
-##                     last = last+1
-##                     out[last, 1] = chunk[i,1]+1
-##                     out[last, 2] = chunk[i,2]
-##                   }                
-##               }
-##             else
-##               {
-##                 if (covered)
-##                   {
-##                     covered = F
-##                     out[last,3] = chunk[i,2]-1
-##                   }
-##               }
-##           }
-##         print(Sys.time()-st)
-##         frac.done = (sum(sl[1:length(sl) %in% 0:chunk[nrow(chunk),1]]) + chunk[nrow(chunk), 2])/gsize
-##         telapsed = as.numeric(difftime(Sys.time(), st, units = 'hours'))
-##         cat(sprintf('%0.2f percent done with chromosome %s, %0.2f percent done with genome: %s covered regions, estimated time remaining: %0.2f hours\n',
-##                     chunk[nrow(chunk), 2]/sl[chunk[nrow(chunk),1]+1] * 100, names(sl)[chunk[nrow(chunk),1]+1],
-##                     frac.done * 100, last,
-##                     telapsed/frac.done - telapsed
-##                     ))
-##       }
-
-##     out.gr = GRanges(names(sl)[out[,1]], IRanges(out[,2], out[,3]))
-##     return(out.gr)
-##   }
-
-
 #' Compute rpkm counts from counts
 #'
 #' takes countbam (or bam.cov.gr) output "counts" and computes rpkm by aggregating across "by" variable
@@ -3821,12 +3147,11 @@ counts2rpkm = function(counts, by)
   }
 
 
-############################
-#' get.mate.gr
+#' Create GRanges of read mates from reads
 #'
-#' returns GRanges corresponding to mates of reads
+#' @return \code{GRanges} corresponding to mates of reads
 #' @name get.mate.gr
-############################
+#' @export
 get.mate.gr = function(reads)
   {
 
@@ -3864,15 +3189,13 @@ get.mate.gr = function(reads)
       ab=data.table(seqnames=mrnm, start=mpos, end=mpos + mwidth - 1, strand=c('+','-')[1+bamflag(reads$flag)[,'isMateMinusStrand']], qname=reads$qname, mapq = mapq)
   }
 
-#############################
-#' takes reads object and returns grl with each read and its mate (if exists)
+#' Takes reads object and returns grl with each read and its mate (if exists)
 #'
 #' @param reads \code{GRanges} holding reads
 #' @param as.grl Default TRUE. Return as a \code{GRangesList}
 #' @param verbose Default FALSE
 #' @name get.pairs.grl
 #' @export
-############################
 get.pairs.grl = function(reads, as.grl = TRUE, verbose = F)
   {
 
@@ -3961,106 +3284,6 @@ chunk = function(from, to = NULL, by = 1, length.out = NULL)
   }
 
 
-#' bam.pair.cov
-#' Computes paired read coverage of pairs of ranges ij in gr.  i.e. determines
-#' the number of high mapping quality read pairs leaving in interval within "win" bases of 3'
-#' edge of gr[i] and ending up <anywhere> in gr[j].  Returns list with fields
-#' $adj.counts = sparse matrix counting read pairs coming from 3' of interval i to anywhere in interval j
-#' $tile.counts = input gr with meta data fields $npairs.unm and $npairs.mq0 showing number of unmapped reads and mapQ 0
-#' reads.
-#' 
-#'
-#' @param bam bam file path
-#' @param gr GRanges of tiles to test (e.g. output of gr.tile)
-#' @param win window size on 3' end of gr to assay outgoing coverage, if NA will use the entire range
-#' @param mq.thresh mapq threshold for determining "well mapped" reads
-#' @name bam.pair.cov
-#' @export
-bam.pair.cov = function(bam, gr, win = 1e3, mq.thresh = 30, chunksize = 100, verbose = T, mc.cores = 1)
-  {    
-    right.win = gr.end(gr, win, ignore.strand = F) ## for negative strand intervals this represents the lower coordinate side     
-    tile.counts = gr[, c()]
-    tile.counts$npairs.unm = NA
-    tile.counts$npairs.mq0 = NA
-    ## adj counts will tell us how many (well mapped) reads leaving the right side of i enter ANYWHERE in j
-    ## for negative strand reads this will represent the beginning of that range
-    adj.counts = sparseMatrix(i=1, j=1, x =0, dims = c(length(gr), length(gr)))
-    chks = chunk(1, length(gr), chunksize)
-    tmp = mclapply(1:nrow(chks), function(i)             
-      {
-        if (verbose)
-          cat('chunk', i, '\n')
-        
-        ix = chks[i, 1]:chks[i, 2]
-        this.win = right.win[ix]
-        reads = grl.unlist(read.bam(tum.jump.bam, intervals = this.win, stripstrand = F, tag = 'MQ'))
-        reads$val = 1
-        
-        if (verbose)
-          cat('extracted', length(reads), 'reads\n')
-        
-        reads.loose = reads[which(reads$mapq>mq.thresh & reads$MQ<mq.thresh)]
-        reads.unm = reads[bamflag(reads)[, 'hasUnmappedMate']]
-
-        ## gather unmapped and mapq0 reads
-        tmp.val = gr.val(this.win, reads.unm, 'val', mean = F, ignore.strand = F, na.rm = T)$val / width(this.win)
-        tmp.val[is.na(tmp.val)] = 0
-        npairs.unm = tmp.val
-        
-        tmp.val = gr.val(this.win, reads.loose, 'val', mean = F, ignore.strand = F, na.rm =T)$val / width(this.win)
-        tmp.val[is.na(tmp.val)] = 0
-        npairs.mq0 =  tmp.val
-        
-        ## get high quality reads
-        reads = reads[which(reads$mapq>=mq.thresh)] ## high quality
-        reads = reads[order(bamflag(reads)[, 'isSupplementary'], bamflag(reads)[, 'isSecondMateRead'])] ## sort supplementary alignments to the end (ensures that top alignments are primary first and second mate read)
-        reads$grl.iix = levapply(reads$grl.iix, by = reads$grl.ix, function(x) 1:length(x)) ## relabel reads
-        reads = reads[reads$grl.iix %in% 1:2, ]
-        reads = reads[reads$grl.ix %in% as.numeric(names(which(table(reads$grl.ix)==2)))]
-
-        if (verbose)
-          cat('processing', length(reads)/2, 'read pairs\n')        
-        read.pair.id = read.id = matrix(NA, ncol = 2, nrow = max(reads$grl.ix))
-        read.id[cbind(reads$grl.ix, reads$grl.iix)] = 1:length(reads)
-        read.pair.id[cbind(reads$grl.ix, reads$grl.iix)] = read.id[cbind(reads$grl.ix, ifelse(reads$grl.iix==1, 2, 1))]
-        ov.r = gr.findoverlaps(reads, this.win, ignore.strand = F, verbose = T)
-        ov.b = gr.findoverlaps(reads, gr.flip(gr), ignore.strand = F, verbose = T)
-        ## we are only counting read pairs where at least one read originates from right.win or left.win
-        ## read pairs where a right facing read from right win pairs with a left facing read from -tile
-
-        if (length(ov.r)>0 & length(ov.b)>0)
-          {
-            ix.pairs.r = merge(cbind(id.r = 1:length(ov.r), key = read.id[cbind(reads$grl.ix[ov.r$query.id], reads$grl.iix[ov.r$query.id])]),
-              cbind(id.b = 1:length(ov.b), key = read.pair.id[cbind(reads$grl.ix[ov.b$query.id], reads$grl.iix[ov.b$query.id])]), by = 'key')[, c('id.r', 'id.b')]
-            
-            ## read pairs where a right facing read from tile pairs with a left facing read from left win
-            ix1 = ix[ov.r$subject.id[ix.pairs.r[,'id.r']]]
-            ix2 = ov.b$subject.id[ix.pairs.r[,'id.b']]
-            val = (width(ov.r)[ix.pairs.r[,'id.r']] + width(ov.b)[ix.pairs.r[,'id.b']])/(width(reads)[ov.r$query.id[ix.pairs.r[,'id.r']]] + width(reads)[ov.b$query.id[ix.pairs.r[,'id.b']]])  ## weighting each read-window by fraction read overlapping that window
-            tmp.mat = sparseMatrix(ix1, ix2, x = val, dims = dim(adj.counts))
-          }
-        else
-          tmp.mat = sparseMatrix(1, 1, x = 0, dims = dim(adj.counts))
-        
-        if (verbose)
-          cat('max adj.counts is', max(tmp.mat), '\n')
-        
-        return(list(adj.counts = tmp.mat, npairs.unm = npairs.unm, npairs.mq0 = npairs.mq0))        
-      }, mc.cores = mc.cores)
-
-    for (i in 1:length(tmp))
-      {
-        tmp.mat = tmp[[i]]$adj.counts
-        ix.pos = which(tmp.mat!=0, arr.ind = T)
-        adj.counts[ix.pos] = adj.counts[ix.pos] + tmp.mat[ix.pos]
-      }
-
-    tile.counts$npairs.unm = unlist(lapply(tmp, function(x) tmp$npairs.unm))
-    tile.counts$npairs.unm = unlist(lapply(tmp, function(x) tmp$npairs.mq0))
-    
-    return(list(adj.counts = adj.counts, tile.counts = tile.counts))    
-  }
-
 
 #' rrbind = function(df1, df2, [df3 ... etc], )
 #'
@@ -4112,82 +3335,6 @@ rrbind = function(..., union = TRUE)
    return(out)
 }
 
-
-
-# Label discordant read pairs
-#
-# Labels read pairs discordant based on whether they have (1) ++ or -- strand orientation (2) "-" strand read start
-# is not greater than dmin or less than dmin ahead of  "+" strand read on same chromosome
-#
-# @note need to merge with gr.isdisc
-# @name discordant.pairs
-## discordant.pairs = function(pairs, inter.only = F, ## will only include interchromosomal pairs
-##   dmin = 50, dmax = 500)
-## {
-##   pairs.gr = grl.unlist(pairs)
-##   chr = as.character(seqnames(pairs.gr));
-##   str = as.character(strand(pairs.gr));
-##   st = start(pairs.gr);
-##   en = end(pairs.gr);
-
-##   chr.l = split(chr, pairs.gr$grl.ix)
-##   str.l = split(str, pairs.gr$grl.ix)
-##   st.l = split(st, pairs.gr$grl.ix)
-##   en.l = split(en, pairs.gr$grl.ix)
-
-##   tmp.out = sapply(chr.l, function(x) length(unique(x)))>1 ## any item w more than one chrom is discordant
-
-##   if (any(!tmp.out))
-##     tmp.out[!tmp.out] = sapply(str.l[!tmp.out], function(x) length(unique(x)))==1 ## any item w only a single strand is discordant
-
-##   if (any(!tmp.out))
-##     {
-##       d = sapply(en.l[!tmp.out], max) - sapply(st.l[!tmp.out], min) ## any item w only a single strand is discordant
-##       tmp.out[!tmp.out] = d<dmin | d>dmax
-##     }
-
-##   out = rep(NA, length(pairs))
-##   out[as.numeric(names(chr.l))] = tmp.out
-  
-  
-## ##   names(pairs) = 1:length(pairs);
-## ##   pairs.ord = names(pairs);
-## ##   tmp = as.data.frame(pairs);  
-## ##   dup = duplicated(tmp$element)
-  
-## ##   pair1 = tmp[!dup, ]
-## ##   pair2 = tmp[dup, ]
-
-## ##   ix = match(pair1$element, pair2$element);
-  
-## ##   out = rep(NA, length(pairs))
-## ##   good = !is.na(ix)
-## ##   str1 = pair1$strand;
-## ##   str2 = pair2$strand[ix]
-
-## ##   chr1 = pair1$seqnames;
-## ##   chr2 = pair2$seqnames[ix]
-  
-## ##   start = pmin(pair1$start, pair2$start[ix])
-## ##   end = pmax(pair1$end, pair2$end[ix])
-
-## ##   d = end-start;
-
-## ##   if (inter.only)
-## ##     out = chr1 != chr2
-## ##   else
-## ##     {
-## ##       out = (str1==str2 | chr1 != chr2);
-## ##       out[!out] = d[!out]<dmin | d[!out]>dmax
-## ##     }
-
-## ##   browser()
-  
-## ##   out = out[match(names(pairs), pair1$element)]
-
-##   return(out);
-## }
-
 #' count.clips
 #'
 #' takes gr or gappedalignment object and uses cigar field (or takes character vector of cigar strings)
@@ -4199,6 +3346,7 @@ rrbind = function(..., union = TRUE)
 #' @param reads GenomicRanges holding the reads
 #' @param hard [Default TRUE] option counts hard clips
 #' @name count.clips
+#' @export
 count.clips = function(reads, hard = FALSE)
 {
   if (length(reads) == 0)
@@ -4262,6 +3410,7 @@ count.clips = function(reads, hard = FALSE)
 #' @param soft [Default TRUE]
 #' @param verbose [Default TRUE]
 #' @name varbase
+#' @export
 varbase = function(reads, soft = TRUE, verbose = TRUE)
 {
   nreads = length(reads)
@@ -4531,303 +3680,6 @@ varbase = function(reads, soft = TRUE, verbose = TRUE)
   return(out.grl)  
 }
 
-#' varcount
-#'
-#' Wrapper around applyPileups
-#' 
-#' takes in vector of bam paths, GRanges corresponding to sites / territories to query,
-#' and outputs a list with fields
-#' $counts = 3D matrix of base counts
-#' (A, C, G, T, N) x sites x bams subject to mapq and baseq thresholds
-#  $gr = output ranges corresponding to "sites" columns of output
-#'#' 
-#'
-#' (uses varbase)
-#'
-#'
-#' ... = other args go to read.bam
-#' @param bams vector of bam paths to get var counts from
-#' @param gr GenomicRanges specifying region to run
-#' @param min.mapq Min mapping quality [Default 0]
-#' @param min.baseq Min base-quality [Default 20]
-#' @param max.depth Max coverage at base [Default 500]
-#' @param indel [Default FALSE]
-#' @param ... = other args go to read.bam
-#' @name varcount
-#' @import abind
-#' @import Rsamtools
-varcount = function(bams, gr, min.mapq = 0, min.baseq = 20, max.depth = 500, indel = FALSE, ...)
-  {
-    out = list()
-
-    if (any(width(gr)!=1))
-      gr = gr.start(gr)
-
-    if (is.character(bams))
-        {            
-            bami = gsub('\\.bam$', '.bai', bams)
-            ix = file.exists(bami)
-            if (any(!ix))
-                bami[!ix] = paste(bams[!ix], 'bai', sep = ',')
-            bams = BamFile(bams, index = bami)
-        }
-    
-    ix = as.logical(seqnames(gr) %in% seqlevels(bams))
-    print(table(ix))
-    if (any(ix))
-        {
-            pp = ApplyPileupsParam(which = gr[ix], what = c("seq"), minBaseQuality = min.baseq, minMapQuality = min.mapq, maxDepth = max.depth)
-            pu = applyPileups(PileupFiles(bams), function(x) x, param = pp)
-        }
-
-    if (is(bams, 'BamFile'))
-        bam.paths = path(bams)   
-    else if (is(bams, 'list'))
-        bam.paths = sapply(bams, path)
-    else if (is(bams, 'character'))
-        bam.paths = bams
-
-    if (!indel)
-        {
-            cnames = c('A', 'C', 'G', 'T', 'N')
-            out$counts = array(NA, dim = c(length(cnames), length(gr), length(bams)), dimnames = list(cnames, NULL, bam.paths))
-            if (any(ix))
-                {
-                    nna = sapply(pu, function(x) length(x$seq)>0)
-                    out$counts[,ix[nna],] = aperm(do.call('abind', lapply(pu, function(x)
-                        {
-                            x$seq[cnames,,, drop = F]
-                        })), c(1,3,2))
-            }
-        }
-    else
-        {
-            cnames = unique(unlist(lapply(pu, function(x) rownames(x$seq))))
-            cnames = cnames[order(nchar(cnames), cnames)]
-            out$counts = array(NA, dim = c(length(cnames), length(gr), length(bams)), dimnames = list(cnames, NULL, bam.paths))
-            if (any(ix))
-                {
-                nna = sapply(pu, function(x) length(x$seq)>0)
-                out$counts[,ix[nna],] = aperm(do.call('abind', lapply(pu, function(x)
-                    {
-                        out = array(NA, dim = c(length(cnames), dim(x$seq)[2:3]), dimnames = list(cnames));
-                        out[rownames(x$seq),, ] = x$seq
-                        return(out)
-                    })), c(1,3,2))
-            }
-        }    
-    out$gr = gr
-    
-    return(out)    
-  }
-
-
-################################
-#' mafcount 
-#'
-#' Returns base counts for reference and alternative allele for an input tum and norm bam and maf data frame or \code{GRanges} specifying substitutions
-#'
-#' maf is a single width GRanges describing variants and field \code{ref} (or \code{Reference_Allele}), \code{alt} (or \code{Tum_Seq_Allele1}) specifying reference and alt allele.
-#' maf is assumed to have width 1 and strand is ignored.  
-#'
-#' @param tum.bam path to a tumor bam file
-#' @param norm.bam path to a normal bam file
-#' @param maf path to a MAF
-#' @param chunk.size Default 100
-#' @param verbose Default TRUE
-#' @param mc.cores Number of cores
-#' @param ... dummy
-#' @name mafcount
-#' @export
-#################################
-mafcount = function(tum.bam, norm.bam = NULL, maf, chunk.size = 100, verbose = TRUE, mc.cores = 1, ...)
- {
-    bams = tum.bam
-    if (!is.null(norm.bam))
-      bams = c(bams, norm.bam)
-    
-    chunks = chunk(1, length(maf), chunk.size)
-
-    if (is.null(maf$Tumor_Seq_Allele1))
-      maf$Tumor_Seq_Allele1 = maf$alt
-
-    if (is.null(maf$Tumor_Seq_Allele2))
-      maf$Reference_Allele = maf$ref
-    
-    maf$alt.count.t =  maf$ref.count.t = NA
-
-    if (!is.null(norm.bam))
-      maf$alt.count.n =  maf$ref.count.n = NA
-
-    if (verbose)
-      cat('Initialized\n')
-
-    if (is.data.frame(maf))
-      maf = seg2gr(maf)
-    
-    tmp = do.call('rbind',
-        mclapply(1:nrow(chunks), function(i)
-            {
-                if (verbose)
-                    cat('Starting chunk ', chunks[i, 1], ' to ', chunks[i, 2], '\n')
-                
-                ix = chunks[i,1]:chunks[i,2]
-               if (verbose)
-                   now = Sys.time()
-               
-               vc = varcount(bams, maf[ix], ...)
-               
-               if (verbose)
-                 print(Sys.time() - now)
-               
-               tum.count = vc$counts[, , 1]
-
-               if (is.null(dim(tum.count)))
-                 tum.count = cbind(tum.count)
-
-               out = cbind(
-                 tum.count[cbind(match(maf$Tumor_Seq_Allele1[ix], rownames(tum.count)), 1:length(ix))],
-                 tum.count[cbind(match(maf$Reference_Allele[ix], rownames(tum.count)), 1:length(ix))]
-                 )
-
-               if (verbose)
-                 cat('Num rows:', nrow(out), '\n')
-                     
-               if (!is.null(norm.bam))
-                 {
-                   norm.count = vc$counts[, , 2]
-                   
-                   if (is.null(dim(norm.count)))
-                     norm.count = cbind(norm.count)
-                   
-                   out = cbind(out, 
-                     norm.count[cbind(match(maf$Tumor_Seq_Allele1[ix], rownames(norm.count)), 1:length(ix))],
-                     norm.count[cbind(match(maf$Reference_Allele[ix], rownames(norm.count)), 1:length(ix))]
-                     )
-                 }
-               return(out)               
-            }, mc.cores = mc.cores))
-
-    
-    
-    maf$alt.count.t = tmp[,1]
-    maf$ref.count.t = tmp[,2]
-    maf$alt.frac.t = maf$alt.count.t / (maf$alt.count.t + maf$ref.count.t)
-    maf$ref.frac.t = 1 - maf$alt.frac.t
-
-    if (!is.null(norm.bam))
-      {
-        maf$alt.count.n = tmp[,3]
-        maf$ref.count.n = tmp[,4]
-        maf$alt.frac.n = maf$alt.count.n / (maf$alt.count.n + maf$ref.count.n)
-        maf$ref.frac.n = 1 - maf$alt.frac.n
-      }
-
-    return(maf)
-  }
-
-#############################
-# hets
-#
-# generates allele fraction at all possible hets at sites specified by vcf (eg hapmap) input
-# for tumor and normal
-# 
-#############################
-hets = function(tum.bam, norm.bam = NULL, out.file, vcf.file = '/cga/meyerson/home/marcin/DB/dbSNP/hapmap_3.3.b37.vcf', chunk.size1 = 1e3, chunk.size2 = 1e2, mc.cores = 1, verbose = TRUE, na.rm = TRUE, 
-  filt.norm = TRUE ## if TRUE will remove any sites that have allele fraction 0 or 1 or NA in MAF 
-  )
-  {    
-      f = file(vcf.file, 'r')
-      if (grepl('VCF', readLines(f, 1)))
-          vcf = TRUE
-      else
-          vcf = FALSE
-
-      sl = hg_seqlengths()
-
-      if (verbose)
-          st = Sys.time()
-
-      nprocessed = 0
-      nhets = 0
-      first = TRUE
-      ## get past headers
-      while (grepl('^#', last.line <<- readLines(f, n=1))){}
-
-      if (verbose)
-          cat('Opened vcf, writing hets to text file', out.file, '\n')
-
-      out.cols = c('seqnames', 'start', 'end', 'Tumor_Seq_Allele1', 'Reference_Allele', 'ref.count.t', 'alt.count.t', 'ref.count.n', 'alt.count.n', 'alt.frac.t', 'ref.frac.t', 'alt.frac.n', 'ref.frac.n')
-
-
-      if (vcf)
-          col.ix = 1:5
-      else
-          {
-              col.ix = match(c("Chromosome", "Start_position", "End_position", "Reference_Allele", "Tumor_Seq_Allele1", "Tumor_Seq_Allele2"), strsplit(last.line, '\t')[[1]])
-              if (any(is.na(col.ix)))
-                  stop('Error processing variant file: must be valid VCF or MAF')
-          }
-      
-      while (!is.null(tmp <- tryCatch(read.delim(file = f, as.is = TRUE, header = FALSE, nrows = chunk.size1)[, col.ix], error = function(x) NULL)))
-          {
-              if (vcf)
-                  names(tmp) = c('chr', 'start', 'name', 'ref', 'alt')
-              else
-                  {
-                      names(tmp) = c('chr', 'start', 'name', 'ref', 'alt', 'alt2')
-                      ## just in case the first tumor seq allele is equal to reference .. which happens in mafs
-                      tmp$alt = ifelse(tmp$alt==tmp$ref, tmp$alt2, tmp$alt)
-                  }
-              
-              loc = seg2gr(tmp, seqlengths = sl)    
-              clock({loc.count = mafcount(tum.bam, norm.bam, loc, indel = TRUE, chunk.size = chunk.size2, mc.cores = mc.cores)})
-              nprocessed = nprocessed + length(loc.count)
-              
-              if (filt.norm & !is.null(loc.count$alt.frac.n))
-                  loc.count = loc.count[which(loc.count$alt.frac.n != 1 & loc.count$alt.frac.n != 0)]
-              
-              nhets = nhets + length(loc.count)
-              if (length(loc.count)>0)
-                  {
-                      df = as.data.frame(loc.count)
-                      if (na.rm) ## remove any entries with 0 ref or alt reads in tumor or normal
-                          {
-                              if (!is.null(norm.bam)) 
-                                  naix = apply(df[, c('alt.count.t', 'ref.count.t', 'alt.count.n', 'ref.count.n')], 1, function(x) all(is.na(x)))
-                              else
-                                  naix = apply(df[, c('alt.count.t', 'ref.count.t')], 1, function(x) all(is.na(x)))
-                              df = df[which(!naix), ]
-                          }
-                      out.cols = intersect(out.cols, names(df))
-                      if (first)
-                          {
-
-                              write.tab(df[, out.cols], out.file, append = F, col.names = T)
-                              first = F
-                          }
-                      else                      
-                          write.tab(df[, out.cols], out.file, append = T, col.names = F)
-                  }
-              
-              if (verbose)
-                  cat(sprintf('Processed %s sites, wrote %s candidate hets\n', nprocessed, nhets))
-              
-              if (verbose)
-                  {
-                      cat('Time elapsed:\n')
-                      print(Sys.time() - st)
-                  }              
-          }
-      
-      close(f)
-
-      if (verbose)
-          cat('Finished het processing wrote to file', out.file, '\n')
-  }
-
-
-###############################
 #' splice.cigar
 #'
 #' takes gr or gappedalignment object "reads" and parses cigar fields
@@ -4850,7 +3702,7 @@ hets = function(tum.bam, norm.bam = NULL, out.file, vcf.file = '/cga/meyerson/ho
 #' @param get.seq Default FALSE
 #' @param return.grl Default TRUE
 #' @name splice.cigar
-###############################
+#' @export
 splice.cigar = function(reads, verbose = TRUE, fast = TRUE, use.D = TRUE, rem.soft = TRUE, get.seq = FALSE, return.grl = TRUE)
 {
   nreads = length(reads)
@@ -5064,8 +3916,6 @@ splice.cigar = function(reads, verbose = TRUE, fast = TRUE, use.D = TRUE, rem.so
       }
 }
    
-
-
 #' Get GC content from reference genome
 #'
 #' Uses BSgenome package to compute gc content for a collection of segments in seg data frame ($chr, $start, $end or $chr, $pos1, $pos2 or $chr, $begin, $end)
@@ -5075,7 +3925,6 @@ splice.cigar = function(reads, verbose = TRUE, fast = TRUE, use.D = TRUE, rem.so
 #' @import BSgenome
 #' @export
 #' @name gc_content
-##########################
 gc_content = function(segs, bs_genome) ##build = 'hg19')
   {
     segs = standardize_segs(segs, chr = TRUE);
@@ -5113,7 +3962,8 @@ gc_content = function(segs, bs_genome) ##build = 'hg19')
 #'
 #' shortcut .. assumes reads are GappedAlignments with flag variable or actual integers representing bam flag
 #' @param reads GenomicRanges holding the reads
-#' @name bamflagr
+#' @name bamflag
+#' @export
 bamflag = function(reads)
   {
     if (inherits(reads, 'GappedAlignments') | inherits(reads, 'data.frame') | inherits(reads, 'GRanges'))
@@ -5132,14 +3982,13 @@ bamflag = function(reads)
   }
 
 
-##########################
 #' bamtag
 #'
 #' outputs a tag that cats qname, first vs first second mate +/- secondary alignment +/- gr.string
 #' to give an identifier for determine duplicates in a read pile
 #' @param reads GenomicRanges holding the reads
 #' @name bamflag
-#########################
+#' @export
 bamtag = function(reads, secondary = F, gr.string = F)
   {
     grs = sec = NULL
@@ -5160,6 +4009,7 @@ bamtag = function(reads, secondary = F, gr.string = F)
 #' (2) has additional flag chrsub to sub in 'chr' in selection, and then sub it out of the output
 #' @name import.ucsc
 #' @importClassesFrom "rtracklayer" WIGFile BEDFile BigWigFile
+#' @export
 import.ucsc = function(con, selection = NULL, text, chrsub = TRUE, verbose = FALSE, as = NULL, ...)
   {
     si = NULL;
@@ -5581,62 +4431,6 @@ get_seq = function(hg, gr, unlist = TRUE, mc.cores = 1, mc.chunks = mc.cores,
     }
 }
 
-#######################
-# score.repeats 
-#
-# scores instances repeats of all 1,2,3,..,k nuc repeats in an input DNAstring set
-#######################
-score.repeats = function(seq, k = 3, min.len = 2, min.occ = 0, weight = 1)
-    {
-
-        if (length(min.len)==1)
-            min.len = rep(min.len, k)
-        else if (length(min.len) != k)
-            k = length(min.len)
-        
-        if (length(min.occ)==1)
-            min.occ = rep(min.occ, k)
-        else if (length(min.occ) != k)
-            k = length(min.occ)
-        
-        if (length(weight)==1)
-            weight = rep(weight, k)
-        else if (length(weight) != length(seq))
-            {
-                k = length(weight)
-                min.occ = min.occ[1:k]
-            }
-        
-        if (length(weight) != length(min.occ) | length(min.occ) != length(min.len))
-            stop('weight and min.occ must be compatible or length 1')
-        
-        score = rep(0,length(seq))
-        for (i in 1:k)
-            {
-                seed = paste(mkAllStrings(DNA_BASES, i))
-                tmp = apply(matrix(rep(seed, min.len[i]), ncol = min.len[i]), 1, paste, collapse = '')
-                pd = PDict(DNAStringSet(tmp))
-                m = vcountPDict(pd, seq)
-                score = score +  weight[i]*colSums(m*sign(m>=min.occ[i]))
-            }
-        return(score)
-    }
-
-
-
-##########################
-# seq_content
-#
-# Uses BSgenome package to compute gc content for a collection of segments in seg data frame ($chr, $start, $end or $chr, $pos1, $pos2 or $chr, $begin, $end)
-# Returns vector of gc content of length nrow(segs).
-##########################
-seq_content = function(gr, contexts = c('G', 'C'), hg = read_hg(fft = T), ...)
-  {
-    tmp = strsplit(as.character(get_seq(hg, gr, ..)), '')
-    return(sapply(tmp, function(x) sum(x %in% contexts)/sum(x != "N")))
-  }
-
-
 #' Deduplicate character vectors
 #
 #' Relabels duplicates in a character vector with .1, .2, .3
@@ -5678,46 +4472,6 @@ levapply = function(x, by, FUN = 'order')
     return(out)
   }
 
-# Multicore pairwiseAlignment
-#
-# Multicore implementation of pairwiseAlignment
-# @note WATCH OUT for bug where if any seqs sent to pairwiseAlignment start as empty, the
-#     C code underneath pairwiseAlignment crashes. Best to remove empties beforehand
-## # @export
-## mc.pairwiseAlignment <- function(pattern, subject, type='local', mc.cores=1, numchunk=NA, verbose=FALSE, ...) {
-
-##   ## remove empty sequences. Bug in pairwiseAlignment where it crashes if first sequence is empty
-##   #logvec <- nchar(pattern) > 0 & nchar(subject) > 0
-##   #pattern <- pattern[logvec]
-##   #subject <- subject[logvec]
-
-##   if (mc.cores == 1) 
-##     return(pairwiseAlignment(pattern, subject, type=type, ...))
-  
-##   ## this chunk function is from marcins functions.R code
-##   if (is.na(numchunk))
-##     chk <- chunk(from=1, to=length(pattern), by=ceiling(length(pattern)/mc.cores))
-##   else
-##     chk <- chunk(from=1, to=length(pattern), by=ceiling(length(pattern)/numchunk))
-
-##   ix.chunks <- lapply(seq(nrow(chk)), function(y) chk[y,1]:chk[y,2])
-##   if (verbose)
-##     print(paste('mc.pairwiseAlignment in', length(ix.chunks), 'chunks'))
-
-##   pam <- mclapply(seq_along(ix.chunks), function(y) {
-##     val <- ix.chunks[[y]]
-##     if (verbose)
-##       print(paste('aligning chunk', y, 'of', length(ix.chunks), 'chunks with length', length(val)))
-##     out <- pairwiseAlignment(pattern[val], subject[val], type=type, ...)
-##     return(out)
-##     }, mc.cores=mc.cores)
-##   if (verbose)
-##     print('Done with mc.pairwiseAligning, sending to concatPA')
-##   pamc <- concatPA(pam, pattern, subject)
-##   return(pamc)
-## }
-
-
 #' Convert from chrXX to numeric format
 #'
 #' Convert from chrXX to numeric format
@@ -5737,42 +4491,6 @@ chr2num = function(x, xy = FALSE)
      
      return(out)
   }
-
-
-## # Concatenate pairwiseAlignmen objects
-## # 
-## # Concatenate pairwiseAlignment objects. modeled after \code{mpi.collate.pairwiseAlignment}
-## # @param pa list of pairwiseAlignment objects
-## # @param pattern Pattern of the entire thing
-## # @param subject Subject of the entire thing
-## # @return A single \code{pairwiseAlignment} object
-## # @export
-## concatPA <- function(pa, pattern, subject) {
-
-##   if (length(pa) == 1)
-##     if (class(pa) == 'list')
-##       return(pa[[1]])
-##     else
-##       return(pa)
-
-##   value <- pa[[1]]
-##   value@score <- unlist(lapply(pa, score))
-
-##   pattern <- QualityScaledDNAStringSet(pattern, quality=value@pattern@unaligned@quality)
-##   subject <- QualityScaledDNAStringSet(subject, quality=value@subject@unaligned@quality)
-  
-##   value@pattern@unaligned <- pattern
-##   value@pattern@range     <- do.call('c', lapply(pa, function(x) x@pattern@range))
-##   value@pattern@mismatch  <- do.call('c', lapply(pa, function(x) x@pattern@mismatch))
-##   value@pattern@indel     <- do.call('c', sapply(pa, function(x) x@pattern@indel))
-
-##   value@subject@unaligned <- subject
-##   value@subject@range     <- do.call('c', lapply(pa, function(x) x@subject@range))
-##   value@subject@mismatch  <- do.call('c', lapply(pa, function(x) x@subject@mismatch))
-##   value@subject@indel     <- do.call('c', sapply(pa, function(x) x@subject@indel))
-
-##   value
-## }
 
 #' Count bases in cigar string
 #' 
@@ -5933,7 +4651,7 @@ gr.reduce <- function(...) {
 #' @param ignore.strand Ignore the strand when comparing overlaps. Default TRUE
 #' @param pintersect Force the pintersect option for \link{gr.findoverlaps}
 #' @return GRanges
-#####################
+#' @export
 gr.mincov <- function(gr, min.cov=2, buffer=0, ignore.strand=TRUE, pintersect=FALSE) {
 
   if (inherits(gr, 'GRangesList'))
@@ -5976,97 +4694,6 @@ gr2grl = function(gr, ix)
      return(out)
   }
 
-
-
-#' base_duplicated but for adjacent only
-#' 
-#' Same as base duplicated function, but only counts duplicates that are adjacent.
-#' e.g. duplicated(c(1,2,2,3,2)) returns c(F,F,T,F,T)
-#'  duplicated.adj(c(1,2,2,3,2)) returns c(F,F,T,F,F)
-#' @param vec vector of values to test
-#' @return logical vector with same length as vec
-#' @export
-adj.duplicated <- function(vec) {
-  if (length(vec) == 0)
-    return (logical())
-  return(c(FALSE, head(vec, length(vec)-1) == tail(vec, length(vec)-1)))
-}
-
-
-# gr.tfix
-# 
-# more aggressive version of gr.fix that requires seqlevels of c(1...22,X,Y,M)
-# and that the seqlengths agree with Hsapiens.
-# @param gr Input GRanges
-# @param unmap Toggle whether to turn start=1 reads onto the Unmapped seqlevel (and adds Unmapped). Default TRUE
-# @export
-## gr.tfix <- function(gr, unmap=TRUE, readlen=101) {
-## 	if (length(gr) == 0)
-## 		return(gr)
-
-## 	## TODO fix issue with different versions of renameSeqlevels
-##         gr <- gr.nochr(gr)	## first strip all chr if there are any
-## 	val <- paste('chr',c(seq(22),'X','Y','M','X','Y'), sep='')
-##         names(val) <- c(seq(22),'X','Y','M',23,24)
-##         for (i in seq_along(val)) {
-##            if (any(seqlevels(gr)==names(val)[i]))
-##              seqlevels(gr)[seqlevels(gr)==names(val)[i]] <- val[i]
-##         }
-        
-## 	gr <- gr.fix(gr, genome=read_hg)
-## 	gr <- keepSeqlevels(gr, paste('chr',c(seq(22),'X','Y','M'),sep=''))
-##         seqlengths(gr) = seqlengths(read_hg())[1:25]
-## 	gr <- gr.nochr(gr)
-
-##         if (seqlengths(gr)[1] != 249250621)
-##           stop('unexpected seqlengths')
-
-##         if (unmap)
-## 	  gr <- gr.addunmap(gr, readlen=readlen)
-
-## 	return(gr)
-## }
-
-# In addition to adding the Unmapped seqlevel
-# to the GRanges, it can optionally modify the 
-# seqnames and field \code{type} for any GRanges
-# level that starts at 1 (current marker for unmapped)
-# 
-# @param gr GRanges to modify
-# @param add.type add Type field and change seqlevels of Unmapped reads to Unmapped (see description). Default T
-# @return GRanges with the modified seqlevels
-# @export
-## gr.addunmap <- function(gr, add.type=F, readlen=101) {
-	
-## 	if (!inherits(gr,'GRanges'))
-##           stop('gr.addunmap: only setup for GRanges')
-
-## 	# add unmapped seqlevel
-## 	gr.tmp <- gr.fix(gr[1], genome=read_hg())
-## 	seqlevels(gr.tmp, force=T) <- paste(c(seq(22),'X','Y','M'), sep='')
-## 	gr.tmp <- gr.nochr(gr.tmp)
-
-## 	seqlevels(gr, force=T) <- c(seqlevels(gr.tmp), 'Unmapped')
-## 	seqlengths(gr) <- c(seqlengths(gr.tmp), Unmapped=200)
-
-## 	# add unmapped info
-## 	if (add.type) {
-## 		isUnmapped <- start(gr)==1
-
-##                 ## fast way to change seqnames
-##                 sn <- as.character(seqnames(gr))
-##                 sn[isUnmapped] <- 'Unmapped'
-##                 seqnames(gr) <- factor(sn, levels=seqlevels(gr))
-                
-##                 ## fast way to change start, end
-##                 rn <- ranges(gr)
-##                 rn[isUnmapped] <- IRanges(start=1, end=readlen)
-##                 ranges(gr) <- rn
-## 	}
-
-## 	return(gr)
-## }
-
 #' Remove chr prefix from GRanges seqlevels
 #'
 #' @param gr GRanges with chr seqlevel prefixes
@@ -6097,7 +4724,6 @@ system.call <- function(syscall, verbose=T) {
   }
     #system(syscall, intern=T, ignore.stdout=TRUE, ignore.stderr=TRUE)
 }
-
 
 #' @name seg2gr
 #' @title Convert GRange like data.frames into GRanges
@@ -6175,8 +4801,6 @@ seg2gr = function(segs, key = NULL, seqlengths = hg_seqlengths(), seqinfo = Seqi
     return(out);
   }
 
-
-#####################
 #' grdt
 #'
 #' Converts gr to data frame
@@ -6185,7 +4809,6 @@ seg2gr = function(segs, key = NULL, seqlengths = hg_seqlengths(), seqinfo = Seqi
 #' @param x \code{GRanges} to convert
 #' @name grl.unlist
 #' @export
-#####################
 grdt = function(x)
  {
       ## new approach just directly instantiating data table
@@ -6230,184 +4853,6 @@ grdt = function(x)
       cmd = paste(cmd, ')', sep = '')
       return(eval(parse(text =cmd)))
   }
-
-
-############################
-# gr2seg
-#
-# converts a granges to a data.frame dumpable to seg file ingestible by IGV
-# ie df has columns
-# $ID, $chrom, $loc.start, $loc.end, $mum.mark, $seg.mean
-#
-############################
-gr2seg = function(gr, score.field = 'seg.mean', id.field = 'ID')
-    {
-        out = data.frame(ID = values(gr)[, id.field], chrom = as.character(seqnames(gr)),
-            loc.start = pmax(1, start(gr)), loc.end = end(gr), num.mark = width(gr), seg.mean = values(gr)[, score.field])
-        return(out)
-    }
-
-############################
-# seq2grl
-#
-# takes (named or unnamed) DNAStringSet or AAStringSet or character vector of sequences 
-# and outputs a GRangesList where each range is single run of a letter with $letter and $col field
-# annotated.   Colors or mapped according to standard color map or a provided named vector specifying
-# letters to colors.
-#
-# There are standard colormaps for DNA and protein which can be overridden with custom named string in "colormap" mapping
-# unique sequence values to colors 
-#
-# 
-#
-# not to be confused with seg2gr
-#############################
-seq2grl = function(seqs, sn = NULL, strand = NULL, rev = F, comp = F, dna = T, colormap = NULL)
-  {
-    seq.nm = NULL
-    
-    if (is(seqs, 'character'))
-      {
-        if (!is.character(x <- tryCatch(DNAStringSet(seqs), error = function(x) 'shite')))
-          {
-            seqs = x
-          }
-        else if (!is.character(x <- tryCatch(AAtringSet(seqs), error = function(x) 'shite')))
-          {
-            seqs = x
-          }
-        else
-          stop('input must be a DNAStringSet, AAStringSet, or character vector representing a DNA or Amino acid sequence')
-      }    
-            
-    if (is(seqs, 'DNAStringSet'))
-      {
-        seq.nm = names(seqs)
-        dna = T
-
-        if (!is.null(strand))
-          comp = rev = ifelse(strand=='+', F, T)
-
-        rev = cbind(1:length(seqs), rev)[,2]==1
-        comp = cbind(1:length(seqs), comp)[,2]==1
-        
-        if (any(rev))
-          seqs[rev] = reverse(seqs[rev])
-        
-        if (any(comp))
-          seqs[comp] = complement(seqs[comp])
-      }
-
-    if (is(seqs, 'AAStringSet'))
-      {
-        seq.nm = names(seqs)
-        dna = F
-
-        rev = cbind(1:length(seqs), rev)[,2]==1
-        
-        if (any(rev))
-          seqs[rev] = reverse(seqs[rev])
-      }
-
-    if (!is.null(sn))
-      if (length(sn) == length(seqs))
-        seq.nm = sn
-      else
-        stop('sn must be same length as seqs')
-    
-    if (is.null(seq.nm))
-      seq.nm = 1:length(seqs)
-    else if (!is.character(seq.nm))
-      seq.nm = as.character(seq.nm)
-    
-    seqs = as.character(seqs);
-    
-    ix = intersect(which(!is.na(seqs)), which(nchar(seqs) > 0))
-    tmp = strsplit(seqs[ix], '')
-
-    tmp.u = unlist(tmp);
-    tmp.u.id = unlist(lapply(1:length(tmp), function(x) rep(x, length(tmp[[x]]))))
-    tmp.u.start = unlist(lapply(tmp, function(x) 1:length(x)))
-
-    if (is.null(colormap))
-      {
-        if (dna)
-          colormap = c('A' = 'green', 'G' = 'brown', 'C' = 'blue', 'T' = 'red')
-        else
-          colormap = structure(brewer.master(length(AMINO_ACID_CODE)), names = names(AMINO_ACID_CODE))
-      }
-    
-    tmp.u.col = colormap[tmp.u]
-    tmp.u.col[is.na(tmp.u.col)] = 'gray'
-
-    return(split(GRanges(seq.nm[ix][tmp.u.id], IRanges(tmp.u.start, width = 1), letter = tmp.u, col = tmp.u.col, border = tmp.u.col,
-                         strand = '*', seqlengths = structure(nchar(seqs), names = seq.nm)), seq.nm[ix][tmp.u.id]))
-  }
-
-############################
-# standardize_segs
-#
-# (data frame seg function)
-#
-# Takes and returns segs data frame standardized to a single format (ie $chr, $pos1, $pos2)
-#
-# if chr = T will ensure "chr" prefix is added to chromossome(if does not exist)
-#############################
-standardize_segs = function(seg, chr = F)
-  {    
-    if (inherits(seg, 'IRangesList'))
-      seg = irl2gr(seg);
-
-    if (is(seg, 'matrix'))
-      seg = as.data.frame(seg, stringsAsFactors = F)
-        
-    if (inherits(seg, 'RangedData') | inherits(seg, 'GRanges') | inherits(seg, 'IRanges'))
-      {
-        val = as.data.frame(values(seg));
-        values(seg) = NULL;
-        seg = as.data.frame(seg, row.names = NULL);  ## returns compressed iranges list
-        seg$seqnames = as.character(seg$seqnames)
-      }
-    else
-      val = NULL;
-    
-    field.aliases = list(
-      ID = c('id', 'patient', 'Sample'),
-      chr = c('seqnames', 'chrom', 'Chromosome', "contig", "seqnames", "seqname", "space", 'chr', 'Seqnames'),
-      pos1 = c('start', 'loc.start', 'begin', 'Start', 'start', 'Start.bp', 'Start_position', 'pos', 'pos1', 'left', 's1'),
-      pos2 =  c('end', 'loc.end', 'End', 'end', "stop", 'End.bp', 'End_position', 'pos2', 'right', 'e1'),
-      strand = c('strand', 'str', 'strand', 'Strand', 'Str')
-      );
-
-    if (is.null(val))
-      val = seg[, setdiff(names(seg), unlist(field.aliases))]
-    
-    seg = seg[, intersect(names(seg), unlist(field.aliases))]
-    
-    for (field in setdiff(names(field.aliases), names(seg)))
-      if (!(field %in% names(seg)))
-        names(seg)[names(seg) %in% field.aliases[[field]]] = field;
-    
-    if (chr) 
-      if (!is.null(seg$chr))
-        if (!grepl('chr', seg$chr[1]))
-          seg$chr = paste('chr', seg$chr, sep = "");
-
-    if (is.null(seg$pos2))
-      seg$pos2 = seg$pos1;
-    
-    missing.fields = setdiff(names(field.aliases), c(names(seg), c('chr', 'ID', 'strand')));
-    
-    if (length(missing.fields)>0)
-      warning(sprintf('seg file format problem, missing an alias for the following fields:\n\t%s',
-                   paste(sapply(missing.fields, function(x) paste(x, '(can also be', paste(field.aliases[[x]], collapse = ', '), ')')), collapse = "\n\t")));
-
-    if (!is.null(val))
-      seg = cbind(seg, val)
-    
-    return(seg)
-  }
-
 
 #'
 #' identifies events that are in ra1 that do not exist in ra2.
@@ -6458,141 +4903,6 @@ ra.union <- function(ra1, ra2, ...)
           out
     }
 
-# shorthand
-lsos <- function(..., n=10) {
-      .ls.objects(..., order.by="Size", decreasing=TRUE, head=TRUE, n=n)
-}
-
-
-gr.jrand <- function(width=1, gr.mask=NULL) {
-
-  ## generate the breakpoints
-  NUMRUN <- length(width)
-  si <- seqinfo(gr.tfix(GRanges(1, IRanges(1,1))))
-  sl <- structure(as.numeric(seqlengths(si))[1:24], names=names(seqlengths(si)[1:24]))
-  chr <- sample(c(1:22, 'X', 'Y'), prob=sl, NUMRUN, replace=TRUE)
-  start <- rep(NA, NUMRUN)
-  for (i in c(1:22, 'X', 'Y')) {
-    logvec <- chr==i
-    start[logvec] <- sample(sl[i], sum(logvec))
-  }
-  gr.random <- GRanges(chr, IRanges(start, width=width))
-  
-  if (!is.null(gr.mask)) {
-    print('Running find overlaps')
-    fo <- gr.findoverlaps(gr.random, gr.mask)
-    gr.random <- gr.random[setdiff(seq(length(gr.random)), fo$subject.id)]
-  }
-  return(gr.random)
-}
-
-read.vcf <- function(fname, format='broad') {
-
-   if (is.na(fname) || !file.exists(fname))
-     return()
-
-   ln = readLines(fname, n = 500)
-   nskip = sum(grepl('^#',  ln))
-   tlen <- length(readLines(fname))
-
-   if (nskip == tlen)
-     return(GRangesList())
-
-   tab = read.delim(fname, skip = nskip, strings = F, header = F)
-   if (format == 'broad' || format == 'b') {
-     colnames(tab) <- c('chr', 'pos', 'ID', 'REF', 'ALT', 'QUAL', 'FILTER', 'INFO', 'FORMAT', 'NORMAL', 'TUMOR')
-     ## parse out the alternate loc
-     strand= gsub(".*?STRAND=(\\+|-).*", '\\1', tab$INFO)
-     mstrand=gsub(".*?MATESTRAND=(\\+|-).*", '\\1', tab$INFO)
-     mpos = as.numeric(gsub(".*?MATEPOS=([0-9]+);.*", '\\1', tab$INFO))
-     mchr = gsub(".*?chr([0-9A-Z]+):.*", '\\1', tab$ALT)
-   } else if (format == 'embl' || format == 'e') {
-     colnames(tab) <- c('chr', 'pos', 'ID', 'REF', 'ALT', 'QUAL', 'FILTER', 'INFO', 'FORMAT', 'NORMAL', 'TUMOR')
-     mpos = as.numeric(gsub(".*?END=([0-9]+);.*", '\\1', tab$INFO))
-     mchr = gsub(".*?CHR2=([0-9A-Z]+);.*", '\\1', tab$INFO)
-     strand='*'
-     mstrand='*'
-   } else if (format == 'sanger' || format == 's') {
-     colnames(tab) <- c('chr', 'pos', 'ID', 'REF', 'ALT', 'QUAL', 'FILTER', 'INFO', 'FORMAT', 'NORMAL', 'TUMOR')
-     mpos = as.numeric(gsub(".*:([0-9]+).*", '\\1', tab$ALT))
-     mchr = gsub(".*([0-9XYM]+).*", '\\1', tab$ALT)
-     strand='*'
-     mstrand='*'
-   }
-
-   gr = GRanges(tab$chr, IRanges(start=tab$pos, width=1), strand=strand, ra.index=seq(nrow(tab)))
-   gr = c(gr, GRanges(mchr, IRanges(start=mpos, width=1), strand=mstrand, ra.index=seq(nrow(tab))))
-
-   grl = split(gr, gr$ra.index)
-
-   ## remove duplicates
-   ro <- ra.overlaps(grl, grl)
-   dt = data.table(ro[ro[, 'ra1.ix'] != ro[, 'ra2.ix'], ])
-   dt[, min := min(ra1.ix, ra2.ix), by=ra1.ix]
-   gr = gr[!gr$ra.index %in% unique(dt$min)]
-   grl = split(gr, gr$ra.index)
-   
-   return(grl)
-   
-}
-
-#' Compare two rearrangement call sets
-#'
-#' Get union / interection counts and identities for two differrent
-#' rearrangment call sets, as stored in \code{GRangesList} objects.
-#' @seealso \code{\link{ra_breaks}} for importing dRanger breakpoint files,
-#' \code{read_vcf} for reading in rearrangement VCF files.
-#' @param ra1 \code{GRangesList} of rearrangement pairs
-#' @param ra2 \code{GRangesList} of rearrangement pairs
-#' @param pad Amount to pad breakpoints by when considering overlaps
-#' @param ignore.strand [default F] Should strandedness be considered when comparing calls
-ra.stats = function(ra1, ra2, pad=0, ignore.strand=FALSE) {
-
-  ## get the overlaps
-  ro <- ra.overlaps(ra1, ra2, pad=pad, ignore.strand=ignore.strand);
-
-  if (is.na(ro[1])) {
-    ra1.private <- seq_along(ra1)
-    ra2.private <- seq_along(ra2)
-    ra1.common = numeric()
-    ra2.common = numeric()
-    ra1.half = numeric()
-    ra2.half = numeric()
-    ra1.full = numeric()
-    ra2.full = numeric()
-  } else {
-    
-    ra1.common <- unique(ro[, 'ra1.ix'])
-    ra2.common <- unique(ro[, 'ra2.ix'])
-    ra1.private <- setdiff(seq_along(ra1), unique(ro[,'ra1.ix']))
-    ra2.private <- setdiff(seq_along(ra2), unique(ro[,'ra2.ix']))
-    
-    gr.ra1p = grl.unlist(ra1)
-    gr.ra2p = grl.unlist(ra2)
-    fo1 <- gr.findoverlaps(gr.ra1p, gr.pad(grl.unlist(ra2), pad))
-    fo2 <- gr.findoverlaps(gr.ra2p, gr.pad(grl.unlist(ra1), pad))
-    
-    ra1.oneside = unique(gr.ra1p$grl.ix[fo1$query.id])
-    ra2.oneside = unique(gr.ra2p$grl.ix[fo2$query.id])
-    
-    ra1.half = intersect(ra1.oneside, ra1.private)
-    ra2.half = intersect(ra2.oneside, ra2.private)
-    ra1.full = setdiff(ra1.private, ra1.half)
-    ra2.full = setdiff(ra2.private, ra2.half)
-  }
-  
-  out = list(ra1.private = ra1.private, ra2.private = ra2.private, ra1.common = ra1.common,
-    ra2.common = ra2.common, ra1.half=ra1.half, ra2.half=ra2.half, ra1.full=ra1.full, ra2.full=ra2.full);
- 
-  print(paste("Common:", length(ra1.common)))
-  print(paste("RA1 Private (half/full):", length(ra1.private), "(", length(ra1.half), "/", length(ra1.full), ")"))
-  print(paste("RA2 Private (half/full):", length(ra2.private), "(", length(ra2.half), "/", length(ra2.full), ")"))
-  
-  return(out)
-  
-}
-
-##########
 #' gr.all
 #'
 #' Return a GRanges that holds interavals for all of HG19
@@ -6882,8 +5192,6 @@ setGeneric('%||%', function(x, ...) standardGeneric('%||%'))
 setMethod("%||%", signature(x = "GRanges"), function(x, y) {
     return(reduce(grbind(x[, c()], y[, c()])))
 })
-
-
 
 .toggle_grfo = function()
     {
