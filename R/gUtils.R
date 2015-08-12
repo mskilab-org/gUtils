@@ -1047,12 +1047,78 @@ parse.grl = function(x, seqlengths = hg_seqlengths())
 #'
 #' quick function to parse gr from character vector IGV / UCSC style strings of format gr1;gr2;gr3 where each gr is of format chr:start-end[+/-]
 #'
-#' @name parse.grl
+#' @name parse.gr
 #' @export
-gstring = parse.gr = function(...)
+parse.gr = function(...)
   {
     return(unlist(parse.grl(...)))
   }
+
+
+#' gstring
+#'
+#' quick function to parse gr from character vector IGV / UCSC style strings of format gr1;gr2;gr3 where each gr is of format chr:start-end[+/-]
+#'
+#' @name gstring
+#' @export
+gstring = function(...)
+  {
+    return(unlist(parse.grl(...)))
+  }
+
+
+#' Trim a pile of GRanges
+#'
+#' trims pile of granges relative to the specified <local> coordinates of each range
+#' (ie the first coordinate of every gr is 1 and the last is width(gr))
+#' if end is larger than the width of the corresponding gr, then the corresponding output will only have end(gr) as its coordinate.
+#'
+#' this is a role not currently provided by the standard granges fxns
+#' (eg shift, reduce, restrict, shift, resize, flank etc)
+#' @param gr GRanges to trime
+#' @param starts number. Default 1
+#' @param ends number. Default 1
+#' @export
+gr.trim = function(gr, starts=1, ends=1, fromEnd=FALSE, ignore.strand = T)
+    {
+    starts = cbind(1:length(gr), starts)[, 2]
+    ends = cbind(1:length(gr), ends)[, 2]
+    
+    if (!ignore.strand)
+        {
+        ix = as.logical(strand(gr)=='-')
+        if (any(ix))
+            {
+            if (fromEnd)
+                {
+                tmp = starts[ix]
+                starts[ix] = ends[ix]
+                ends[ix] = tmp-1
+            }
+            else
+                {
+                starts[ix] = width(gr)[ix]-starts[ix]+1
+                ends[ix] = width(gr)[ix]-ends[ix]+1
+            }
+        }
+    }
+      
+    if (fromEnd) {
+      en = pmax(starts, end(gr)-ends);
+  } else {
+      ends = pmax(starts, ends);
+      ends = pmin(ends, width(gr));
+      en = start(gr) + ends - 1;
+  }
+    
+    st = start(gr)+starts-1;
+    st = pmin(st, en);
+            
+    out = GRanges(seqnames(gr), IRanges(st, en),
+                   seqlengths = seqlengths(gr), strand = strand(gr))
+    values(out) = values(gr)
+    return(out)
+}
 
 
 #' ra.overlaps
@@ -3792,7 +3858,75 @@ splice.cigar = function(reads, verbose = TRUE, fast = TRUE, use.D = TRUE, rem.so
               return(out.gr)
       }
 }
-   
+
+
+############################
+#' standardize_segs
+#'
+#' (data frame seg function)
+#'
+#' Takes and returns segs data frame standardized to a single format (ie $chr, $pos1, $pos2)
+#
+#' if chr = T will ensure "chr" prefix is added to chromossome(if does not exist)
+#' @name standardize_segs
+#' @export
+#############################
+standardize_segs = function(seg, chr = F)
+  {    
+    if (inherits(seg, 'IRangesList'))
+      seg = irl2gr(seg);
+
+    if (is(seg, 'matrix'))
+      seg = as.data.frame(seg, stringsAsFactors = F)
+        
+    if (inherits(seg, 'RangedData') | inherits(seg, 'GRanges') | inherits(seg, 'IRanges'))
+      {
+        val = as.data.frame(values(seg));
+        values(seg) = NULL;
+        seg = as.data.frame(seg, row.names = NULL);  ## returns compressed iranges list
+        seg$seqnames = as.character(seg$seqnames)
+      }
+    else
+      val = NULL;
+    
+    field.aliases = list(
+      ID = c('id', 'patient', 'Sample'),
+      chr = c('seqnames', 'chrom', 'Chromosome', "contig", "seqnames", "seqname", "space", 'chr', 'Seqnames'),
+      pos1 = c('start', 'loc.start', 'begin', 'Start', 'start', 'Start.bp', 'Start_position', 'pos', 'pos1', 'left', 's1'),
+      pos2 =  c('end', 'loc.end', 'End', 'end', "stop", 'End.bp', 'End_position', 'pos2', 'right', 'e1'),
+      strand = c('strand', 'str', 'strand', 'Strand', 'Str')
+      );
+
+    if (is.null(val))
+      val = seg[, setdiff(names(seg), unlist(field.aliases))]
+    
+    seg = seg[, intersect(names(seg), unlist(field.aliases))]
+    
+    for (field in setdiff(names(field.aliases), names(seg)))
+      if (!(field %in% names(seg)))
+        names(seg)[names(seg) %in% field.aliases[[field]]] = field;
+    
+    if (chr) 
+      if (!is.null(seg$chr))
+        if (!grepl('chr', seg$chr[1]))
+          seg$chr = paste('chr', seg$chr, sep = "");
+
+    if (is.null(seg$pos2))
+      seg$pos2 = seg$pos1;
+    
+    missing.fields = setdiff(names(field.aliases), c(names(seg), c('chr', 'ID', 'strand')));
+    
+    if (length(missing.fields)>0)
+      warning(sprintf('seg file format problem, missing an alias for the following fields:\n\t%s',
+                   paste(sapply(missing.fields, function(x) paste(x, '(can also be', paste(field.aliases[[x]], collapse = ', '), ')')), collapse = "\n\t")));
+
+    if (!is.null(val))
+      seg = cbind(seg, val)
+    
+    return(seg)
+  }
+
+
 #' Get GC content from reference genome
 #'
 #' Uses BSgenome package to compute gc content for a collection of segments in seg data frame ($chr, $start, $end or $chr, $pos1, $pos2 or $chr, $begin, $end)
@@ -4143,25 +4277,26 @@ hg_seqlengths = function(hg19 = TRUE, chr = FALSE, include.junk = FALSE)
 #' @export
 read_hg = function(hg19 = T, fft = F)
   {
-
-    if (file.exists(Sys.getenv('HG.FFT')))
-      REFGENE.FILE.HG19.FFT = Sys.getenv('HG.FFT')
-    else if (file.exists('/home/unix/marcin/DB/ffTracks/hg19.rds'))
-      REFGENE.FILE.HG19.FFT = '/home/unix/marcin/DB/ffTracks/hg19.rds'      
+      if (fft)
+          {
+              if (file.exists(Sys.getenv('HG.FFT')))
+                  REFGENE.FILE.HG19.FFT = Sys.getenv('HG.FFT')
+              else if (file.exists('~/DB/ffTracks/hg19.rds'))
+                  REFGENE.FILE.HG19.FFT = '~/DB/ffTracks/hg19.rds'
+              else
+                  stop("Need to supply environment variable to FFtracked genome or load BSGenome. Env Var: HG.FFT")
+              
+              return(readRDS(REFGENE.FILE.HG19.FFT))
+          }
     else
-      stop("Need to supply environment variable to FFtracked genome. Env Var: HG.FFT")
-      
-    if (fft)
-      return(readRDS(REFGENE.FILE.HG19.FFT))
-##     else
-##       {
-##         require(BSgenome)
-##         if (hg19)
-##           library(BSgenome.Hsapiens.UCSC.hg19)
-##         else
-##           library(BSgenome.Hsapiens.UCSC.hg18)
-##       }
-    return(Hsapiens)
+        {
+            require(BSgenome)
+            if (hg19)
+                library(BSgenome.Hsapiens.UCSC.hg19)
+            else
+                library(BSgenome.Hsapiens.UCSC.hg18)            
+            return(Hsapiens)
+        }
   }
 
 #' Retrieve genomic sequenes
@@ -4868,8 +5003,10 @@ setMethod("%-%", signature(gr = "GRanges"), function(gr, sh) {
 #' @author Marcin Imielinski
 #setGeneric('%*%', function(x, ...) standardGeneric('%*%'))
 setMethod("%*%", signature(x = "GRanges"), function(x, y) {
-    gr = gr.findoverlaps(x, y, qcol = names(values(x)), scol = names(values(y)))
-    return(gr)
+              if (is.character(y))
+                  y = parse.gr(y)
+              gr = gr.findoverlaps(x, y, qcol = names(values(x)), scol = names(values(y)))
+              return(gr)
 })
 
 
@@ -4887,6 +5024,8 @@ setMethod("%*%", signature(x = "GRanges"), function(x, y) {
 #' @author Marcin Imielinski
 setGeneric('%^%', function(x, ...) standardGeneric('%^%'))
 setMethod("%^%", signature(x = "GRanges"), function(x, y) {
+              if (is.character(y))
+                  y = parse.gr(y)
     return(gr.in(x, y))
 })
 
@@ -4904,7 +5043,7 @@ setMethod("%^%", signature(x = "GRanges"), function(x, y) {
 #' @export 
 #' @author Marcin Imielinski
 setGeneric('%$%', function(x, ...) standardGeneric('%$%'))
-setMethod("%$%", signature(x = "GRanges"), function(x, y) {
+setMethod("%$%", signature(x = "GRanges"), function(x, y) {  
     return(gr.val(x, y, val = names(values(y))))
 })
 
@@ -4923,7 +5062,9 @@ setMethod("%$%", signature(x = "GRanges"), function(x, y) {
 #' @author Marcin Imielinski
 setGeneric('%&%', function(x, ...) standardGeneric('%&%'))
 setMethod("%&%", signature(x = "GRanges"), function(x, y) {
-    return(reduce(gr.findoverlaps(x[, c()], y[, c()])))
+              if (is.character(y))
+                  y = parse.gr(y)
+              return(reduce(gr.findoverlaps(x[, c()], y[, c()])))
 })
 
 
@@ -4941,6 +5082,8 @@ setMethod("%&%", signature(x = "GRanges"), function(x, y) {
 #' @author Marcin Imielinski
 setGeneric('%_%', function(x, ...) standardGeneric('%_%'))
 setMethod("%_%", signature(x = "GRanges"), function(x, y) {
+              if (is.character(y))
+                  y = parse.gr(y)
     setdiff(gr.stripstrand(x[, c()]), gr.stripstrand(y[, c()]))
 })
 
@@ -4959,7 +5102,9 @@ setMethod("%_%", signature(x = "GRanges"), function(x, y) {
 #' @author Marcin Imielinski
 setGeneric('%|%', function(x, ...) standardGeneric('%|%'))
 setMethod("%|%", signature(x = "GRanges"), function(x, y) {
-    return(reduce(grbind(gr.stripstrand(x[, c()]), gr.stripstrand(y[, c()]))))
+              if (is.character(y))
+                  y = parse.gr(y)
+              return(reduce(grbind(gr.stripstrand(x[, c()]), gr.stripstrand(y[, c()]))))
 })
 
 #' @name %**%
@@ -4976,7 +5121,9 @@ setMethod("%|%", signature(x = "GRanges"), function(x, y) {
 #' @author Marcin Imielinski
 setGeneric('%**%', function(x, ...) standardGeneric('%**%'))
 setMethod("%**%", signature(x = "GRanges"), function(x, y) {
-    gr = gr.findoverlaps(x, y, qcol = names(values(x)), scol = names(values(y)), ignore.strand = FALSE)
+              if (is.character(y))
+                  y = parse.gr(y)
+              gr = gr.findoverlaps(x, y, qcol = names(values(x)), scol = names(values(y)), ignore.strand = FALSE)
     return(gr)
 })
 
@@ -4995,6 +5142,8 @@ setMethod("%**%", signature(x = "GRanges"), function(x, y) {
 #' @author Marcin Imielinski
 setGeneric('%^^%', function(x, ...) standardGeneric('%^^%'))
 setMethod("%^^%", signature(x = "GRanges"), function(x, y) {
+              if (is.character(y))
+                  y = parse.gr(y)
     return(gr.in(x, y, ignore.strand = FALSE))
 })
 
@@ -5013,6 +5162,8 @@ setMethod("%^^%", signature(x = "GRanges"), function(x, y) {
 #' @author Marcin Imielinski
 setGeneric('%$$%', function(x, ...) standardGeneric('%$$%'))
 setMethod("%$$%", signature(x = "GRanges"), function(x, y) {
+              if (is.character(y))
+                  y = parse.gr(y)
     return(gr.val(x, y, val = names(values(y)), ignore.strand = FALSE))
 })
 
@@ -5031,6 +5182,8 @@ setMethod("%$$%", signature(x = "GRanges"), function(x, y) {
 #' @author Marcin Imielinski
 setGeneric('%&&%', function(x, ...) standardGeneric('%&&%'))
 setMethod("%&&%", signature(x = "GRanges"), function(x, y) {
+              if (is.character(y))
+                                y = parse.gr(y)
     return(reduce(gr.findoverlaps(x[, c()], y[, c()], ignore.strand = FALSE)))
 })
 
@@ -5049,6 +5202,8 @@ setMethod("%&&%", signature(x = "GRanges"), function(x, y) {
 #' @author Marcin Imielinski
 setGeneric('%__%', function(x, ...) standardGeneric('%__%'))
 setMethod("%__%", signature(x = "GRanges"), function(x, y) {
+              if (is.character(y))
+                  y = parse.gr(y)
     setdiff(x[, c()], y[, c()])
 })
 
@@ -5067,6 +5222,8 @@ setMethod("%__%", signature(x = "GRanges"), function(x, y) {
 #' @author Marcin Imielinski
 setGeneric('%||%', function(x, ...) standardGeneric('%||%'))
 setMethod("%||%", signature(x = "GRanges"), function(x, y) {
+              if (is.character(y))
+                  y = parse.gr(y)
     return(reduce(grbind(x[, c()], y[, c()])))
 })
 
