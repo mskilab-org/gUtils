@@ -1447,20 +1447,22 @@ gr.tile = function(gr, w = 1e3)
     gr = gr[ix] 
 
     if (length(gr)==0)
-        return(gr[c()][, c()])
-    sn = as.character(seqnames(gr))
-    str = as.character(strand(gr))
-    pos = lapply(1:length(gr), function(x) c(seq(start(gr)[x], end(gr)[x], w), end(gr)[x]+1));
-    starts = lapply(pos, function(x) x[1:(length(x)-1)])
-    ends = lapply(pos, function(x) x[2:length(x)]-1);
-    chr = lapply(1:length(gr), function(x) rep(sn[x], length(starts[[x]])))
-    strs = lapply(1:length(gr), function(x) rep(str[x], length(starts[[x]])))
-    query.id = lapply(1:length(gr), function(x) rep(x, length(starts[[x]])))
-    out = GRanges(unlist(chr), IRanges(unlist(starts), unlist(ends)), strand = unlist(strs), seqlengths = seqlengths(gr))
-    out$query.id = ix[unlist(query.id)]
-    out$tile.id = unlist(lapply(query.id, function(x) 1:length(x)))
+        return(gr[c()][, c()])   
+
+    ws = as.numeric(ceiling((width(gr))/w))
+
+    st = rep(start(gr), ws)
+    en = rep(end(gr), ws)
+    strand = rep(as.character(strand(gr)), ws)
+    dt = data.table(query.id = rep(1:length(gr), ws))
+    dt[, numw := 0:(length(query.id)-1), by = query.id]   
+    start = pmin(st+w*dt$numw, en)
+    end = pmin(st+w*(dt$numw+1)-1, en)
+    
+    out = GRanges(rep(as.character(seqnames(gr)), ws), IRanges(start, end), strand = strand, query.id = ix[dt$query.id], tile.id = 1:length(start), seqinfo = seqinfo(gr))
+    
     return(out)
-  }
+}
 
 
 #' gr.flatmap
@@ -2940,6 +2942,87 @@ read.bam = function(bam, intervals = NULL,## GRanges of intervals to retrieve
     return(out)
 }
 
+#' @name bam.cov.gr
+#' @title Get coverage as GRanges from BAM on custom set of GRanges
+#' @description
+#'
+#' gets coverage from bam in supplied ranges using "countBam", returning gr with coverage counts in
+#' each of the provided ranges (different from bam.cov above) specified as $file, $records, and $nucleotides
+#' columns in the values field
+#' basically a wrapper for countBam with some standard settings for ScanBamParams
+#'
+#' @param bam Input bam file. Advisable to make "bam" a BamFile instance instead of a plain string, so that the index does not have to be reloaded.
+#' @param bami Input bam index file.
+#' @param gr GRanges of intervals to retrieve
+#' @param verbose Increase verbosity
+#' @param isPaired See documentation for \code{scanBamFlag}. Default NA
+#' @param isProperPair See documentation for \code{scanBamFlag}. Default NA
+#' @param isUnmappedQuery See documentation for \code{scanBamFlag}. Default NA
+#' @param hasUnmappedMate See documentation for \code{scanBamFlag}. Default NA
+#' @param isNotPassingQualityControls See documentation for \code{scanBamFlag}. Default NA
+#' @param isDuplicate See documentation for \code{scanBamFlag}. Default FALSE
+#' @param isValidVendorRead See documentation for \code{scanBamFlag}. Default TRUE
+#' @param mc.cores Number of cores in \code{mclapply} call.
+#' @param chunksize How many intervals to process per core. Default 10. 
+#' @param ... passed to \code{scanBamFlag}
+#' @return GRanges parallel to input GRanges, but with metadata filled in.
+#' @import GenomicRanges
+#' @import parallel
+#' @import Rsamtools
+#' @export
+bam.cov.gr = function(bam, gr, bami = NULL, count.all = FALSE, isPaired = T, isProperPair = T, isUnmappedQuery = F, hasUnmappedMate = F, isNotPassingQualityControls = F, isDuplicate = F, isValidVendorRead = T, mc.cores = 1, chunksize = 10, verbose = F, ...)
+{
+  if (is.character(bam))
+    if (!is.null(bami))
+      bam = BamFile(bam, bami)
+    else
+        {
+            if (file.exists(paste(bam, 'bai', sep = '.')))
+                bam = BamFile(bam, paste(bam, 'bai', sep = '.'))
+            else if (file.exists(gsub('.bam$', '.bai', bam)))
+                bam = BamFile(bam, paste(bam, 'bai', sep = '.'))
+            else
+                stop('BAM index not found, please find index and specify bam file argument as valid BamFile object')
+        }
+
+  keep = which(seqnames(gr) %in% seqlevels(bam))
+
+  if (length(keep)>0)
+      {
+        ix = c(keep[c(seq(1, length(keep), chunksize))], keep[length(keep)]+1);  ## prevent bam error from improper chromosomes 
+        chunk.id = unlist(lapply(1:(length(ix)-1), function(x) rep(x, ix[x+1]-ix[x])))
+        
+        gr.chunk = split(gr[keep], chunk.id[keep]);
+        if (count.all)
+            flag = scanBamFlag()
+        else
+            flag = scanBamFlag(isPaired = isPaired, isProperPair = isProperPair, isUnmappedQuery = isUnmappedQuery,
+                hasUnmappedMate = hasUnmappedMate, isNotPassingQualityControls = isNotPassingQualityControls,
+                isDuplicate = isDuplicate, ...)
+        out = do.call('rbind', mclapply(1:length(gr.chunk),
+          function(x) {
+            if (verbose)
+              cat(sprintf('Processing ranges %s to %s of %s, extracting %s bases\n', ix[x], ix[x+1]-1, length(keep), sum(width(gr.chunk[[x]]))))
+            countBam(bam, param = ScanBamParam(which = gr.chunk[[x]], flag = flag))
+          }, mc.cores = mc.cores));
+        
+                                        # have to fix the order (since RangesList conversion will mess it up) .. looking into better workarounds
+        
+        gr.tag = paste(as.character(seqnames(gr)), start(gr), end(gr));
+        out.tag = paste(out$space, out$start, out$end);
+        ix = match(gr.tag, out.tag);
+        values(gr) = cbind(as.data.frame(values(gr)), out[ix, c('file', 'records', 'nucleotides')])
+      }
+  else
+    values(gr) = cbind(as.data.frame(values(gr)), data.frame(file = rep(gsub('.*\\/([^\\/]+)$', '\\1', path(bam)), length(gr)), records = NA, nucleotides = NA))
+
+  return(gr)
+}
+
+
+#' @name bam.cov.tile
+#' @title Get coverage as GRanges from BAM on genome tiles across seqlengths of genome
+#' @description
 #' Quick way to get tiled coverage via piping to samtools (~10 CPU-hours for 100bp tiles, 5e8 read pairs)
 #'
 #' Gets coverage for window size "window", pulling "chunksize" records at a time and incrementing bin
@@ -2961,7 +3044,7 @@ read.bam = function(bam, intervals = NULL,## GRanges of intervals to retrieve
 #' @import Rsamtools
 #' @import data.table
 #' @export
-bam.cov = function(bam.file, window = 1e2, chunksize = 1e5, min.mapq = 30, verbose = TRUE,
+bam.cov.tile = function(bam.file, window = 1e2, chunksize = 1e5, min.mapq = 30, verbose = TRUE,
     max.tlen = 1e4, ## max insert size to consider
     st.flag = "-f 0x02 -F 0x10",
     fragments = TRUE,
