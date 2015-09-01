@@ -1454,12 +1454,12 @@ gr.tile = function(gr, w = 1e3)
     st = rep(start(gr), ws)
     en = rep(end(gr), ws)
     strand = rep(as.character(strand(gr)), ws)
-    dt = data.table(query.id = rep(1:length(gr), ws))
-    dt[, numw := 0:(length(query.id)-1), by = query.id]   
+    dt = data.table(query.id = rep(1:length(gr), ws), tile.id = 1:sum(ws))
+    dt[, numw := 0:(length(tile.id)-1), by = query.id]   
     start = pmin(st+w*dt$numw, en)
     end = pmin(st+w*(dt$numw+1)-1, en)
     
-    out = GRanges(rep(as.character(seqnames(gr)), ws), IRanges(start, end), strand = strand, query.id = ix[dt$query.id], tile.id = 1:length(start), seqinfo = seqinfo(gr))
+    out = GRanges(rep(as.character(seqnames(gr)), ws), IRanges(start, end), strand = strand, query.id = ix[dt$query.id], tile.id = 1:length(start), seqinfo = seqinfo(gr))    
     
     return(out)
 }
@@ -2999,19 +2999,17 @@ bam.cov.gr = function(bam, gr, bami = NULL, count.all = FALSE, isPaired = T, isP
             flag = scanBamFlag(isPaired = isPaired, isProperPair = isProperPair, isUnmappedQuery = isUnmappedQuery,
                 hasUnmappedMate = hasUnmappedMate, isNotPassingQualityControls = isNotPassingQualityControls,
                 isDuplicate = isDuplicate, ...)
-        out = do.call('rbind', mclapply(1:length(gr.chunk),
+        out = rbindlist(mclapply(1:length(gr.chunk),
           function(x) {
             if (verbose)
               cat(sprintf('Processing ranges %s to %s of %s, extracting %s bases\n', ix[x], ix[x+1]-1, length(keep), sum(width(gr.chunk[[x]]))))
-            countBam(bam, param = ScanBamParam(which = gr.chunk[[x]], flag = flag))
+            as.data.table(countBam(bam, param = ScanBamParam(which = gr.chunk[[x]], flag = flag)))
           }, mc.cores = mc.cores));
-        
-                                        # have to fix the order (since RangesList conversion will mess it up) .. looking into better workarounds
-        
+
         gr.tag = paste(as.character(seqnames(gr)), start(gr), end(gr));
         out.tag = paste(out$space, out$start, out$end);
         ix = match(gr.tag, out.tag);
-        values(gr) = cbind(as.data.frame(values(gr)), out[ix, c('file', 'records', 'nucleotides')])
+        values(gr) = cbind(as.data.frame(values(gr)), out[ix, c('file', 'records', 'nucleotides'), with = FALSE])
       }
   else
     values(gr) = cbind(as.data.frame(values(gr)), data.frame(file = rep(gsub('.*\\/([^\\/]+)$', '\\1', path(bam)), length(gr)), records = NA, nucleotides = NA))
