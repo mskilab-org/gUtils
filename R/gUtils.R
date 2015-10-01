@@ -642,7 +642,7 @@ grbind = function(x, ...)
 
     bare.grs = lapply(grs, function(x) gr.fix(x[,c()], sl.new))
     out = tryCatch(do.call('c', bare.grs), error = function(e) NULL)
-        
+
     if (is.null(out) | is.list(out)) ## something failed with concatenation, likely some weird ghost with concatenating GRanges with 'c', below is a temp fix
         {
             getsridofghostsomehow =  c(bare.grs[[1]], bare.grs[[2]])
@@ -661,15 +661,15 @@ grbind = function(x, ...)
     if (!force.rrbind)
       tmp = tryCatch(do.call('rrbind2', vals), error = function(e) NULL)
     else
-      tmp = NULL
-    
+        tmp = NULL
+        
     if (is.null(tmp) | force.rrbind) ## sometimes rrbind2 gets picky because of type checking (rbindlist) .. so just run rrbind then
        values(out) = do.call('rrbind', vals)
      else
        values(out) = tmp
 
     if (any(ix))
-      out$col.4214124124124 = NULL
+        out$col.4214124124124 = NULL
     return(out)     
   }
 
@@ -2455,7 +2455,7 @@ grl.filter = function(grl, windows)
 #' @param only [Default FALSE]
 #' @name grl.allin
 #' @export
-grl.in = grl.allin = function(grl, windows, some = FALSE, only = FALSE)
+grl.in = grl.allin = function(grl, windows, some = FALSE, only = FALSE, logical = TRUE)
   {
     if (length(grl)==0)
       return(logical())
@@ -2465,15 +2465,17 @@ grl.in = grl.allin = function(grl, windows, some = FALSE, only = FALSE)
                  
     numwin = length(windows);    
     gr = grl.unlist(grl)
-    m = as.data.frame(gr.findoverlaps(gr, windows))
+    m = grdt(gr.findoverlaps(gr, windows))
 
     out = rep(FALSE, length(grl))
     if (nrow(m)==0)
       return(out)
+
     m$grl.id = gr$grl.ix[m$query.id]
+    m$grl.iid = gr$grl.iix[m$query.id]
 
     if (some)
-      tmp = aggregate(formula = subject.id ~ grl.id, data = m, FUN = function(x) length(intersect(1:numwin, x))>0)
+        tmp = as.data.frame(m[, length(unique(grl.iid)), by = grl.id])
     else if (only)
       return(mapply(function(x, y) length(setdiff(x, y))==0,
                     split(1:length(gr), factor(gr$grl.ix, 1:length(grl))),
@@ -2483,6 +2485,8 @@ grl.in = grl.allin = function(grl, windows, some = FALSE, only = FALSE)
     
     out = rep(FALSE, length(grl))
     out[tmp[,1]] = tmp[,2]
+    if (logical)
+        out = out!=0
     return(out)    
   }
 
@@ -4905,7 +4909,7 @@ seg2gr = function(segs, key = NULL, seqlengths = hg_seqlengths(), seqinfo = Seqi
 grdt = function(x)
  {
       ## new approach just directly instantiating data table
-      cmd = 'data.table(';
+      cmd = 'data.frame(';
       if (is(x, 'GRanges'))
           {
               was.gr = TRUE
@@ -4944,7 +4948,8 @@ grdt = function(x)
           }
 
       cmd = paste(cmd, ')', sep = '')
-      return(eval(parse(text =cmd)))
+#      browser()
+      return(as.data.table(eval(parse(text =cmd))))
   }
 
 #'
