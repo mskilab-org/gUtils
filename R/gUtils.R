@@ -41,7 +41,6 @@ globalVariables(c("V1", "V2", "V3", "len", "chr", "bin", "count", "rowid", "bin1
                   "qname", "reads", "last.line", "uix", "id", "i.start", "i.end", "sn", "subject.id", "query.id",
                   "CIRCOS.DIR"))
 
-
 #' Get GRanges corresponding to beginning of range
 #'
 #' Alternative to \code{flank} that will provide start positions *within* intervals
@@ -53,6 +52,16 @@ globalVariables(c("V1", "V2", "V3", "len", "chr", "bin", "count", "rowid", "bin1
 #' @param ignore.strand [default = T] If set to \code{FALSE}, will extend '-' strands from the other direction.
 #' @return GRanges object of width 1 ranges representing start of each genomic range in the input.
 #' @import GenomicRanges
+#' @import data.table
+#' @import IRanges
+#' @import GenomicRanges
+#' @importFrom Matrix sparseMatrix
+#' @import Rsamtools
+#' @import BSgenome
+#' @import rtracklayer
+#' @import parallel
+#' @import Rsamtools
+#' @import Biostrings
 #' @examples
 #'   \dontrun{st <- c(1,2,3)
 #'   si <- Seqinfo("1",3)
@@ -124,9 +133,6 @@ gr.start = function(x, width = 1, force = FALSE, ignore.strand = TRUE, clip = FA
 #' All of the remaining fields are added as meta data to the GRanges
 #' @param dt data.table to convert to GRanges
 #' @return GRanges object of length = nrow(dt)
-#' @import data.table
-#' @import IRanges
-#' @import GenomicRanges
 #' @examples
 #' \dontrun{r <- dtgr(data.table(start=1, seqnames="X", end=2, strand='+'))}
 #' @export
@@ -231,6 +237,7 @@ gr.end = function(x, width = 1, force = FALSE, ignore.strand = TRUE, clip = TRUE
 #' @param x \code{GRanges} object to operate on
 #' @param pad Amount to pad the output width to (default 0, so width of 1)
 #' @return \code{GRanges} of the midpoint, calculated from \code{floor(width(x)/2)}
+#' @export
 #' @examples
 #' \dontrun{gr.mid(GRanges(1, IRanges(1000,2000), seqinfo=Seqinfo("1", 2000)))}
 gr.mid = function(x)
@@ -1029,9 +1036,10 @@ parse.grl = function(x, seqlengths = hg_seqlengths())
     tmp.id = rep(1:length(tmp), sapply(tmp, length))
     str = gsub('.*([\\+\\-])$','\\1', tmp.u)
     spl = strsplit(tmp.u, '[\\:\\-\\+]', perl = T)
-    if (any(ix <- sapply(spl, length)!=3))
-      spl[ix] = strsplit(gr.string(seqinfo2gr(seqlengths)[sapply(spl[ix], function(x) x[[1]])], mb = F), '[\\:\\-\\+]', perl = T)
-
+    if (any(ix <- sapply(spl, length)==1))
+        spl[ix] = strsplit(gr.string(seqinfo2gr(seqlengths)[sapply(spl[ix], function(x) x[[1]])], mb = F), '[\\:\\-\\+]', perl = T)
+    else if (any(ix <- sapply(spl, length)==2))
+        spl[ix] = lapply(spl, function(x) x[c(1,2,2)])
     if (any(ix <- !str %in% c('+', '-')))
       str[ix] = '*'    
     df = cbind(as.data.frame(matrix(unlist(spl), ncol = 3, byrow = T), stringsAsFactors = F), str)
@@ -1138,7 +1146,6 @@ gr.trim = function(gr, starts=1, ends=1, fromEnd=FALSE, ignore.strand = T)
 #' @param ignore.strand Ignore rearrangement orientation when doing overlaps. Default FALSE
 #' @param ... params to be sent to \code{\link{gr.findoverlaps}}
 #' @name ra.overlaps
-#' @importFrom Matrix sparseMatrix
 #' @export
 ra.overlaps = function(ra1, ra2, pad = 0, arr.ind = T, ignore.strand=FALSE, ...)
   {    
@@ -1214,8 +1221,6 @@ gr.sub = function(gr, a = c('(^chr)(\\.1$)', 'MT'), b= c('', 'M'))
 #' @param gname dummy
 #' @param drop Remove all ranges without seqlevelts in the genome. Default FALSE
 #' @name gr.fix
-#' @import GenomicRanges
-#' @import data.table
 #' @export
 gr.fix = function(gr, genome = NULL, gname = NULL,  drop = FALSE)
   {
@@ -2741,8 +2746,6 @@ get.varcol = function()
 #' @param size.limit Default 1e6
 #' @param ... passed to \code{scanBamFlag}
 #' @return Reads in one of GRanges, GRangesList or data.table
-#' @import Rsamtools
-#' @import data.table
 #' @export
 read.bam = function(bam, intervals = NULL,## GRanges of intervals to retrieve
     gr = intervals,
@@ -2970,9 +2973,6 @@ read.bam = function(bam, intervals = NULL,## GRanges of intervals to retrieve
 #' @param chunksize How many intervals to process per core. Default 10. 
 #' @param ... passed to \code{scanBamFlag}
 #' @return GRanges parallel to input GRanges, but with metadata filled in.
-#' @import GenomicRanges
-#' @import parallel
-#' @import Rsamtools
 #' @export
 bam.cov.gr = function(bam, gr, bami = NULL, count.all = FALSE, isPaired = T, isProperPair = T, isUnmappedQuery = F, hasUnmappedMate = F, isNotPassingQualityControls = F, isDuplicate = F, isValidVendorRead = T, mc.cores = 1, chunksize = 10, verbose = F, ...)
 {
@@ -3043,8 +3043,6 @@ bam.cov.gr = function(bam, gr, bami = NULL, count.all = FALSE, isPaired = T, isP
 #' @param midpoint if TRUE will only use the fragment midpoint, if FALSE will count all bins that overlap the fragment
 #' @return GRanges of "window" bp tiles across seqlengths of bam.file with meta data field $counts specifying fragment counts centered
 #' in the given bin.
-#' @import Rsamtools
-#' @import data.table
 #' @export
 bam.cov.tile = function(bam.file, window = 1e2, chunksize = 1e5, min.mapq = 30, verbose = TRUE,
     max.tlen = 1e4, ## max insert size to consider
@@ -4018,7 +4016,6 @@ standardize_segs = function(seg, chr = F)
 #' Returns vector of gc content of length nrow(segs).
 #' @param segs Segment data frame to pull gc from
 #' @param bs_genome A \code{\link{BSgenome}} object. Perhaps \code{BSgenome.Hsapiens.UCSC.hg19::Hsapiens}
-#' @import BSgenome
 #' @export
 #' @name gc_content
 gc_content = function(segs, bs_genome) ##build = 'hg19')
@@ -4104,7 +4101,6 @@ bamtag = function(reads, secondary = F, gr.string = F)
 #' (1) handles "as" formats
 #' (2) has additional flag chrsub to sub in 'chr' in selection, and then sub it out of the output
 #' @name import.ucsc
-#' @importClassesFrom "rtracklayer" WIGFile BEDFile BigWigFile
 #' @export
 import.ucsc = function(con, selection = NULL, text, chrsub = TRUE, verbose = FALSE, as = NULL, ...)
   {
@@ -4189,7 +4185,7 @@ import.ucsc = function(con, selection = NULL, text, chrsub = TRUE, verbose = FAL
     
     if (chrsub & !is.null(si) & !is.null(selection))
       selection = gr.fix(gr.chr(selection), si, drop = T)
-
+    
     if (class(f) %in% c('BEDFile'))
         {
             if (!is.null(selection))
@@ -4331,7 +4327,6 @@ match.bs = function(query, dict, midpoint = FALSE)
 #' @param chr Flag for whether to keep "chr". Default FALSE
 #' @param include.junk Flag for whether to not trim to only 1-22, X, Y, M. Default FALSE
 #' @return Seqlengths
-#' @import BSgenome
 #' @export
 hg_seqlengths = function(hg19 = TRUE, chr = FALSE, include.junk = FALSE)
   {
@@ -4396,7 +4391,6 @@ read_hg = function(hg19 = T, fft = F)
 #' @param mc.chunks Optional define how to chunk the multicore call. Default mc.cores
 #' @param verbose Increase verbosity
 #' @return DNAStringSet of sequences
-#' @importClassesFrom "Biostrings" DNAString AAString AAStringSet DNAStringSet
 #' @export
 get_seq = function(hg, gr, unlist = TRUE, mc.cores = 1, mc.chunks = mc.cores,
      as.data.table = FALSE, verbose = FALSE)
@@ -4833,7 +4827,6 @@ system.call <- function(syscall, verbose=T) {
 #' @param segs data frame of segments with fields denoting chromosome, start, end, and other metadata (see standardized segs for seg data frame input formats)
 #' @param seqlengths seqlengths of output GRanges object
 #' @param seqinfo seqinfo of output GRanges object
-#' @import GenomicRanges
 #' @export
 seg2gr = function(segs, key = NULL, seqlengths = hg_seqlengths(), seqinfo = Seqinfo())
   {
@@ -5042,7 +5035,6 @@ setMethod("%|%", signature(gr = "GRanges"), function(gr, df) {
 #' Operator to shift GRanges right "sh" bases
 #' 
 #' @return shifted granges
-#' @import GenomicRanges
 #' @rdname gr.nudge
 #' @exportMethod %+%
 #' @export
@@ -5062,7 +5054,6 @@ setMethod("%+%", signature(gr = "GRanges"), function(gr, sh) {
 #' df %!% c('string.*to.*match', 'another.string.to.match')
 #' 
 #' @return shifted granges
-#' @import GenomicRanges
 #' @rdname gr.nudge
 #' @exportMethod %-%
 #' @export
