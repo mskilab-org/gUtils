@@ -15,7 +15,7 @@ Depends:
     BSgenome (>= 1.34),
     GenomicRanges (>= 1.18),
     rtracklayer (>= 1.26),
-    Biostrings (>= 2.34),
+    Biostrings (>= 2.34)
 Imports:
     abind (>= 1.4),
     Matrix (>= 1.1),

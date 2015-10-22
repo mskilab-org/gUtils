@@ -680,6 +680,68 @@ grbind = function(x, ...)
     return(out)     
   }
 
+#' Concatenate GRangesList 
+#'
+#' Concatenates \code{GRangesList} objects taking the union of their \code{mcols} features if they have non-overlapping features
+#' @return Concatenated GRangesList 
+#' @examples
+#' ## Create some dummy data
+#' gr1 <- GRanges(1, IRanges(100,1000), my.gene='X', seqinfo=Seqinfo("1", 1000))
+#' gr2 <- GRanges(1, IRanges(200,2000), my.annot='Y', seqinfo=Seqinfo("1",2000))
+#' gr3 <- GRanges(2, IRanges(1,3000), my.annot='Z', seqinfo=Seqinfo("2",3000))
+#' grl1 <- GRangesList(grbind(gr1, gr2))
+#' grl2 <- GRangesList(grbind(gr1, gr3))
+#' ## Add unique annotation to just one \code{mcols}.
+#' mcols(gr1)$my.new.annot=1
+#' ## Concatenate
+#' grlbind(grl1, grl2)
+#' @export
+grlbind = function(...)
+  {
+    ## TODO: make this work for when underlying grs do not have matching features
+    ## currently will loose gr level features
+    grls = list(...)
+
+    ## annoying acrobatics to reconcile gr and grl level features for heterogenous input gr / grls
+    grls.ul = lapply(grls, grl.unlist)
+    grls.ul.rb = do.call('grbind', grls.ul)
+    sp = unlist(lapply(1:length(grls), function(x) rep(x, length(grls.ul[[x]]))))
+    gix = split(grls.ul.rb$grl.ix, sp)
+    gjx = split(1:length(grls.ul.rb), sp)
+    grls.ul.rb$grl.iix = grls.ul.rb$grl.ix = NULL
+        
+    grls.vals = lapply(grls, function(x)
+      { if (ncol(values(x))>0)  return(as.data.frame(values(x))) else return(data.frame(dummy241421 = rep(NA, length(x))))})
+
+    grls.new = mapply(function(x,y) split(grls.ul.rb[x],y), gjx, gix)
+    
+    out = do.call('c', grls.new)
+
+    if (is.list(out))
+      {
+        if (length(grls.new)>1)
+          {
+            bla = c(grls.new[[1]], grls.new[[2]]) ## fix R ghost
+            out = do.call('c', grls.new)
+            if (is.list(out)) ## if still is list then do manual 'c'
+                {
+                   out = grls.new[[1]]
+                   for (i in 2:length(grls.new))
+                       out = c(out, grls.new[[i]])
+                }
+          }
+        else
+          out = grls.new[[1]]
+      }        
+    
+    out.val = do.call('rrbind', grls.vals)
+    out.val$dummy241421 = NULL
+    values(out) = out.val
+
+    return(out)      
+  }
+
+
 #' Add "chr" to GRanges seqlevels
 #'
 #' Adds "chr" to seqlevels of gr / grl object to make compatible with UCSC genome
@@ -4258,7 +4320,7 @@ rrbind2 = function(..., union = T, as.data.table = FALSE)
           return(as.data.table(as.data.frame(tmp[, cols])))
       })
     else
-      expanded.dts <- lapply(dfs, as.data.table)
+      expanded.dts <- lapply(dfs, function(x) as.data.table(as.data.frame(x)))
 
     ## convert data frames (or DataFrame) to data table.
     ## need to convert DataFrame to data.frmae for data.table(...) call. 
@@ -5106,6 +5168,70 @@ setMethod("%^%", signature(x = "GRanges"), function(x, y) {
     return(gr.in(x, y))
 })
 
+#' @name %&%
+#' @title subset x on y ranges wise ignoring strand
+#' @description
+#' shortcut for x[gr.in(x,y)]
+#' 
+#' gr1 %&% gr2 returns the subsets of gr1 that overlaps gr2
+#' 
+#' @return subset of gr1 that overlaps gr2
+#' @rdname gr.in
+#' @exportMethod %^%
+#' @export 
+#' @author Marcin Imielinski
+setGeneric('%&%', function(x, ...) standardGeneric('%&%'))
+setMethod("%&%", signature(x = "GRanges"), function(x, y) {
+              if (is.character(y))
+                  y = parse.gr(y)
+    return(x[gr.in(x, y)])
+})
+
+#' @name %Q%
+#' @title query ranges by applying an expression to ranges metadata 
+#' @description
+#' 
+#' gr %Q% query returns the subsets of gr1 that matches meta data statement in query
+#' 
+#' @return subset of gr that matches query
+#' @rdname gr.query
+#' @exportMethod %Q%
+#' @export 
+#' @author Marcin Imielinski
+setGeneric('%Q%', function(x, ...) standardGeneric('%Q%'))
+setMethod("%Q%", signature(x = "GRanges"), function(x, y) {
+    condition_call  =substitute(y)
+    ix = eval(condition_call, as.data.frame(x))
+    return(x[ix])
+})
+
+
+subset2 <- function(x, condition) {
+      condition_call <- substitute(condition)
+        r <- eval(condition_call, x)
+      browser()
+        x[r, ]
+  }
+  
+#' @name %WW%
+#' @title subset x on y ranges wise obeying strand
+#' @description
+#' shortcut for x[gr.in(x,y, ignore.strand = FALSE)]
+#' 
+#' gr1 %WW% gr2 returns the subsets of gr that overlaps gr2 not ignoring strand
+#' 
+#' @return subset of gr1 that overlaps gr2
+#' @rdname gr.in
+#' @exportMethod %^%
+#' @export 
+#' @author Marcin Imielinski
+setGeneric('%WW%', function(x, ...) standardGeneric('%WW%'))
+setMethod("%WW%", signature(x = "GRanges"), function(x, y) {
+              if (is.character(y))
+                  y = parse.gr(y)
+    return(x[gr.in(x, y, ignore.strand = FALSE)])
+})
+
 
 #' @name %$% 
 #' @title gr.val shortcut to get mean values of subject "x" meta data fields in query "y" (strand agnostic)
@@ -5113,8 +5239,9 @@ setMethod("%^%", signature(x = "GRanges"), function(x, y) {
 #' Shortcut for gr.val (using val = names(values(y)))
 #'
 #' gr1 %$% gr2
+#'
 #' 
-#' @return logical vector of length gr1 which is TRUE at entry i only if gr1[i] intersects at least one interval in gr2
+#' @return gr1 with extra meta data fields populated from gr2
 #' @rdname gr.val
 #' @exportMethod %$%
 #' @export 
@@ -5122,6 +5249,88 @@ setMethod("%^%", signature(x = "GRanges"), function(x, y) {
 setGeneric('%$%', function(x, ...) standardGeneric('%$%'))
 setMethod("%$%", signature(x = "GRanges"), function(x, y) {  
     return(gr.val(x, y, val = names(values(y))))
+})
+
+#' @name %O% 
+#' @title gr.val shortcut to get fractional overlap of gr1 by gr2, ignoring strand
+#' @description
+#' Shortcut for gr.val (using val = names(values(y)))
+#'
+#' gr1 %O% gr2
+#' 
+#' @return fractional overlap of gr1 with gr2
+#' @rdname gr.val
+#' @exportMethod %O%
+#' @export 
+#' @author Marcin Imielinski
+setGeneric('%O%', function(x, ...) standardGeneric('%O%'))
+setMethod("%O%", signature(x = "GRanges"), function(x, y) {
+    ov = grdt(gr.findoverlaps(x, reduce(y)))[ , sum(width), keyby = query.id]
+    x$width.ov = 0
+    x$width.ov[ov$query.id] = ov$V1
+    return(x$width.ov/width(x))
+})
+
+
+#' @name %OO% 
+#' @title gr.val shortcut to get fractional overlap of gr1 by gr2, respecting strand
+#' @description
+#' Shortcut for gr.val (using val = names(values(y)))
+#'
+#' gr1 %OO% gr2
+#' 
+#' @return fractional overlap  of gr1 with gr2
+#' @rdname gr.val
+#' @exportMethod %OO%
+#' @export 
+#' @author Marcin Imielinski
+setGeneric('%OO%', function(x, ...) standardGeneric('%OO%'))
+setMethod("%OO%", signature(x = "GRanges"), function(x, y) {
+    ov = grdt(gr.findoverlaps(x, reduce(y), ignore.strand = FALSE))[ , sum(width), keyby = query.id]
+    x$width.ov = 0
+    x$width.ov[ov$query.id] = ov$V1
+    return(x$width.ov/width(x))
+})
+
+#' @name %o% 
+#' @title gr.val shortcut to get fractional overlap of gr1 by gr2, ignoring strand
+#' @description
+#' Shortcut for gr.val (using val = names(values(y)))
+#'
+#' gr1 %o% gr2
+#' 
+#' @return bases overlap of gr1 with gr2
+#' @rdname gr.val
+#' @exportMethod %o%
+#' @export 
+#' @author Marcin Imielinski
+setGeneric('%o%', function(x, ...) standardGeneric('%o%'))
+setMethod("%o%", signature(x = "GRanges"), function(x, y) {
+    ov = grdt(gr.findoverlaps(x, reduce(y)))[ , sum(width), keyby = query.id]
+    x$width.ov = 0
+    x$width.ov[ov$query.id] = ov$V1
+    return(x$width.ov)
+})
+
+
+#' @name %oo% 
+#' @title gr.val shortcut to get fractional overlap of gr1 by gr2, respecting strand
+#' @description
+#' Shortcut for gr.val (using val = names(values(y)))
+#'
+#' gr1 %oo% gr2
+#' 
+#' @return bases overlap  of gr1 with gr2
+#' @rdname gr.val
+#' @exportMethod %oo%
+#' @export 
+#' @author Marcin Imielinski
+setGeneric('%oo%', function(x, ...) standardGeneric('%oo%'))
+setMethod("%oo%", signature(x = "GRanges"), function(x, y) {
+    ov = grdt(gr.findoverlaps(x, y, ignore.strand = FALSE))[ , sum(width), keyby = query.id]
+    x$width.ov = 0
+    x$width.ov[ov$query.id] = ov$V1
+    return(x$width.ov)
 })
 
 
@@ -5191,7 +5400,7 @@ setMethod("%|%", signature(x = "GRanges"), function(x, y) {
 #'
 #' gr1 %**% gr2
 #' 
-#' @return new granges containing every pairwise intersection of ranges in gr1 and gr2 with a join of the corresponding  metadata
+#' @return new granges containing every pairwise intersection of ranges in gr1 and gr2 with a join of the corresponding metadata
 #' @rdname grfo
 #' @exportMethod %**%
 #' @export
@@ -5232,7 +5441,7 @@ setMethod("%^^%", signature(x = "GRanges"), function(x, y) {
 #'
 #' gr1 %$$% gr2
 #' 
-#' @return logical vector of length gr1 which is TRUE at entry i only if gr1[i] intersects at least one interval in gr2
+#' @return gr1 with extra meta data fields populated from gr2
 #' @rdname gr.val
 #' @exportMethod %$$%
 #' @export 

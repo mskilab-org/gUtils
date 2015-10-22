@@ -3,6 +3,10 @@
 \name{gr.val}
 \alias{\%$$\%}
 \alias{\%$\%}
+\alias{\%OO\%}
+\alias{\%O\%}
+\alias{\%o\%}
+\alias{\%oo\%}
 \alias{gr.val}
 \title{gr.val}
 \usage{
@@ -12,6 +16,14 @@ gr.val(query, target, val = NULL, mean = TRUE, weighted = mean,
   max.slice = Inf, mc.cores = 1, ..., sep = ", ")
 
 x \%$\% ...
+
+x \%O\% ...
+
+x \%OO\% ...
+
+x \%o\% ...
+
+x \%oo\% ...
 
 x \%$$\% ...
 }
@@ -51,9 +63,17 @@ x \%$$\% ...
 \item{sep}{scalar character, specifies character to use as separator when aggregating character "vals" from target, only applies if target is numeric}
 }
 \value{
-logical vector of length gr1 which is TRUE at entry i only if gr1[i] intersects at least one interval in gr2
+gr1 with extra meta data fields populated from gr2
 
-logical vector of length gr1 which is TRUE at entry i only if gr1[i] intersects at least one interval in gr2
+fractional overlap of gr1 with gr2
+
+fractional overlap  of gr1 with gr2
+
+bases overlap of gr1 with gr2
+
+bases overlap  of gr1 with gr2
+
+gr1 with extra meta data fields populated from gr2
 }
 \description{
 annotates gr's in "query" with aggregated values of gr's in "target" in field "val"
@@ -61,6 +81,22 @@ annotates gr's in "query" with aggregated values of gr's in "target" in field "v
 Shortcut for gr.val (using val = names(values(y)))
 
 gr1 %$% gr2
+
+Shortcut for gr.val (using val = names(values(y)))
+
+gr1 %O% gr2
+
+Shortcut for gr.val (using val = names(values(y)))
+
+gr1 %OO% gr2
+
+Shortcut for gr.val (using val = names(values(y)))
+
+gr1 %o% gr2
+
+Shortcut for gr.val (using val = names(values(y)))
+
+gr1 %oo% gr2
 
 Shortcut for gr.val (using val = names(values(y)))
 
@@ -83,6 +119,14 @@ Optional
 query and target can be GRangesLists's, in which case val will refer to GRangesList level values fields
 }
 \author{
+Marcin Imielinski
+
+Marcin Imielinski
+
+Marcin Imielinski
+
+Marcin Imielinski
+
 Marcin Imielinski
 
 Marcin Imielinski

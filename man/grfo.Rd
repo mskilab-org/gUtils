@@ -13,7 +13,7 @@ x \%**\% ...
 \value{
 new granges containing every pairwise intersection of ranges in gr1 and gr2 with a join of the corresponding metadata (strand agnostic)
 
-new granges containing every pairwise intersection of ranges in gr1 and gr2 with a join of the corresponding  metadata
+new granges containing every pairwise intersection of ranges in gr1 and gr2 with a join of the corresponding metadata
 }
 \description{
 Shortcut for gr.findoverlaps (standard arguments)
