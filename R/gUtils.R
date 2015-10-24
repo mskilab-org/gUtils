@@ -5334,26 +5334,6 @@ setMethod("%oo%", signature(x = "GRanges"), function(x, y) {
 })
 
 
-#' @name %&%
-#' @title gr.intersect shortcut
-#' @description
-#' Shortcut for gr.intersect
-#'
-#' gr1 %&% gr2
-#' 
-#' @return granges representing intersection of input intervals
-#' @rdname gr.intersect
-#' @exportMethod %&%
-#' @export 
-#' @author Marcin Imielinski
-setGeneric('%&%', function(x, ...) standardGeneric('%&%'))
-setMethod("%&%", signature(x = "GRanges"), function(x, y) {
-              if (is.character(y))
-                  y = parse.gr(y)
-              return(reduce(gr.findoverlaps(x[, c()], y[, c()])))
-})
-
-
 #' @name %_%
 #' @title setdiff shortcut (strand agnostic)
 #' @description
@@ -5452,27 +5432,6 @@ setMethod("%$$%", signature(x = "GRanges"), function(x, y) {
                   y = parse.gr(y)
     return(gr.val(x, y, val = names(values(y)), ignore.strand = FALSE))
 })
-
-
-#' @name %&&%
-#' @title gr.intersect shortcut (respects strand)
-#' @description
-#' Shortcut for gr.intersect
-#'
-#' gr1 %&&% gr2
-#' 
-#' @return granges representing intersection of input intervals
-#' @rdname gr.intersect
-#' @exportMethod %&&%
-#' @export 
-#' @author Marcin Imielinski
-setGeneric('%&&%', function(x, ...) standardGeneric('%&&%'))
-setMethod("%&&%", signature(x = "GRanges"), function(x, y) {
-              if (is.character(y))
-                                y = parse.gr(y)
-    return(reduce(gr.findoverlaps(x[, c()], y[, c()], ignore.strand = FALSE)))
-})
-
 
 #' @name %__% 
 #' @title setdiff shortcut (respects strand)
