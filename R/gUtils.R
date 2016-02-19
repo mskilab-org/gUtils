@@ -1726,7 +1726,7 @@ gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE,
     qcol = NULL, ## any query meta data columns to add to result
     scol = NULL, ## any subject meta data columns to add to resultx
     max.chunk = 1e13,
-    foverlaps = ifelse(is.na(as.logical(Sys.getenv('GRFO_FOVERLAPS'))), TRUE, as.logical(Sys.getenv('GRFO_FOVERLAPS'))) & exists('foverlaps'),
+    foverlaps = ifelse(is.na(as.logical(Sys.getenv('GRFO_FOVERLAPS'))), FALSE, as.logical(Sys.getenv('GRFO_FOVERLAPS'))) & exists('foverlaps'),
     pintersect = NA,
     verbose = F,
     type = 'any', 
