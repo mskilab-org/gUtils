@@ -12,6 +12,7 @@ Contents:
    :maxdepth: 2
 
    introduction
+   hello
    rangeops.rst
    data.rst
    utils.rst
