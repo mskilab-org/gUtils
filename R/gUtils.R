@@ -5127,7 +5127,7 @@ grdt = function(x)
                                        ifelse(grepl('factor$', class.f), 'as.character',
                                        ifelse(grepl('List', class.f), 'as.list',
                                               ifelse(grepl('factor', class.f), 'as.character',
-                                              ifelse(grepl('List', class.f), 'as.list', 'c')))))))
+                                              ifelse(grepl('List', class.f), 'as.list', 'c'))))))))
               cmd = paste(cmd, paste(value.f, '=', as.statement, "(x$'", value.f, "')", sep = '', collapse = ','), sep = '')
           }
 
