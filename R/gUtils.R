@@ -1032,7 +1032,7 @@ gr.peaks = function(gr, field = 'score', minima = F, peel = 0, id.field = NULL, 
 #' @param other.cols dummyz
 #' @name gr.string
 #' @export
-gr.string = function(gr, add.chr = FALSE, mb = FALSE, round = 3, other.cols = c())
+gr.string = function(gr, add.chr = FALSE, mb = FALSE, round = 3, other.cols = c(), pretty = FALSE)
   {
       if (length(gr)==0)
           return(as.character(NULL))
@@ -1051,7 +1051,10 @@ gr.string = function(gr, add.chr = FALSE, mb = FALSE, round = 3, other.cols = c(
     if (mb)      
       return(paste(sn, ':', round(start(gr)/1e6, round), '-', round(end(gr)/1e6, round), str, other.str, sep = ''))
     else
-      return(paste(sn, ':', start(gr), '-', end(gr), str, other.str, sep = ''))
+        if (pretty)
+            return(paste(sn, ':', str_trim(prettyNum(start(gr), big.mark = ',')), '-', str_trim(prettyNum(end(gr), big.mark = ',')), str, other.str, sep = ''))
+        else
+            return(paste(sn, ':', start(gr), '-', end(gr), str, other.str, sep = ''))
   }
 
 
@@ -2483,6 +2486,44 @@ gr.val = function(query, target, val = NULL,
 
     return(query)
   }
+
+
+#' gr.dice
+#'
+#' "dice" up gr into width 1 ranges spanning the input (warning can produce a very large object)
+#'
+#' if grl = T, then input gr structure will be reflected in the output grl structure
+#' @name gr.dice
+#' @export
+gr.dice = function(gr, grl = F)
+  {
+    sn = Rle(as.character(seqnames(gr)), width(gr))
+    tmp.st = start(gr)
+    tmp.en = end(gr)    
+    st = unlist(lapply(1:length(gr), function(x) tmp.st[x]:tmp.en[x]))
+    str = Rle(as.character(strand(gr)), width(gr))
+
+    ## reverse for negative strand ranges
+    if (any(ix <- as.logical(strand(gr) == '-')))
+      {
+        w = width(gr)
+        q.id = unlist(lapply(1:length(gr), function(x) rep(x, w[x])))
+        q.l = split(1:length(st), q.id)
+        
+        for (j in q.l[ix])
+          st[j] = rev(st[j])
+      }
+                
+    ix = Rle(1:length(gr), width(gr))        
+    out = GRanges(sn, IRanges(st, st), strand = str, seqlengths = seqlengths(gr))
+    values(out) = values(gr)[ix, ]
+
+    if (grl)
+      out = split(out, ix)
+    
+    return(out)      
+  }
+
 
 #' gr.dist
 #'
@@ -4083,12 +4124,12 @@ standardize_segs = function(seg, chr = F)
       }
     else
       val = NULL;
-    
+
     field.aliases = list(
       ID = c('id', 'patient', 'Sample'),
       chr = c('seqnames', 'chrom', 'Chromosome', "contig", "seqnames", "seqname", "space", 'chr', 'Seqnames'),
-      pos1 = c('start', 'loc.start', 'begin', 'Start', 'start', 'Start.bp', 'Start_position', 'pos', 'pos1', 'left', 's1'),
-      pos2 =  c('end', 'loc.end', 'End', 'end', "stop", 'End.bp', 'End_position', 'pos2', 'right', 'e1'),
+      pos1 = c('start', 'startpos', 'loc.start', 'begin', 'Start', 'start', 'Start.bp', 'Start_position', 'pos', 'pos1', 'left', 's1'),
+      pos2 =  c('end', 'endpos', 'loc.end', 'End', 'end', "stop", 'End.bp', 'End_position', 'pos2', 'right', 'e1'),
       strand = c('strand', 'str', 'strand', 'Strand', 'Str')
       );
 
@@ -4822,28 +4863,60 @@ gr.isdisc <- function(gr, isize=1000, unmap.only=FALSE) {
 #' Minimal overlaps for GRanges/GRangesList
 #' 
 #' Takes any number of GRanges or GRangesList and reduces them to the minimal
-#' set of overlapping windows, ignoring strand.
+#' set of overlapping windows, ignoring strand (optional).  Can also
+#' collapse only within levels of a meta data field "by"
+#'
+#' Will populate output with metadata of first row of input contributing the reduced output range. 
+#' 
 #' @param ... \code{GRanges} or \code{GRangesList}
 #' @return GRanges
 #' @export
-gr.reduce <- function(...) {
+gr.reduce <- function(..., by = NULL, ignore.strand = TRUE, span = FALSE) {    
+	input <- do.call(grbind, list(...))
+        if (length(input)==0)
+            return(input)
+        input.meta = values(input)        
+        if (is.null(by))
+            values(input) = data.frame(i = 1:length(input), bykey = 1)
+        else
+            values(input) = data.frame(i = 1:length(input), bykey = values(input)[, by])
 
-	input <- list(...)
-	for (i in seq_along(input)) {
-          if (inherits(input[[i]], 'GRanges'))
-	    input[[i]] <- reduce(gr.stripstrand(input[[i]]))
-	  else if (inherits(input[[i]], 'GRangesList'))
-   	    input[[i]] <- reduce(gr.stripstrand(unlist(input[[i]])))
-          else 
-   	    stop('reduce.window: Need to input GRanges or GRangesList objects')
-          seqlengths(input[[i]]) <- seqlengths(input[[i]])*NA
-        }
+        if (span)
+            {
+                if (ignore.strand)
+                    out = seg2gr(grdt(input)[, data.frame(i = i[1], start = min(start), end = max(end)), keyby = list(seqnames, bykey)])
+                else
+                    out = seg2gr(grdt(input)[, data.frame(i = i[1], start = min(start), end = max(end)), keyby = list(seqnames, strand, bykey)])
+            }
+        else
+            {
+                if (ignore.strand)
+                    out = seg2gr(grdt(input)[, cbind(i = i[1], as.data.frame(reduce(IRanges(start, end)))), keyby = list(seqnames, bykey)])
+                else
+                    out = seg2gr(grdt(input)[, cbind(i = i[1], as.data.frame(reduce(IRanges(start, end)))), keyby = list(seqnames, strand, bykey)])
+            }
         
-	output <- do.call('c', input)
+        values(out) = input.meta[out$i, ]
 
-	return(sort(reduce(output)))
+        #input = do.call(grbind, input)
+	## for (i in seq_along(input)) {
+        ##   if (inherits(input[[i]], 'GRanges'))
+	##     input[[i]] <- reduce(gr.stripstrand(input[[i]]))
+	##   else if (inherits(input[[i]], 'GRangesList'))
+   	##     input[[i]] <- reduce(gr.stripstrand(unlist(input[[i]])))
+        ##   else 
+   	##     stop('reduce.window: Need to input GRanges or GRangesList objects')
+        ##   seqlengths(input[[i]]) <- seqlengths(input[[i]])*NA
+        ## }
+        
+	## output <- do.call('c', input)
 
+        return(out)
+#	return(sort(reduce(output)))
 }
+
+
+
 
 #' Return windows with minimal coverage
 #'
@@ -5053,6 +5126,7 @@ grdt = function(x)
                                 ifelse(grepl('StringSet$', class.f), 'as.character',
                                        ifelse(grepl('factor$', class.f), 'as.character',
                                        ifelse(grepl('List', class.f), 'as.list',
+                                              ifelse(grepl('factor', class.f), 'as.character',
                                               ifelse(grepl('List', class.f), 'as.list', 'c')))))))
               cmd = paste(cmd, paste(value.f, '=', as.statement, "(x$'", value.f, "')", sep = '', collapse = ','), sep = '')
           }
@@ -5255,7 +5329,7 @@ setMethod("%&%", signature(x = "GRanges"), function(x, y) {
 #' @author Marcin Imielinski
 setGeneric('%Q%', function(x, ...) standardGeneric('%Q%'))
 setMethod("%Q%", signature(x = "GRanges"), function(x, y) {
-    condition_call  =substitute(y)
+    condition_call  = substitute(y)
     ix = eval(condition_call, as.data.frame(x))
     return(x[ix])
 })
