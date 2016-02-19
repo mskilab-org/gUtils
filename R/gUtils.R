@@ -791,7 +791,7 @@ streduce = function(gr, pad = 0, sort = TRUE)
     #  gr = gr.fix(gr)
     
     #out = suppressWarnings(sort(reduce(gr.stripstrand(gr+pad))))
-        out = suppressWarnings(sort(reduce(gr.stripstrand(gr.pad(gr, pad)))))
+    out = suppressWarnings(sort(reduce(gr.stripstrand(gr.pad(gr, pad)))))
     suppressWarnings(start(out) <-pmax(1, start(out)))
 #    out <- gr.tfix(out)
     if (!is.na(seqlengths(out)[1]))
@@ -1191,6 +1191,56 @@ gr.trim = function(gr, starts=1, ends=1, fromEnd=FALSE, ignore.strand = T)
 }
 
 
+#' ra.merge
+#'
+#' merges rearrangements input as GRangesList
+#' 
+ra.merge = function(..., pad = 0, ignore.strand = FALSE)
+    {
+        ra = list(...)
+        nm = names(ra)
+        if (is.null(nm))
+            nm = paste('ra', 1:length(ra), sep = '')
+        nm = paste('seen.by', nm, sep = '.')        
+        if (length(nm)==0)
+            return(NULL)        
+        out = ra[[1]]
+        values(out) = cbind(as.data.frame(matrix(FALSE, nrow = length(out), ncol = length(nm), dimnames = list(NULL, nm))), values(out))
+        values(out)[, nm[1]] = TRUE
+        if (length(ra)>1)
+            {
+                for (i in 2:length(ra))
+                    {                
+                        this.ra = ra[[i]]                        
+                        if (length(this.ra)>0)
+                            {
+                                values(this.ra) = cbind(as.data.frame(matrix(FALSE, nrow = length(this.ra), ncol = length(nm), dimnames = list(NULL, nm))), values(this.ra))
+                                ovix = ra.overlaps(out, this.ra, pad = pad, ignore.strand = ignore.strand)
+                                values(this.ra)[[nm[i]]] = TRUE
+                                if (!all(is.na(ovix)))
+                                    values(out)[, nm[i]][ovix[,1]] = TRUE 
+                                if (!all(is.na(ovix)))
+                                    nix = setdiff(1:length(this.ra), ovix[,2])
+                                else
+                                    nix = 1:length(this.ra)                
+                                if (length(nix)>0)    
+                                    {    
+                                        val1 = values(out)
+                                        val2 = values(this.ra)
+                                        values(out) = NULL
+                                        values(this.ra) = NULL
+                                        out = grlbind(out, this.ra[nix])    
+                                        values(out) = rrbind2(val1, val2[nix, ])                                                                            
+                                    }                            
+                            }
+                    }
+            }
+        return(out)
+    }
+
+
+
+
 #' ra.overlaps
 #'
 #' Determines overlaps between two piles of rearrangement junctions ra1 and ra2 (each GRangesLists of signed locus pairs)
@@ -1214,7 +1264,6 @@ ra.overlaps = function(ra1, ra2, pad = 0, arr.ind = T, ignore.strand=FALSE, ...)
     bp1 = grl.unlist(ra1) + pad
     bp2 = grl.unlist(ra2) + pad 
     ix = gr.findoverlaps(bp1, bp2, ignore.strand = ignore.strand, ...)
-#    ix.rev = gr.findoverlaps(bp1, gr.flip(bp2), ignore.strand = F) ## match even if flipped
 
     .make_matches = function(ix, bp1, bp2)
       {
@@ -2522,7 +2571,7 @@ grl.filter = function(grl, windows)
 #' @param only [Default FALSE]
 #' @name grl.allin
 #' @export
-grl.in = grl.allin = function(grl, windows, some = FALSE, only = FALSE, logical = TRUE)
+grl.in = grl.allin = function(grl, windows, some = FALSE, only = FALSE, logical = TRUE, ...)
   {
     if (length(grl)==0)
       return(logical())
@@ -2532,7 +2581,7 @@ grl.in = grl.allin = function(grl, windows, some = FALSE, only = FALSE, logical 
                  
     numwin = length(windows);    
     gr = grl.unlist(grl)
-    m = grdt(gr.findoverlaps(gr, windows))
+    m = grdt(gr.findoverlaps(gr, windows, ...))
 
     out = rep(FALSE, length(grl))
     if (nrow(m)==0)
@@ -3382,45 +3431,46 @@ chunk = function(from, to = NULL, by = 1, length.out = NULL)
 #' @param union if union flag is used then will take union of columns (and put NA's for columns of df1 not in df2 and vice versa). Default TRUE
 #' @name rrbind
 rrbind = function(..., union = TRUE)
-  {     
-    dfs = list(...);  # gets list of data frames
-    if (any(ix <- sapply(dfs, function(x) class(x)[1])!='data.frame'))
-        dfs[ix] = lapply(dfs[ix], as.data.frame)
-
-    dfs = dfs[!sapply(dfs, is.null)]    
-    dfs = dfs[sapply(dfs, ncol)>0]
-
-    ## defactorize (need to do to cat without introducing NA's in weird places)
-    dfs = lapply(dfs, function(x) { for (y in names(x)) if (is.factor(x[,y])) x[, y] = as.character(x[, y]); return(x)})
-    
-    names.list = lapply(dfs, names);
-    classes = unlist(lapply(dfs, function(x) sapply(names(x), function(y) class(x[, y]))))
-    cols = unique(unlist(names.list));
-    unshared = lapply(names.list, function(x) setdiff(cols, x));
-    unshared.u = unique(unlist(unshared))
-    ix = which(sapply(dfs, nrow)>0)
-    expanded.dfs = lapply(ix, function(x)
-      {
-        dfs[[x]][, unshared[[x]]] = as.character(NA);
-        return(dfs[[x]][, cols, drop = F])
-      })
-    
-    out = do.call('rbind', expanded.dfs);
-    
-    if (any(uix <<- which(classes[unshared.u] != 'character')))
-      {
-          ix = match(unshared.u, names(out))
-          for (j in uix) ### HACK to prevent stupid class mismatches leading to NA BS
-              out[, ix[j]] = as(out[, ix[j]], classes[unshared.u[j]])
-      }
-    
-    if (!union)
-      {
-        shared = setdiff(cols, unique(unlist(unshared)))
-        out = out[, shared];
-      }    
-    
-   return(out)
+    {
+        dfs = list(...);  # gets list of data frames
+        
+        dfs = dfs[!sapply(dfs, is.null)]    
+        dfs = dfs[sapply(dfs, ncol)>0]
+        
+        ## defactorize (need to do to cat without introducing NA's in weird places)
+        dfs = lapply(dfs, function(x) { for (y in names(x)) if (is.factor(x[,y])) x[, y] = as.character(x[, y]); return(x)})
+        if (any(ix <- sapply(dfs, function(x) class(x)[1])!='data.frame'))
+            dfs[ix] = lapply(dfs[ix], as.data.frame)
+        
+        
+        names.list = lapply(dfs, names);
+        classes = unlist(lapply(dfs, function(x) sapply(names(x), function(y) class(x[, y]))))
+        cols = unique(unlist(names.list));
+        unshared = lapply(names.list, function(x) setdiff(cols, x));
+        unshared.u = unique(unlist(unshared))
+        ix = which(sapply(dfs, nrow)>0)
+        expanded.dfs = lapply(ix, function(x)
+            {
+                dfs[[x]][, unshared[[x]]] = as.character(NA);
+                return(dfs[[x]][, cols, drop = F])
+            })
+        
+        out = do.call('rbind', expanded.dfs);
+        
+        if (any(uix <<- which(classes[unshared.u] != 'character')))
+            {
+                ix = match(unshared.u, names(out))
+                for (j in uix) ### HACK to prevent stupid class mismatches leading to NA BS
+                    out[, ix[j]] = as(out[, ix[j]], classes[unshared.u[j]])
+            }
+        
+        if (!union)
+            {
+                shared = setdiff(cols, unique(unlist(unshared)))
+                out = out[, shared];
+            }    
+        
+        return(out)
 }
 
 #' count.clips
@@ -4309,7 +4359,6 @@ rrbind2 = function(..., union = T, as.data.table = FALSE)
     cols = unique(unlist(names.list));
     unshared = lapply(names.list, function(x) setdiff(cols, x));
     ix = which(sapply(dfs, nrow)>0)
-
     ## only call expanded dfs if needed
     if (any(sapply(unshared, length) != 0)) 
       expanded.dts <- lapply(ix, function(x) {
@@ -4441,6 +4490,8 @@ read_hg = function(hg19 = T, fft = F)
         }
   }
 
+#' @name get_seq
+#' @title get_seq
 #' Retrieve genomic sequenes
 #'
 #' Wrapper around getSeq which does the "chr" and seqnames conversion if necessary
@@ -4473,12 +4524,14 @@ get_seq = function(hg, gr, unlist = TRUE, mc.cores = 1, mc.chunks = mc.cores,
       return(out)
     }
   else
-    {
+      {
       if (is(hg, 'ffTrack'))
-        {
-          if (!all(sort(levels(hg)) == sort(c('A', 'T', 'G', 'C', 'N'))))
-            cat("ffTrack not in correct format for get_seq, levels must contain only: 'A', 'T', 'G', 'C', 'N'\n")
-        }
+          {
+              if (!isClass('ffTrack'))
+                  stop('ffTrack library needs to be loaded')
+              if (!all(sort(hg@.levels) == sort(c('A', 'T', 'G', 'C', 'N'))))
+                  cat("ffTrack not in correct format for get_seq, levels must contain only: 'A', 'T', 'G', 'C', 'N'\n")
+          }
       else ## only sub in 'chr' if hg is a BSenome        
         if (!all(grepl('chr', as.character(seqnames(gr)))))
           gr = gr.chr(gr)
@@ -4489,11 +4542,11 @@ get_seq = function(hg, gr, unlist = TRUE, mc.cores = 1, mc.chunks = mc.cores,
           ix = suppressWarnings(split(1:length(gr), 1:mc.chunks))
 
           if (is(hg, 'ffTrack'))
-            {
+              {
+                  
               mcout <- mclapply(ix, function(x) 
                 {
-                  tmp = hg[gr[x]]
-                  
+                  tmp = suppressWarnings(hg[gr[x]])
                   if (any(is.na(tmp)))
                     stop("ffTrack corrupt: has NA values, can't convert to DNAString")
 
@@ -4544,10 +4597,10 @@ get_seq = function(hg, gr, unlist = TRUE, mc.cores = 1, mc.chunks = mc.cores,
             }
         }
       else
-        {
+          {
           if (is(hg, 'ffTrack'))
-            {
-              tmp = hg[gr]
+              {
+              tmp = suppressWarnings(hg[gr])
 
               tmp[is.na(tmp)] = 'N'
 
@@ -4573,7 +4626,7 @@ get_seq = function(hg, gr, unlist = TRUE, mc.cores = 1, mc.chunks = mc.cores,
                   } else { 
                     bst$seq[ix] <- as.character(Biostrings::complement(DNAStringSet(bst$seq[ix])))
                   }
-                }
+              }
               
               return(bst)
             }
@@ -4733,7 +4786,7 @@ gr.isclip <- function(gr, clip.cutoff=10) {
 #' There is only a minimum absolute isize, and any read below this is
 #' not considered discordant. This will return logicals based on read pairs
 #' @param gr Granges OR data.table that has \code{isize} field and \code{qname} field
-#' @param isize Minimum insert size required to call discordant. Default 1000
+#' @param isize Minimum insert size required to call dis<cordant. Default 1000
 #' @param unmap.only Find only pairs with an unmapped read
 #' @return logical vector of length of input, denoting each read as discordant or not
 #' @export
@@ -4829,7 +4882,8 @@ gr.mincov <- function(gr, min.cov=2, buffer=0, ignore.strand=TRUE, pintersect=FA
 gr.pad = function(gr, pad)
     {
         start(gr) = pmax(1, start(gr)-pad)
-        end(gr) = pmin(seqlengths(gr)[as.character(seqnames(gr))], end(gr)+pad)
+        en = pmin(seqlengths(gr)[as.character(seqnames(gr))], end(gr)+pad)
+        end(gr) = ifelse(is.na(en), end(gr)+pad, en)
         return(gr)
     }
 
@@ -4997,8 +5051,9 @@ grdt = function(x)
                   ifelse(grepl('Character', class.f), 'as.character',
                          ifelse(grepl('StringSetList', class.f), '.StringSetListAsList',
                                 ifelse(grepl('StringSet$', class.f), 'as.character',
+                                       ifelse(grepl('factor$', class.f), 'as.character',
                                        ifelse(grepl('List', class.f), 'as.list',
-                                              ifelse(grepl('List', class.f), 'as.list', 'c'))))))
+                                              ifelse(grepl('List', class.f), 'as.list', 'c')))))))
               cmd = paste(cmd, paste(value.f, '=', as.statement, "(x$'", value.f, "')", sep = '', collapse = ','), sep = '')
           }
 
@@ -5293,6 +5348,48 @@ setMethod("%OO%", signature(x = "GRanges"), function(x, y) {
 })
 
 #' @name %o% 
+#' @title gr.val shortcut to total per interval width of overlap of gr1 with gr2, ignoring strand
+#' @description
+#' Shortcut for gr.val (using val = names(values(y)))
+#'
+#' gr1 %o% gr2
+#' 
+#' @return bases overlap of gr1 with gr2
+#' @rdname gr.val
+#' @exportMethod %o%
+#' @export 
+#' @author Marcin Imielinski
+setGeneric('%o%', function(x, ...) standardGeneric('%o%'))
+setMethod("%o%", signature(x = "GRanges"), function(x, y) {
+    ov = grdt(gr.findoverlaps(x, reduce(y)))[ , sum(width), keyby = query.id]
+    x$width.ov = 0
+    x$width.ov[ov$query.id] = ov$V1
+    return(x$width.ov)
+})
+
+
+#' @name %oo% 
+#' @title gr.val shortcut to total per interval width of overlap of gr1 with gr2, respecting strand
+#' @description
+#' Shortcut for gr.val (using val = names(values(y)))
+#'
+#' gr1 %oo% gr2
+#' 
+#' @return bases overlap  of gr1 with gr2
+#' @rdname gr.val
+#' @exportMethod %oo%
+#' @export 
+#' @author Marcin Imielinski
+setGeneric('%oo%', function(x, ...) standardGeneric('%oo%'))
+setMethod("%oo%", signature(x = "GRanges"), function(x, y) {
+    ov = grdt(gr.findoverlaps(x, y, ignore.strand = FALSE))[ , sum(width), keyby = query.id]
+    x$width.ov = 0
+    x$width.ov[ov$query.id] = ov$V1
+    return(x$width.ov)
+})
+
+
+#' @name %o% 
 #' @title gr.val shortcut to get fractional overlap of gr1 by gr2, ignoring strand
 #' @description
 #' Shortcut for gr.val (using val = names(values(y)))
@@ -5332,6 +5429,50 @@ setMethod("%oo%", signature(x = "GRanges"), function(x, y) {
     x$width.ov[ov$query.id] = ov$V1
     return(x$width.ov)
 })
+
+
+#' @name %N% 
+#' @title gr.val shortcut to get total numbers of intervals in gr2 overlapping with each interval in  gr1, ignoring strand
+#' @description
+#' Shortcut for gr.val (using val = names(values(y)))
+#'
+#' gr1 %N% gr2
+#' 
+#' @return bases overlap of gr1 with gr2
+#' @rdname gr.val
+#' @exportMethod %N%
+#' @export 
+#' @author Marcin Imielinski
+setGeneric('%N%', function(x, ...) standardGeneric('%N%'))
+setMethod("%N%", signature(x = "GRanges"), function(x, y) {
+    ov = grdt(gr.findoverlaps(x, reduce(y)))[ , length(width), keyby = query.id]
+    x$width.ov = 0
+    x$width.ov[ov$query.id] = ov$V1
+    return(x$width.ov)
+})
+
+
+#' @name %NN%
+#' @title gr.val shortcut to get total numbers of intervals in gr2 overlapping with each interval in  gr1, respecting strand
+#' @description
+#' Shortcut for gr.val (using val = names(values(y)))
+#'
+#' gr1 %NN% gr2
+#' 
+#' @return bases overlap  of gr1 with gr2
+#' @rdname gr.val
+#' @exportMethod %N%
+#' @export 
+#' @author Marcin Imielinski
+setGeneric('%NN%', function(x, ...) standardGeneric('%NN%'))
+setMethod("%NN%", signature(x = "GRanges"), function(x, y) {
+    ov = grdt(gr.findoverlaps(x, y, ignore.strand = FALSE))[ , length(width), keyby = query.id]
+    x$width.ov = 0
+    x$width.ov[ov$query.id] = ov$V1
+    return(x$width.ov)
+})
+
+
 
 
 #' @name %_%
@@ -5472,6 +5613,15 @@ setMethod("%||%", signature(x = "GRanges"), function(x, y) {
     return(reduce(grbind(x[, c()], y[, c()])))
 })
 
+
+#' @name toggle_grfo
+#' @title toggle data.table vs IRanges find overlaps
+#' @description
+#'
+#' toggles global setting of whether to use data.table vs IRanges find overlaps machinery
+#' 
+#' @export 
+#' @author Marcin Imielinski
 .toggle_grfo = function()
     {
         old.val = as.logical(Sys.getenv('GRFO_FOVERLAPS'))

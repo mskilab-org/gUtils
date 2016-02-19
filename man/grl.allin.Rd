@@ -5,7 +5,7 @@
 \alias{grl.in}
 \title{grl.allin}
 \usage{
-grl.in(grl, windows, some = FALSE, only = FALSE, logical = TRUE)
+grl.in(grl, windows, some = FALSE, only = FALSE, logical = TRUE, ...)
 }
 \arguments{
 \item{grl}{\link{GRangesList} object to query}
