@@ -4,7 +4,7 @@
 \alias{gr.reduce}
 \title{Minimal overlaps for GRanges/GRangesList}
 \usage{
-gr.reduce(...)
+gr.reduce(..., by = NULL, ignore.strand = TRUE, span = FALSE)
 }
 \arguments{
 \item{...}{\code{GRanges} or \code{GRangesList}}
@@ -14,6 +14,10 @@ GRanges
 }
 \description{
 Takes any number of GRanges or GRangesList and reduces them to the minimal
-set of overlapping windows, ignoring strand.
+set of overlapping windows, ignoring strand (optional).  Can also
+collapse only within levels of a meta data field "by"
+}
+\details{
+Will populate output with metadata of first row of input contributing the reduced output range.
 }
 

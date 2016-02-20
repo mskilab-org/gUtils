@@ -4,7 +4,8 @@
 \alias{gr.string}
 \title{gr.string}
 \usage{
-gr.string(gr, add.chr = FALSE, mb = FALSE, round = 3, other.cols = c())
+gr.string(gr, add.chr = FALSE, mb = FALSE, round = 3, other.cols = c(),
+  pretty = FALSE)
 }
 \arguments{
 \item{gr}{dummy}

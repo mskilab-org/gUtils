@@ -6,7 +6,7 @@
 \usage{
 gr.findoverlaps(query, subject, ignore.strand = TRUE, first = FALSE,
   qcol = NULL, scol = NULL, max.chunk = 1e+13,
-  foverlaps = ifelse(is.na(as.logical(Sys.getenv("GRFO_FOVERLAPS"))), TRUE,
+  foverlaps = ifelse(is.na(as.logical(Sys.getenv("GRFO_FOVERLAPS"))), FALSE,
   as.logical(Sys.getenv("GRFO_FOVERLAPS"))) & exists("foverlaps"),
   pintersect = NA, verbose = F, type = "any", by = NULL, mc.cores = 1,
   return.type = "same", ...)

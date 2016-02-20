@@ -3471,6 +3471,7 @@ chunk = function(from, to = NULL, by = 1, length.out = NULL)
 #' @param ... list of data frames to concatenate
 #' @param union if union flag is used then will take union of columns (and put NA's for columns of df1 not in df2 and vice versa). Default TRUE
 #' @name rrbind
+#' @export 
 rrbind = function(..., union = TRUE)
     {
         dfs = list(...);  # gets list of data frames
