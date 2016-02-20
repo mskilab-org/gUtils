@@ -3,6 +3,8 @@
 \name{gr.val}
 \alias{\%$$\%}
 \alias{\%$\%}
+\alias{\%NN\%}
+\alias{\%N\%}
 \alias{\%OO\%}
 \alias{\%O\%}
 \alias{\%o\%}
@@ -24,6 +26,14 @@ x \%OO\% ...
 x \%o\% ...
 
 x \%oo\% ...
+
+x \%o\% ...
+
+x \%oo\% ...
+
+x \%N\% ...
+
+x \%NN\% ...
 
 x \%$$\% ...
 }
@@ -73,6 +83,14 @@ bases overlap of gr1 with gr2
 
 bases overlap  of gr1 with gr2
 
+bases overlap of gr1 with gr2
+
+bases overlap  of gr1 with gr2
+
+bases overlap of gr1 with gr2
+
+bases overlap  of gr1 with gr2
+
 gr1 with extra meta data fields populated from gr2
 }
 \description{
@@ -100,6 +118,22 @@ gr1 %oo% gr2
 
 Shortcut for gr.val (using val = names(values(y)))
 
+gr1 %o% gr2
+
+Shortcut for gr.val (using val = names(values(y)))
+
+gr1 %oo% gr2
+
+Shortcut for gr.val (using val = names(values(y)))
+
+gr1 %N% gr2
+
+Shortcut for gr.val (using val = names(values(y)))
+
+gr1 %NN% gr2
+
+Shortcut for gr.val (using val = names(values(y)))
+
 gr1 %$$% gr2
 }
 \details{
@@ -119,6 +153,14 @@ Optional
 query and target can be GRangesLists's, in which case val will refer to GRangesList level values fields
 }
 \author{
+Marcin Imielinski
+
+Marcin Imielinski
+
+Marcin Imielinski
+
+Marcin Imielinski
+
 Marcin Imielinski
 
 Marcin Imielinski

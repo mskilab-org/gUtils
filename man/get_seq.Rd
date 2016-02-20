@@ -2,7 +2,11 @@
 % Please edit documentation in R/gUtils.R
 \name{get_seq}
 \alias{get_seq}
-\title{Retrieve genomic sequenes}
+\title{get_seq
+Retrieve genomic sequenes
+
+Wrapper around getSeq which does the "chr" and seqnames conversion if necessary
+also handles GRangesList queries}
 \usage{
 get_seq(hg, gr, unlist = TRUE, mc.cores = 1, mc.chunks = mc.cores,
   as.data.table = FALSE, verbose = FALSE)
@@ -24,6 +28,9 @@ get_seq(hg, gr, unlist = TRUE, mc.cores = 1, mc.chunks = mc.cores,
 DNAStringSet of sequences
 }
 \description{
+get_seq
+Retrieve genomic sequenes
+
 Wrapper around getSeq which does the "chr" and seqnames conversion if necessary
 also handles GRangesList queries
 }

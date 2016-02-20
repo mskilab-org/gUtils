@@ -9,7 +9,7 @@ gr.isdisc(gr, isize = 1000, unmap.only = FALSE)
 \arguments{
 \item{gr}{Granges OR data.table that has \code{isize} field and \code{qname} field}
 
-\item{isize}{Minimum insert size required to call discordant. Default 1000}
+\item{isize}{Minimum insert size required to call dis<cordant. Default 1000}
 
 \item{unmap.only}{Find only pairs with an unmapped read}
 }
