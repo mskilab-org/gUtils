@@ -1996,6 +1996,41 @@ gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE,
    }
 
 
+#' More robust and faster implementation of GenomicRangs::setdiff
+#'
+#' Robust to common edge cases of setdiff(gr1, gr2)  where gr2 ranges are contained inside gr1's (yieldings
+#' setdiffs yield two output ranges for some of the input gr1 intervals.  
+#' 
+#' @param query \code{GRanges} object as query
+#' @param subject \code{GRanges} object as subject
+#' @param max.slice Default Inf. If query is bigger than this, chunk into smaller on different cores
+#' @param verbose Default FALSE
+#' @param mc.cores Default 1. Only works if exceeded max.slice
+#' @param ... arguments to be passed to \link{gr.findoverlaps}
+#' @return returns indices of query in subject or NA if none found
+#' @name gr.match
+#' @export
+gr.setdiff = function(query, subject, ignore.strand = TRUE, by = NULL,  ...)
+    {
+        if (!is.null(by)) ## in this case need to be careful about setdiffing only within the "by" level
+            {
+                tmp = grdt(subject)
+                tmp$strand = factor(tmp$strand, c('+', '-', '*'))
+                sl = seqlengths(subject)
+                gp = seg2gr(tmp[, as.data.frame(gaps(IRanges(start, end), 1, sl[seqnames][1])), by = c('seqnames', 'strand', by)], seqinfo = seqinfo(subject))                
+            }
+        else ## otherwise easier
+            {
+                if (ignore.strand)
+                    gp = gaps(gr.stripstrand(subject)) %Q% (strand == '*')
+                else
+                    gp = gaps(subject)
+            }
+        
+        out = gr.findoverlaps(query, gp, qcol = names(values(query)), ignore.strand = ignore.strand, by = by, ...)        
+        return(out)        
+    }
+
 #' Faster implementatin of GenomicRangs::match 
 #'
 #' Faster implementation of GRanges match (uses gr.findoverlaps)
@@ -5411,7 +5446,7 @@ setMethod("%oo%", signature(x = "GRanges"), function(x, y) {
 #' @name %_%
 #' @title setdiff shortcut (strand agnostic)
 #' @description
-#' Shortcut for union
+#' Shortcut for setdiff
 #'
 #' gr1 %_% gr2
 #' 
