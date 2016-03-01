@@ -6,9 +6,6 @@
 \usage{
 grl.stripnames(grl)
 }
-\arguments{
-\item{grl}{\link{GRangesList} to string names from}
-}
 \description{
 get rid of gr names inside a grl
 }

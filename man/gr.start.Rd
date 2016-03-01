@@ -4,8 +4,7 @@
 \alias{gr.start}
 \title{Get GRanges corresponding to beginning of range}
 \usage{
-gr.start(x, width = 1, force = FALSE, ignore.strand = TRUE,
-  clip = FALSE)
+gr.start(x, width = 1, force = F, ignore.strand = T, clip = F)
 }
 \arguments{
 \item{x}{\code{GRanges} object to operate on}
@@ -25,8 +24,7 @@ GRanges object of width 1 ranges representing start of each genomic range in the
 Alternative to \code{flank} that will provide start positions *within* intervals
 }
 \examples{
-\dontrun{st <- c(1,2,3)
-  si <- Seqinfo("1",3)
-  gr.start(GRanges(1, IRanges(st, width=101), seqinfo=si), width=20)}
+gr.start(GRanges(1, IRanges(start=c(1,2,3), width=101), seqinfo=Seqinfo("1", 3)), width=20)
+gr.start(GRanges(1, IRanges(start=c(1,2,3), width=101), seqinfo=Seqinfo("1", 3)), width=200, clip=T)
 }
 

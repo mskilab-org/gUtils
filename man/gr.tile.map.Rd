@@ -4,16 +4,7 @@
 \alias{gr.tile.map}
 \title{gr.tile.map}
 \usage{
-gr.tile.map(query, subject, mc.cores = 1, verbose = FALSE)
-}
-\arguments{
-\item{query}{Query}
-
-\item{subject}{Subject}
-
-\item{mc.cores}{number of cores}
-
-\item{verbose}{Default FALSE}
+gr.tile.map(query, subject, mc.cores = 1, verbose = F)
 }
 \description{
 Given two tilings of the genome (eg at different resolution)

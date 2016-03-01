@@ -4,16 +4,7 @@
 \alias{gr.refactor}
 \title{gr.refactor}
 \usage{
-gr.refactor(gr, sn, gap = 0, rev = FALSE)
-}
-\arguments{
-\item{gr}{\code{GRanges} to refactor}
-
-\item{sn}{character vector of new seqnames}
-
-\item{gap}{Default 0}
-
-\item{rev}{Default FALSE}
+gr.refactor(gr, sn, gap = 0, rev = F)
 }
 \description{
 Takes a pile of ranges gr and new seqnames "sn" (either of length 1 or

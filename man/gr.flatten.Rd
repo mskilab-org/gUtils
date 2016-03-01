@@ -6,11 +6,6 @@
 \usage{
 gr.flatten(gr, gap = 0)
 }
-\arguments{
-\item{gr}{\code{GRanges} to flatten}
-
-\item{gap}{Default 0}
-}
 \description{
 Takes pile of GRanges and returns into a data.frame with nrow = length(gr) with each
 representing the corresponding input range superimposed onto a single "flattened"

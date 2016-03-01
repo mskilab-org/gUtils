@@ -2,11 +2,12 @@
 % Please edit documentation in R/gUtils.R
 \name{grl.filter}
 \alias{grl.filter}
-\title{Filters GRangesList to only include ranges in the specified window}
+\title{grl.filter}
 \usage{
 grl.filter(grl, windows)
 }
 \description{
+filters grl to only include ranges in the specified window
 (this is different from %in% which does not remove non matching ranges from the grls)
 }
 \details{

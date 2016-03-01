@@ -5,16 +5,7 @@
 \alias{grl.in}
 \title{grl.allin}
 \usage{
-grl.in(grl, windows, some = FALSE, only = FALSE)
-}
-\arguments{
-\item{grl}{\link{GRangesList} object to query}
-
-\item{windows}{\link{GRanges} windows to check against}
-
-\item{some}{[Default FALSE]}
-
-\item{only}{[Default FALSE]}
+grl.in(grl, windows, some = FALSE, only = FALSE, logical = TRUE, ...)
 }
 \description{
 Like %in% for grl but now will return a logical vector that is true at position if i

@@ -6,15 +6,6 @@
 \usage{
 grl.split(grl, seqname = TRUE, strand = TRUE, values = c())
 }
-\arguments{
-\item{grl}{\code{GRangesList} to split}
-
-\item{seqname}{Default TRUE}
-
-\item{strand}{Default TRUE}
-
-\item{values}{columns of values field in grl}
-}
 \description{
 splits GRL's with respect to their seqnames and strand (default), returning
 new grl whose items only contain ranges with a single seqname / strand

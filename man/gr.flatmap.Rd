@@ -7,28 +7,6 @@
 gr.flatmap(gr, windows, gap = 0, strand.agnostic = T, squeeze = F,
   xlim = c(0, 1), pintersect = FALSE)
 }
-\arguments{
-\item{gr}{\code{GRanges} to flatten}
-
-\item{windows}{\code{GRanges} to flatten onto}
-
-\item{gap}{Default 0}
-
-\item{strand.agnostic}{Default FALSE}
-
-\item{squeeze}{Default FALSE. If TRUE, then will additionally squeeze ranges into xlim}
-
-\item{xlim}{Default c(0,1)}
-
-\item{pintersect}{Default FALSE}
-}
-\value{
-output is list with two fields corresponding to data frames:
-  $grl.segs = data frame of input gr's "lifted" onto new flattened coordinate space (NOTE: nrow of this not necessarily equal to length(gr))
-  $window.segs = the coordinates of input windows in the new flattened (and squeezed) space
-
-FIX: turn this into Chain object
-}
 \description{
 Takes gr (Granges object) and maps onto a flattened coordinate system defined by windows (GRanges object)
 a provided "gap" (in sequence units).  If squeeze == T then will additionally squeeze ranges into xlim.
@@ -37,5 +15,7 @@ a provided "gap" (in sequence units).  If squeeze == T then will additionally sq
 output is list with two fields corresponding to data frames:
 $grl.segs = data frame of input gr's "lifted" onto new flattened coordinate space (NOTE: nrow of this not necessarily equal to length(gr))
 $window.segs = the coordinates of input windows in the new flattened (and squeezed) space
+
+FIX: turn this into Chain object
 }
 

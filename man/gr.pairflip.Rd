@@ -6,9 +6,6 @@
 \usage{
 gr.pairflip(gr)
 }
-\arguments{
-\item{gr}{\code{GRanges}}
-}
 \description{
 "pairs" gr returning a grl with each item consisting
 of the original gr and its strand flip

@@ -5,21 +5,15 @@
 \title{Simplify granges by collapsing all non-overlapping adjacent ranges that share a given "field" value
 (adjacent == adjacent in the input GRanges object)}
 \usage{
-gr.simplify(gr, field = NULL, val = NULL, include.val = TRUE,
-  split = FALSE, pad = 1)
+gr.simplify(gr, field = NULL, val = NULL, include.val = T, split = F,
+  pad = 1)
 }
 \arguments{
 \item{gr}{takes in gr or grl}
 
 \item{field}{character scalar, corresponding to value field of gr}
 
-\item{val}{Default NULL}
-
 \item{include.val}{scalar logical, will include in out gr values field of first matching record in input gr}
-
-\item{split}{Default FALSE}
-
-\item{pad}{Default 1}
 }
 \value{
 Simplified GRanges with "field" populated with uniquely contiguous values

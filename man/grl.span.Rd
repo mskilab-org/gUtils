@@ -4,16 +4,7 @@
 \alias{grl.span}
 \title{grl.span}
 \usage{
-grl.span(grl, chr = NULL, ir = FALSE, keep.strand = TRUE)
-}
-\arguments{
-\item{grl}{\link{GRangesList} to query}
-
-\item{chr}{[Default NULL]}
-
-\item{ir}{[Default FALSE]}
-
-\item{keep.strand}{[Default TRUE]}
+grl.span(grl, chr = NULL, ir = F, keep.strand = T)
 }
 \description{
 Returns GRanges object representing the left / right extent of each GRL item.  In case of "chimeric" GRL items (ie that map

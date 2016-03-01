@@ -6,13 +6,6 @@
 \usage{
 grl.string(grl, sep = ",", ...)
 }
-\arguments{
-\item{grl}{GenomicRangesList to get strings from}
-
-\item{sep}{[Default ","]}
-
-\item{...}{dummy}
-}
 \description{
 return ucsc style interval string corresponding to each gr in each grl, one line per grl item, with gr's in
 grl separated by sep

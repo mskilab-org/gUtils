@@ -9,16 +9,16 @@
 3) If q in Q is fully outside of S (ie fully inside not S) then return the \code{start-1} (if \code{up = T}) or \code{end+1} (if \code{up = F})
 of the matching range in not S}
 \usage{
-gr.round(Q, S, up = TRUE, parallel = FALSE)
+gr.round(Q, S, up = T, parallel = F)
 }
 \arguments{
 \item{Q}{Query \code{GRanges} (strand is ignored)}
 
 \item{S}{Subject \code{GRanges} (strand is ignored)}
 
-\item{up}{[default TRUE] See description.}
+\item{up}{[default T] See description.}
 
-\item{parallel}{[default FALSE] If \code{TRUE}, assumes Q and S are same length and this analysis is only performed between the corresponding Q and S pairs.}
+\item{parallel}{[default F] If \code{TRUE}, assumes Q and S are same length and this analysis is only performed between the corresponding Q and S pairs.}
 }
 \value{
 Rounded \code{GRanges}
@@ -32,8 +32,8 @@ Round a set of GRanges to another set
 of the matching range in not S
 }
 \examples{
-\dontrun{query   <- GRanges(1, IRanges(c(100,110),width=201), seqinfo=Seqinfo("1", 500))
+query   <- GRanges(1, IRanges(c(100,110),width=201), seqinfo=Seqinfo("1", 500))
 subject <- GRanges(1, IRanges(c(160,170),width=201), seqinfo=Seqinfo("1", 500))
-gr.round(query, subject)}
+gr.round(query, subject)
 }
 

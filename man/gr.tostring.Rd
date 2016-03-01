@@ -7,20 +7,6 @@
 gr.tostring(gr, places = 2, interval = 1e+06, unit = "MB",
   prefix = "chr")
 }
-\arguments{
-\item{gr}{\code{GRanges}}
-
-\item{places}{Number of decimal places. Default 2}
-
-\item{interval}{Default 1e6}
-
-\item{unit}{Default "MB"}
-
-\item{prefix}{Default "chr"}
-}
-\value{
-text representation of input
-}
 \description{
 dumps out a quick text representation of a gr object (ie a character vector)
 }

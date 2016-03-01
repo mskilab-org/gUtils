@@ -4,7 +4,7 @@
 \alias{gr.sample}
 \title{Sample GRanges intervals}
 \usage{
-gr.sample(gr, k, len = 100, replace = TRUE)
+gr.sample(gr, k, len = 100, replace = T)
 }
 \arguments{
 \item{gr}{\code{GRanges} object to operate on}

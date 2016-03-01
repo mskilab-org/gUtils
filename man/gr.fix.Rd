@@ -4,16 +4,7 @@
 \alias{gr.fix}
 \title{gr.fix}
 \usage{
-gr.fix(gr, genome = NULL, gname = NULL, drop = FALSE)
-}
-\arguments{
-\item{gr}{\code{GRanges} to be fixed}
-
-\item{genome}{Genome to fix to}
-
-\item{gname}{dummy}
-
-\item{drop}{Remove all ranges without seqlevelts in the genome. Default FALSE}
+gr.fix(gr, genome = NULL, gname = NULL, drop = F)
 }
 \description{
 "Fixes" seqlengths / seqlevels

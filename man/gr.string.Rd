@@ -4,18 +4,8 @@
 \alias{gr.string}
 \title{gr.string}
 \usage{
-gr.string(gr, add.chr = FALSE, mb = FALSE, round = 3, other.cols = c())
-}
-\arguments{
-\item{gr}{dummy}
-
-\item{add.chr}{dummy}
-
-\item{mb}{dummy}
-
-\item{round}{dummy}
-
-\item{other.cols}{dummyz}
+gr.string(gr, add.chr = FALSE, mb = FALSE, round = 3, other.cols = c(),
+  pretty = FALSE)
 }
 \description{
 return ucsc style interval string corresponding to gr pile (ie chr:start-end)

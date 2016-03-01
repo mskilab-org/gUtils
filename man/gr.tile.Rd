@@ -8,8 +8,6 @@ gr.tile(gr, w = 1000)
 }
 \arguments{
 \item{gr}{GRanges to tile, also can be seqlengths or seqinfo}
-
-\item{w}{Width of the binds. Default 1e3}
 }
 \description{
 tiles interval (or whole genome) with segments of <= specified width.  Returns strandless gr

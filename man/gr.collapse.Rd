@@ -6,11 +6,6 @@
 \usage{
 gr.collapse(gr, pad = 1)
 }
-\arguments{
-\item{gr}{\code{GRanges} to collapse}
-
-\item{pad}{padding to place around ranges. Default 1}
-}
 \description{
 like "reduce" except only collapses <<adjacent>> ranges in the input
 returning the collapsed ranges

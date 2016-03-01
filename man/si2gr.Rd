@@ -4,9 +4,15 @@
 \alias{si2gr}
 \title{Create GRanges from Seqinfo}
 \usage{
-si2gr(si, strip.empty = FALSE)
+si2gr(...)
+
+si2gr(...)
 }
 \arguments{
+\item{si}{Seqinfo object}
+
+\item{strip.empty}{Don't know. Default FALSE}
+
 \item{si}{Seqinfo object}
 
 \item{strip.empty}{Don't know. Default FALSE}
@@ -14,8 +20,13 @@ si2gr(si, strip.empty = FALSE)
 \description{
 Creates a genomic ranges from seqinfo object
 ie a pile of ranges spanning the genome
+
+Creates a genomic ranges from seqinfo object
+ie a pile of ranges spanning the genome
 }
 \examples{
+si <- Seqinfo(names(hg_seqlength(), hg_seqlengths()))
+si2gr(si)
 \dontrun{si <- Seqinfo(names(hg_seqlength(), hg_seqlengths()))
 si2gr(si)}
 }

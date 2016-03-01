@@ -4,7 +4,7 @@
 \alias{gr.mid}
 \title{Get the midpoint of range}
 \usage{
-gr.mid(x)
+gr.mid(x, pad = 0)
 }
 \arguments{
 \item{x}{\code{GRanges} object to operate on}
@@ -18,6 +18,6 @@ gr.mid(x)
 Get the midpoint of range
 }
 \examples{
-\dontrun{gr.mid(GRanges(1, IRanges(1000,2000), seqinfo=Seqinfo("1", 2000)))}
+##gr.mid(GRanges(1, IRanges(1000,2000), seqinfo=Seqinfo("1", 2000)), pad=10)
 }
 

@@ -17,6 +17,6 @@ Takes as input a data.table which must have the fields: start, end, strand, seqn
 All of the remaining fields are added as meta data to the GRanges
 }
 \examples{
-\dontrun{r <- dtgr(data.table(start=1, seqnames="X", end=2, strand='+'))}
+gr <- dtgr(data.table(start=c(1,2), seqnames=c("X", "1"), end=c(10,20), strand = c('+', '-')))
 }
 

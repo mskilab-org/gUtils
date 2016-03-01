@@ -4,7 +4,7 @@
 \alias{gr2gatk}
 \title{Dump GRanges to GATK file}
 \usage{
-gr2gatk(gr, file, add.chr = FALSE)
+gr2gatk(gr, file, add.chr = F)
 }
 \arguments{
 \item{gr}{GRanges}

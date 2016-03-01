@@ -4,19 +4,8 @@
 \alias{rle.query}
 \title{rle.query}
 \usage{
-rle.query(subject.rle, query.gr, verbose = FALSE, mc.cores = 1,
+rle.query(subject.rle, query.gr, verbose = F, mc.cores = 1,
   chunksize = 1e+09)
-}
-\arguments{
-\item{subject.rle}{Subject}
-
-\item{query.gr}{Query}
-
-\item{verbose}{Default FALSE}
-
-\item{mc.cores}{number of cores}
-
-\item{chunksize}{Default 1e9}
 }
 \value{
 Rle representing the (concatenated) vector of data (reversing order in case of negative strand input)

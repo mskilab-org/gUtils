@@ -2,8 +2,12 @@
 % Please edit documentation in R/gUtils.R
 \name{gr.match}
 \alias{gr.match}
-\title{Faster implementatin of GenomicRangs::match}
+\alias{gr.setdiff}
+\title{gr.match
+More robust and faster implementation of GenomicRangs::setdiff}
 \usage{
+gr.setdiff(query, subject, ignore.strand = TRUE, by = NULL, ...)
+
 gr.match(query, subject, max.slice = Inf, verbose = FALSE, mc.cores = 1,
   ...)
 }
@@ -12,19 +16,23 @@ gr.match(query, subject, max.slice = Inf, verbose = FALSE, mc.cores = 1,
 
 \item{subject}{\code{GRanges} object as subject}
 
+\item{...}{arguments to be passed to \link{gr.findoverlaps}}
+
 \item{max.slice}{Default Inf. If query is bigger than this, chunk into smaller on different cores}
 
 \item{verbose}{Default FALSE}
 
 \item{mc.cores}{Default 1. Only works if exceeded max.slice}
-
-\item{...}{arguments to be passed to \link{gr.findoverlaps}}
 }
 \value{
 returns indices of query in subject or NA if none found
 }
 \description{
+Robust to common edge cases of setdiff(gr1, gr2)  where gr2 ranges are contained inside gr1's (yieldings
+setdiffs yield two output ranges for some of the input gr1 intervals.
+
 Faster implementation of GRanges match (uses gr.findoverlaps)
 returns indices of query in subject or NA if none found
+... = additional args for findOverlaps (IRanges version)
 }
 

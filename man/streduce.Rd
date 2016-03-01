@@ -4,7 +4,7 @@
 \alias{streduce}
 \title{Shortcut for \code{reduce(sort(gr.stripstrand(unlist(x))))}}
 \usage{
-streduce(gr, pad = 0, sort = TRUE)
+streduce(gr, pad = 0, sort = T)
 }
 \arguments{
 \item{gr}{takes in gr or grl}

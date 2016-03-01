@@ -6,9 +6,6 @@
 \usage{
 grl.pivot(x)
 }
-\arguments{
-\item{x}{GenomicRangesList object to pivot}
-}
 \description{
 "pivots" grl object "x" by returning a new grl "y" whose
 kth item is gr object of ranges x[[i]][k] for all i in 1:length(x)

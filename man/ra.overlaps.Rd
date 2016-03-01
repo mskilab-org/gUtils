@@ -2,32 +2,13 @@
 % Please edit documentation in R/gUtils.R
 \name{ra.overlaps}
 \alias{ra.overlaps}
-\alias{ra.setdiff}
 \title{ra.overlaps}
 \usage{
 ra.overlaps(ra1, ra2, pad = 0, arr.ind = T, ignore.strand = FALSE, ...)
-
-ra.setdiff(ra1, ra2, ...)
-}
-\arguments{
-\item{ra1}{\code{GRangesList} with rearrangement set 1}
-
-\item{ra2}{\code{GRangesList} with rearrangement set 2}
-
-\item{pad}{Amount to pad the overlaps by. Larger is more permissive. Default is exact (0)}
-
-\item{arr.ind}{Default TRUE}
-
-\item{ignore.strand}{Ignore rearrangement orientation when doing overlaps. Default FALSE}
-
-\item{...}{params to be sent to \code{\link{gr.findoverlaps}}}
 }
 \description{
 Determines overlaps between two piles of rearrangement junctions ra1 and ra2 (each GRangesLists of signed locus pairs)
 against each other, returning a sparseMatrix that is T at entry ij if junction i overlaps junction j.
-
-identifies events that are in ra1 that do not exist in ra2.
-Aside from ra1 and ra2, all arguments are sent to ra.overlaps
 }
 \details{
 if argument pad = 0 (default) then only perfect overlap will validate, otherwise if pad>0 is given, then

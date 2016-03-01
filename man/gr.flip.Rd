@@ -4,12 +4,7 @@
 \alias{gr.flip}
 \title{gr.flip}
 \usage{
-gr.flip(gr, which = TRUE)
-}
-\arguments{
-\item{gr}{\code{GRanges} to flip}
-
-\item{which}{Default TRUE}
+gr.flip(gr, which = T)
 }
 \description{
 flips strand on grs
