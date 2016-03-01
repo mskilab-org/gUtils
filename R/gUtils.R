@@ -28,10 +28,8 @@ grdt = function(gr)
     return(as.data.table(as.data.frame(gr)))
   }
 
-#' Get GRanges corresponding to beginning of range
+#' Get \code\link[GenomicRanges]{GRanges}} corresponding to beginning of range
 #'
-#' Alternative to \code{flank} that will provide start positions *within* intervals
-#' 
 #' @param x \code{GRanges} object to operate on
 #' @param width [default = 1] Specify subranges of greater width including the start of the range.
 #' @param force [default = F] Allows returned \code{GRanges} to have ranges outside of its \code{Seqinfo} bounds.
@@ -103,8 +101,7 @@ gr.start = function(x, width = 1, force = F, ignore.strand = T, clip = F)
     return(out)    
   }
 
-###############
-#' Convert data.table to GRanges
+#' Convert  to GRanges
 #'
 #' Takes as input a data.table which must have the fields: start, end, strand, seqnames.
 #' All of the remaining fields are added as meta data to the GRanges
