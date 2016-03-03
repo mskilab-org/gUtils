@@ -16,7 +16,6 @@ Contents:
    rangeops.rst
    data.rst
    utils.rst
-   rsam.rst
 
 Indices and tables
 ==================
