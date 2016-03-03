@@ -8,9 +8,14 @@ before_install:
   - chmod 755 pkg-build.sh
   - ./pkg-build.sh bootstrap
 
+bioc_packages:
+ - GenomicRanges
+
+r_github_packages:
+  - jimhester/covr
+
 install:
   - ./pkg-build.sh install_deps
-  - ./travis-tool.sh github_package jimhester/covr
 
 script:
   - ./pkg-build.sh run_tests
