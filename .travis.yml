@@ -1,8 +1,42 @@
-language: r
+## See https://github.com/metacran/r-builder for details.
+
+language: c
 sudo: required
 
-bioc_packages:
- - GenomicRanges
+before_install:
+  - curl -OL https://raw.githubusercontent.com/metacran/r-builder/master/pkg-build.sh
+  - chmod 755 pkg-build.sh
+  - ./pkg-build.sh bootstrap
 
-env:
- - "_R_CHECK_FORCE_SUGGESTS_=0"
+install:
+  - ./pkg-build.sh install_deps
+  - ./travis-tool.sh github_package jimhester/covr
+
+script:
+  - ./pkg-build.sh run_tests
+
+after_failure:
+  - ./pkg-build.sh dump_logs
+
+after_success:
+  - Rscript -e 'covr::coveralls()'
+
+notifications:
+  email:
+    on_success: change
+    on_failure: change
+
+#env:
+#  matrix:
+#    - RVERSION=oldrel
+#    - RVERSION=release
+#    - RVERSION=devel
+
+#language: r
+#sudo: required
+
+#bioc_packages:
+# - GenomicRanges
+
+#env:
+# - "_R_CHECK_FORCE_SUGGESTS_=0"
