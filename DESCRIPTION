@@ -9,12 +9,18 @@ Authors@R: c(person(given = "Jeremiah", family = "Wala", role = c("aut",
 Description: R package providing additional capabilities and speed for
     GenomicRanges operations.
 Depends:
-    R (>= 3.1.0)
+    R (>= 3.1.0),
+    GenomicRanges (>= 1.22),
+    data.table (>= 1.9)
 Imports:
-    data.table (>= 1.9),
-    GenomicRanges (>= 1.18)
-Suggests:
+    IRanges (>= 2.4),
+    S4Vectors (>= 0.8),
+    GenomeInfoDb (>= 1.6),
     parallel
+Suggests:
+    BSgenome.Hsapiens.UCSC.hg19,
+    testthat
 License: GPL-2
-BugReports: http://github.com/jwalabroad/gUtils/issues
+BugReports: http://github.com/mskilab/gUtils/issues
 LazyData: true
+RoxygenNote: 5.0.1
