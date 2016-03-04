@@ -1,12 +1,14 @@
 ## See https://github.com/metacran/r-builder for details.
 
-language: c
+language: r
 sudo: required
 
 before_install:
   - curl -OL https://raw.githubusercontent.com/metacran/r-builder/master/pkg-build.sh
   - chmod 755 pkg-build.sh
   - ./pkg-build.sh bootstrap
+
+bioc_required: true
 
 bioc_packages:
  - GenomicRanges
