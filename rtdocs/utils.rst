@@ -1,19 +1,15 @@
 Additional utilities
 --------------------
 
-gr.string and grl.string
+gr.string
 
-parse.grl and parse.gr
+grl.string
 
-gr.gatk
-
-gr.chr and gr.nochr
+gr.chr
 
 gr.fix
 
 gr.tostring
-
-affine.map
 
 gr.findoverlaps
 
@@ -21,16 +17,7 @@ gr.match
 
 gr.in
 
-gr.duplicated
-
-gr.val
-
 gr.dist
-
-alpha
 
 grl.in
 
-chunk
-
-import.ucsc
