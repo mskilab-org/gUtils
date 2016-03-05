@@ -734,6 +734,7 @@ gr.chr = function(gr)
 #' @param gr takes in gr or grl
 #' @param pad asdf. Default 0
 #' @param sort Flag to sort the output. Default TR#' @return GRanges
+#' @importFrom GenomicRanges reduce
 #' @export
 streduce = function(gr, pad = 0, sort = TRUE)
   {
