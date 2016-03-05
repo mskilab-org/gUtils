@@ -4,14 +4,12 @@
 \alias{gr.tile.map}
 \title{gr.tile.map}
 \usage{
-gr.tile.map(query, subject, mc.cores = 1, verbose = FALSE)
+gr.tile.map(query, subject, verbose = FALSE)
 }
 \arguments{
 \item{query}{Query \code{GRanges} pile}
 
 \item{subject}{Subject \code{GRanges} pile}
-
-\item{mc.cores}{Number of cores to us [1]}
 
 \item{verbose}{Increase the verbosity of the output}
 }

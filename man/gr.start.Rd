@@ -26,7 +26,7 @@ Get GRanges corresponding to beginning of range
 }
 \examples{
 library(gUtils)
-gr.start(GRanges(1, IRanges(start=c(1,2,3), width=101), seqinfo=Seqinfo("1", 3)), width=200)
-gr.start(GRanges(1, IRanges(start=c(1,2,3), width=101), seqinfo=Seqinfo("1", 3)), width=200, clip=TRUE)
+gr.start(gr1, width=200)
+gr.start(gr1, width=200, clip=TRUE)
 }
 

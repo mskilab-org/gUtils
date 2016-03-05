@@ -1,3 +1,19 @@
+#' This is data to be included in my package
+#'
+#' @name grl1
+#' @docType data
+#' @keywords data
+#' @format A \code{GRangesList} with 2 elements
+NULL
+
+#' This is also data
+#'
+#' @name gr1
+#' @docType data
+#' @keywords data
+#' @format A \code{GRanges} with 2 elements
+NULL
+
 #' Converts \code{GRanges} to \code{data.table}
 #'
 #' @importFrom data.table
@@ -27,8 +43,8 @@ gr2dt <- function(gr)
 #' @importFrom GenomicRanges GRanges
 #' @examples
 #' library(gUtils)
-#' gr.start(GRanges(1, IRanges(start=c(1,2,3), width=101), seqinfo=Seqinfo("1", 3)), width=200)
-#' gr.start(GRanges(1, IRanges(start=c(1,2,3), width=101), seqinfo=Seqinfo("1", 3)), width=200, clip=TRUE)
+#' gr.start(gr1, width=200)
+#' gr.start(gr1, width=200, clip=TRUE)
 #' @export
 gr.start <- function(x, width = 1, force = FALSE, ignore.strand = TRUE, clip = FALSE)
   {
@@ -139,7 +155,7 @@ dt2gr <- function(dt) {
 #' @return GRanges object of width 1 ranges representing end of each genomic range in the input.
 #' @examples
 #' library(gUtils)
-#' gr.end(GRanges(1, IRanges(start=c(1,2,3), width=101), seqinfo=Seqinfo("1", 3)), width=200, clip=TRUE)
+#' gr.end(gr1, width=200, clip=TRUE)
 #' @importFrom GenomeInfoDb
 #'   seqlengths
 #' @importFrom GenomicRanges strand seqnames values<- values
@@ -211,6 +227,7 @@ gr.end = function(x, width = 1, force = FALSE, ignore.strand = TRUE, clip = TRUE
 #' @param pad Amount to pad the output width to (default 0, so width of 1)
 #' @return \code{GRanges} of the midpoint, calculated from \code{floor(width(x)/2)}
 #' @export
+#' @importFrom GenomicRanges start<- end<- start end
 #' @examples
 #' gr.mid(GRanges(1, IRanges(1000,2000), seqinfo=Seqinfo("1", 2000)), pad=10)
 gr.mid = function(x, pad = 0)
@@ -291,6 +308,8 @@ gr.round = function(Q, S, up = TRUE, parallel = FALSE)
 #' @param seed [default NA] Optionally specify a seed for the RNG. Defualt behavior is random seed.
 #' @return \code{GRanges} with random intervals on the specifed "chromosomes"
 #' @note This function is currently quite slow, needs optimization
+#' @importFrom GenomeInfoDb seqinfo seqnames<-
+#' @importFrom GenomicRanges gaps ranges ranges<-
 #' @examples
 #' ## Generate a single random interval of width 10, on "chr" of length 1000
 #' gr.rand(10, Seqinfo("1", 1000))
@@ -644,16 +663,8 @@ grbind = function(x, ...)
 #' @param ... Any number of \code{GRangesList} to concatenate together
 #' @return Concatenated GRangesList
 #' @examples
-#' ## Create some dummy data
-#' gr1 <- GRanges(1, IRanges(100,1000), my.gene='X', seqinfo=Seqinfo("1", 1000))
-#' gr2 <- GRanges(1, IRanges(200,2000), my.annot='Y', seqinfo=Seqinfo("1",2000))
-#' gr3 <- GRanges(2, IRanges(1,3000), my.annot='Z', seqinfo=Seqinfo("2",3000))
-#' grl1 <- GRangesList(grbind(gr1, gr2))
-#' grl2 <- GRangesList(grbind(gr1, gr3))
-#' ## Add unique annotation to just one \code{mcols}.
-#' mcols(gr1)$my.new.annot=1
 #' ## Concatenate
-#' grlbind(grl1, grl2)
+#' grlbind(grl1, grl1)
 #' @export
 grlbind = function(...)
   {
@@ -753,6 +764,7 @@ streduce = function(gr, pad = 0, sort = TRUE)
 #' @param include.val scalar logical, will include in out gr values field of first matching record in input gr
 #' @param split TODO
 #' @param pad TODO [1]
+#' @importFrom IRanges pintersect
 #' @return Simplified GRanges with "field" populated with uniquely contiguous values
 #' @export
 gr.simplify = function(gr, field = NULL, val = NULL, include.val = TRUE, split = FALSE, pad = 1)
@@ -882,6 +894,7 @@ gr.sub = function(gr, a = c('(^chr)(\\.1$)', 'MT'), b= c('', 'M'))
 #' @return \code{GRanges} pile with the fixed \code{Seqinfo}
 #' @importFrom GenomeInfoDb
 #'    Seqinfo
+#'    seqinfo
 #'    keepSeqlevels
 #'    seqlevels
 #'    seqlengths
@@ -972,6 +985,7 @@ gr.fix = function(gr, genome = NULL, gname = NULL,  drop = FALSE)
 #' @param gap TODO [0]
 #' @return TODO
 #' @name gr.flatten
+#' @importFrom GenomicRanges mcols
 #' @export
 gr.flatten = function(gr, gap = 0)
   {
@@ -1518,41 +1532,6 @@ gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE,
        }
    }
 
-
-#' More robust and faster implementation of \code{GenomicRanges::setdiff}
-#'
-#' Robust to common edge cases of setdiff(gr1, gr2)  where gr2 ranges are contained inside gr1's (yieldings
-#' setdiffs yield two output ranges for some of the input gr1 intervals.
-#'
-#' @param query \code{GRanges} object as query
-#' @param subject \code{GRanges} object as subject
-#' @param ignore.strand Don't consider strand information [TRUE]
-#' @param by Additional meta.data to consider when finding set differences [NULL]
-#' @param ... Additional arguments to be passed to \code{gr.findoverlaps}
-#' @return returns indices of query in subject or NA if none found
-#' @name gr.setdiff
-#' @export
-gr.setdiff = function(query, subject, ignore.strand = TRUE, by = NULL,  ...)
-    {
-        if (!is.null(by)) ## in this case need to be careful about setdiffing only within the "by" level
-            {
-                tmp = gr2dt(subject)
-                tmp$strand = factor(tmp$strand, c('+', '-', '*'))
-                sl = seqlengths(subject)
-                gp = seg2gr(tmp[, as.data.frame(gaps(IRanges(start, end), 1, sl[seqnames][1])), by = c('seqnames', 'strand', by)], seqinfo = seqinfo(subject))
-            }
-        else ## otherwise easier
-            {
-                if (ignore.strand)
-                    gp = gaps(gr.stripstrand(subject)) %Q% (strand == '*')
-                else
-                    gp = gaps(subject)
-            }
-
-        out = gr.findoverlaps(query, gp, qcol = names(values(query)), ignore.strand = ignore.strand, by = by, ...)
-        return(out)
-    }
-
 #' Faster \code{GenomicRanges::match}
 #'
 #' Faster implementation of GRanges match (uses gr.findoverlaps)
@@ -1596,13 +1575,12 @@ gr.match = function(query, subject, max.slice = Inf, verbose = FALSE, mc.cores =
 #'
 #' @param query Query \code{GRanges} pile
 #' @param subject Subject \code{GRanges} pile
-#' @param mc.cores Number of cores to us [1]
 #' @param verbose Increase the verbosity of the output
 #' @return TODO
 #' @note Assumes that input query and subject have no gaps (including at end) or overlaps, i.e. ignores end()
 #' coordinates and only uses "starts"
 #' @export
-gr.tile.map = function(query, subject, mc.cores = 1, verbose = FALSE)
+gr.tile.map = function(query, subject, verbose = FALSE)
   {
     ix.q = order(query)
     ix.s = order(subject)
@@ -1613,7 +1591,8 @@ gr.tile.map = function(query, subject, mc.cores = 1, verbose = FALSE)
     ql = split(ix.q, q.chr)
     sl = split(ix.s, s.chr)
 
-    tmp = mcmapply(
+    #tmp = mcmapply(
+    tmp <- lapply(
       function(x,y)
       {
         if (length(y)==0)
@@ -1654,7 +1633,9 @@ gr.tile.map = function(query, subject, mc.cores = 1, verbose = FALSE)
           }
         out = out[rowSums(is.na(out))==0, ]
         return(out)
-      }, ql, sl[names(ql)], mc.cores = mc.cores, SIMPLIFY = FALSE)
+      #}, ql, sl[names(ql)], mc.cores = mc.cores, SIMPLIFY = FALSE)
+      }, ql, sl[names(ql)], SIMPLIFY = FALSE)
+
 
     m = munlist(tmp)[, -c(1:2), drop = FALSE]
     out = split(m[,2], m[,1])[as.character(1:length(query))]
@@ -1865,24 +1846,25 @@ grl.split = function(grl, seqname = TRUE, strand = TRUE,
 #'
 #' In this way, \code{grl.unlist} is reversible, while \code{unlist} is not.
 #' @name grl.unlist
+#' @importFrom BiocGenerics unlist
 #' @param grl \code{GRangeList} object to unlist
 #' @export
 grl.unlist = function(grl)
-  {
+{
     if (length(grl) == 0) ## JEREMIAH
       return(GRanges())
-#      return(grl)
-    names(grl) = NULL
 
+    names(grl) = NULL
     as.df = as.data.frame(grl)
 
     el = as.df$element
     if (is.null(el))
         el = as.df$group
 
-    out = unlist(grl)
-    out$grl.ix = el
+    out = BiocGenerics::unlist(grl)
+    mcols(out)$grl.ix = el
     tmp = rle(el)
+
     out$grl.iix = unlist(sapply(tmp$lengths, function(x) 1:x))
     values(out) = cbind(values(grl)[out$grl.ix, , drop = FALSE], values(out))
     return(out)
@@ -1969,6 +1951,7 @@ grl.span = function(grl, chr = NULL, ir = FALSE, keep.strand = TRUE)
 #' Assumes all grs in "x" are of equal length
 #' @name grl.pivot
 #' @param x \code{GRangesList} object to pivot
+#' @importFrom GenomicRanges GRanges GRangesList
 #' @examples
 #' #library(BSgenome.Hsapiens.UCSC.hg19)
 #' #grl.pivot(GRangesList(list(si2gr(Hsapiens),rev(si2gr(Hsapiens) ))))
@@ -1987,8 +1970,7 @@ grl.pivot = function(x)
 #' rrbind = function(df1, df2, [df3 ... etc], )
 #' @param union if union flag is used then will take union of columns (and put NA's for columns of df1 not in df2 and vice versa). Default TRUE
 #' @keywords internal
-#' @importFrom data.table
-#'    data.table
+#' @importFrom data.table data.table rbindlist
 rrbind2 = function(..., union = TRUE, as.data.table = FALSE)
 {
   dfs = list(...);  # gets list of data frames
@@ -2158,8 +2140,8 @@ seg2gr = function(segs, key = NULL, seqlengths = NULL, seqinfo = Seqinfo())
 #' @keywords internal
 standardize_segs = function(seg, chr = FALSE)
 {
-  if (inherits(seg, 'IRangesList'))
-    seg = irl2gr(seg);
+  #if (inherits(seg, 'IRangesList'))
+  #  seg = irl2gr(seg);
 
   if (is(seg, 'matrix'))
     seg = as.data.frame(seg, stringsAsFactors = FALSE)

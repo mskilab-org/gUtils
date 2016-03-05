@@ -25,6 +25,6 @@ Alternative to \code{flank} that will provide end positions *within* intervals
 }
 \examples{
 library(gUtils)
-gr.end(GRanges(1, IRanges(start=c(1,2,3), width=101), seqinfo=Seqinfo("1", 3)), width=200, clip=TRUE)
+gr.end(gr1, width=200, clip=TRUE)
 }
 

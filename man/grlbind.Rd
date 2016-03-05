@@ -16,15 +16,7 @@ Concatenated GRangesList
 Concatenates \code{GRangesList} objects taking the union of their \code{mcols} features if they have non-overlapping features
 }
 \examples{
-## Create some dummy data
-gr1 <- GRanges(1, IRanges(100,1000), my.gene='X', seqinfo=Seqinfo("1", 1000))
-gr2 <- GRanges(1, IRanges(200,2000), my.annot='Y', seqinfo=Seqinfo("1",2000))
-gr3 <- GRanges(2, IRanges(1,3000), my.annot='Z', seqinfo=Seqinfo("2",3000))
-grl1 <- GRangesList(grbind(gr1, gr2))
-grl2 <- GRangesList(grbind(gr1, gr3))
-## Add unique annotation to just one \\code{mcols}.
-mcols(gr1)$my.new.annot=1
 ## Concatenate
-grlbind(grl1, grl2)
+grlbind(grl1, grl1)
 }
 
