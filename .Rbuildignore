@@ -8,3 +8,4 @@ circos
 batch.R
 ^.*\tar.gz$
 rtdocs
+install_bioc.sh
