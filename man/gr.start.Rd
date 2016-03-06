@@ -14,7 +14,7 @@ gr.start(x, width = 1, force = FALSE, ignore.strand = TRUE,
 
 \item{force}{[default = F] Allows returned \code{GRanges} to have ranges outside of its \code{Seqinfo} bounds.}
 
-\item{ignore.strand}{[default = TRUE] If set to \code{FALSE}, will extend '-' strands from the other direction.}
+\item{ignore.strand}{If set to \code{FALSE}, will extend '-' strands from the other direction [TRUE].}
 
 \item{clip}{[default = F] Trims returned \code{GRanges} so that it does not extend beyond bounds of the input \code{GRanges}}
 }
@@ -26,7 +26,7 @@ Get GRanges corresponding to beginning of range
 }
 \examples{
 library(gUtils)
-gr.start(gr1, width=200)
-gr.start(gr1, width=200, clip=TRUE)
+gr.start(gr.DNAase, width=200)
+gr.start(gr.DNAase, width=200, clip=TRUE)
 }
 

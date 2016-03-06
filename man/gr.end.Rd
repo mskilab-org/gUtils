@@ -25,6 +25,6 @@ Alternative to \code{flank} that will provide end positions *within* intervals
 }
 \examples{
 library(gUtils)
-gr.end(gr1, width=200, clip=TRUE)
+gr.end(gr.DNAase, width=200, clip=TRUE)
 }
 

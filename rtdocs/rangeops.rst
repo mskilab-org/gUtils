@@ -4,41 +4,47 @@ Range Operations
 This section will describe additional GRanges operations provided by gUtils.
 
 .. code-block:: bash
-  
+
    ## make some example data sets
    ref19 <- readRDS(system.file("extdata","refGene.hg19.gr.rds", package="gUtils"))
-   gr  <- GRanges(1, IRanges(c(2,5,10), c(4,9,16)), seqinfo=Seqinfo("1", 20)) 
+   gr  <- GRanges(1, IRanges(c(2,5,10), c(4,9,16)), seqinfo=Seqinfo("1", 20))
    gr2 <- c(gr, GRanges(1, IRanges(c(1,9), c(6,14)), seqinfo=Seqinfo("1", 20)))
    dt <- data.table(seqnames=1, start=c(2,5,10), end=c(3,8,15))
-	
-``shift(gr, 2)``
 
 .. figure:: figures/shift.png
-   :alt: 
-   :scale: 50 %	
-
-``flank(gr, width=2)``
+   :alt:
+   :scale: 50 %
 
 .. figure:: figures/flank.png
-   :alt: 
+   :alt:
    :scale: 50 %
 
-``gr.start(gr, width=3)``
+.. figure:: figures/flank_start.png
+   :alt:
+   :scale: 50 %
 
 .. figure:: figures/gr.start.png
-   :alt: 
+   :alt:
    :scale: 50 %
 
-``gr.end(gr, width=3)``
+.. figure:: figures/gr.start_wstrand.png
+   :alt:
+   :scale: 50 %
 
 .. figure:: figures/gr.end.png
-   :alt: 
+   :alt:
    :scale: 50 %
 
-``gr.mid(gr) + 2``
+.. figure:: figures/gr.end_wstrand.png
+   :alt:
+   :scale: 50 %
 
 .. figure:: figures/gr.mid.png
-   :alt: 
+   :alt:
+   :scale: 50 %
+
+.. figure:: figures/streduce.png
+   :alt:
    :scale: 50 %
 
 ``grbind``
@@ -51,10 +57,10 @@ This section will describe additional GRanges operations provided by gUtils.
    c(gr,gr2)  ## ERROR
    ## with grbind
    grbind(gr, gr2) ## SUCCESS. Adds NA for missing fields
-   ## GenomicRanges::c does this already for GRangesList 
+   ## GenomicRanges::c does this already for GRangesList
 
 ``streduce(gr2)``
-  
+
 .. figure:: figures/streduce.png
    :alt:
    :scale: 50 %
@@ -62,14 +68,14 @@ This section will describe additional GRanges operations provided by gUtils.
 ``gr.sample(gr2, 2, len=2, replace=TRUE)``
 
 .. code-block:: bash
-  
+
    ## output GRanges
    GRanges object with 3 ranges and 1 metadata column:
       seqnames    ranges strand |  query.id
          <Rle> <IRanges>  <Rle> | <integer>
    [1]        1  [ 8,  9]      * |         2
-   [2]        1  [ 5,  6]      * |         2 
-   [3]        1  [11, 12]      * |         3 
+   [2]        1  [ 5,  6]      * |         2
+   [3]        1  [11, 12]      * |         3
 
 .. figure:: figures/gr.sample.png
    :alt:

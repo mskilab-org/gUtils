@@ -4,12 +4,10 @@
 \alias{gr.mid}
 \title{Get the midpoint of range}
 \usage{
-gr.mid(x, pad = 0)
+gr.mid(x)
 }
 \arguments{
 \item{x}{\code{GRanges} object to operate on}
-
-\item{pad}{Amount to pad the output width to (default 0, so width of 1)}
 }
 \value{
 \code{GRanges} of the midpoint, calculated from \code{floor(width(x)/2)}
@@ -18,6 +16,6 @@ gr.mid(x, pad = 0)
 Get the midpoint of range
 }
 \examples{
-gr.mid(GRanges(1, IRanges(1000,2000), seqinfo=Seqinfo("1", 2000)), pad=10)
+gr.mid(GRanges(1, IRanges(1000,2000), seqinfo=Seqinfo("1", 2000)))
 }
 

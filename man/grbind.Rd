@@ -13,10 +13,7 @@ grbind(x, ...)
 }
 \value{
 Concatenated \code{GRanges}
-gr1 <- GRanges(1, IRanges(100,1000), my.gene='X', seqinfo=Seqinfo("1", 1000))
-gr2 <- GRanges(1, IRanges(200,2000), my.annot='Y', seqinfo=Seqinfo("1",2000))
-gr3 <- GRanges(2, IRanges(1,3000), my.annot='Z', seqinfo=Seqinfo("2",3000))
-grbind(gr1, gr2, gr3)
+grbind(gr.genes, gr.DNAase)
 }
 \description{
 Concatenates \code{GRanges} objects, taking the union of their features if they have non-overlapping features

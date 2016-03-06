@@ -17,6 +17,6 @@ Concatenates \code{GRangesList} objects taking the union of their \code{mcols} f
 }
 \examples{
 ## Concatenate
-grlbind(grl1, grl1)
+#grlbind(grl1, grl1)
 }
 

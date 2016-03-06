@@ -1,17 +1,17 @@
-#' This is data to be included in my package
+#' DNAaseI hypersensitivity sites from UCSC Table Browser hg19
 #'
-#' @name grl1
+#' @name gr.DNAase
 #' @docType data
 #' @keywords data
-#' @format A \code{GRangesList} with 2 elements
+#' @format \code{GRanges}
 NULL
 
-#' This is also data
+#' RefSeq genes from UCSC Table Browser hg19
 #'
-#' @name gr1
+#' @name gr.genes
 #' @docType data
 #' @keywords data
-#' @format A \code{GRanges} with 2 elements
+#' @format \code{GRanges}
 NULL
 
 #' Converts \code{GRanges} to \code{data.table}
@@ -38,13 +38,13 @@ gr2dt <- function(gr)
 #' @param width [default = 1] Specify subranges of greater width including the start of the range.
 #' @param force [default = F] Allows returned \code{GRanges} to have ranges outside of its \code{Seqinfo} bounds.
 #' @param clip [default = F] Trims returned \code{GRanges} so that it does not extend beyond bounds of the input \code{GRanges}
-#' @param ignore.strand [default = TRUE] If set to \code{FALSE}, will extend '-' strands from the other direction.
+#' @param ignore.strand If set to \code{FALSE}, will extend '-' strands from the other direction [TRUE].
 #' @return \code{GRanges} object of width 1 ranges representing start of each genomic range in the input.
 #' @importFrom GenomicRanges GRanges
 #' @examples
 #' library(gUtils)
-#' gr.start(gr1, width=200)
-#' gr.start(gr1, width=200, clip=TRUE)
+#' gr.start(gr.DNAase, width=200)
+#' gr.start(gr.DNAase, width=200, clip=TRUE)
 #' @export
 gr.start <- function(x, width = 1, force = FALSE, ignore.strand = TRUE, clip = FALSE)
   {
@@ -155,7 +155,7 @@ dt2gr <- function(dt) {
 #' @return GRanges object of width 1 ranges representing end of each genomic range in the input.
 #' @examples
 #' library(gUtils)
-#' gr.end(gr1, width=200, clip=TRUE)
+#' gr.end(gr.DNAase, width=200, clip=TRUE)
 #' @importFrom GenomeInfoDb
 #'   seqlengths
 #' @importFrom GenomicRanges strand seqnames values<- values
@@ -224,20 +224,14 @@ gr.end = function(x, width = 1, force = FALSE, ignore.strand = TRUE, clip = TRUE
 #' Get the midpoint of range
 #'
 #' @param x \code{GRanges} object to operate on
-#' @param pad Amount to pad the output width to (default 0, so width of 1)
 #' @return \code{GRanges} of the midpoint, calculated from \code{floor(width(x)/2)}
 #' @export
 #' @importFrom GenomicRanges start<- end<- start end
 #' @examples
-#' gr.mid(GRanges(1, IRanges(1000,2000), seqinfo=Seqinfo("1", 2000)), pad=10)
-gr.mid = function(x, pad = 0)
+#' gr.mid(GRanges(1, IRanges(1000,2000), seqinfo=Seqinfo("1", 2000)))
+gr.mid = function(x)
   {
       start(x) = end(x) = rowMeans(cbind(start(x), end(x)))
-      if (!is.null(pad))
-          if (!is.na(pad))
-              if (pad>0)
-                  x = x + pad
-
       return(x)
   }
 
@@ -501,30 +495,6 @@ gr.sample = function(gr, k, len = 100, replace = TRUE)
     }
 }
 
-##footprint = function(gr)
-##    cat(prettyNum(sum(as.numeric(width(reduce(gr)))), big.mark = ','), '\n')
-
-#' Output standard human genome seqlengths
-#'
-#' Outputs a standard seqlengths for human genome +/- "chr"
-#' @param hg BSgenome object, perhaps from \code{library(BSgenome.Hsapiens.UCSC.hg19)}
-#' @param chr Flag for whether to keep "chr". Default FALSE
-#' @param include.junk Flag for whether to not trim to only 1-22, X, Y, M. Default FALSE
-#' @return Seqlengths
-#' @export
-hg_seqlengths = function(hg, chr = FALSE, include.junk = FALSE)
-{
-  sl = seqlengths(hg)
-
-  if (!include.junk)
-    sl = sl[c(paste('chr', 1:22, sep = ''), 'chrX', 'chrY', 'chrM')]
-
-  if (!chr)
-    names(sl) = gsub('chr', '', names(sl))
-
-  return(sl)
-}
-
 #' Create \code{GRanges} from \code{Seqinfo} or \code{BSgenome}
 #'
 #' Creates a genomic ranges from seqinfo object
@@ -567,10 +537,7 @@ si2gr <- function(si, strip.empty = FALSE)
 #' @param ... additional \code{GRanges}
 #' @note Does not fill in the \code{Seqinfo} for the output \code{GRanges}
 #' @return Concatenated \code{GRanges}
-#' gr1 <- GRanges(1, IRanges(100,1000), my.gene='X', seqinfo=Seqinfo("1", 1000))
-#' gr2 <- GRanges(1, IRanges(200,2000), my.annot='Y', seqinfo=Seqinfo("1",2000))
-#' gr3 <- GRanges(2, IRanges(1,3000), my.annot='Z', seqinfo=Seqinfo("2",3000))
-#' grbind(gr1, gr2, gr3)
+#' grbind(gr.genes, gr.DNAase)
 #' @export
 grbind = function(x, ...)
   {
@@ -664,7 +631,7 @@ grbind = function(x, ...)
 #' @return Concatenated GRangesList
 #' @examples
 #' ## Concatenate
-#' grlbind(grl1, grl1)
+#' #grlbind(grl1, grl1)
 #' @export
 grlbind = function(...)
   {

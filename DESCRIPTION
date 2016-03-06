@@ -21,7 +21,8 @@ Imports:
 Suggests:
     BSgenome.Hsapiens.UCSC.hg19,
     testthat,
-    covr
+    covr,
+    rtracklayer
 License: GPL-2
 BugReports: http://github.com/mskilab/gUtils/issues
 LazyData: true
