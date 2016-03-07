@@ -61,3 +61,7 @@ will return the subset of gr1 entries for whose metadata column $gene has “EGF
    window = genez[genez$gene_name == "RB1"] + 2e6
 
    plot(c(gt.ge , gt.cov) , window)
+
+.. figure:: figures/COSMICplot.png 
+   :alt:
+   :scale: 50 % 
