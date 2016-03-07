@@ -19,7 +19,7 @@ WI=600
   if (length(grn_p))
     g <- g + geom_rect(data=as.data.frame(grn_p), aes(xmin=start, xmax=end+1, ymin=1, ymax=1.9), fill='red', color='black', alpha=alpha)
   if (length(grn_m))
-    g <- g + geom_rectct(data=as.data.frame(grn_m), aes(xmin=start, xmax=end+1, ymin=0, ymax=0.9), fill='red', color='black', alpha=alpha)
+    g <- g + geom_rect(data=as.data.frame(grn_m), aes(xmin=start, xmax=end+1, ymin=0, ymax=0.9), fill='red', color='black', alpha=alpha)
 
   g <- g + theme(axis.text.y=element_blank(), axis.ticks.y=element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_line(colour="gray65", size=0.5, linetype = 'dashed'), axis.ticks.x=element_blank())
   g <- g + scale_x_continuous(breaks=seq(from=1.5, to=20.5, by=1), minor_breaks=seq(from=1,to=20, by=1), labels=1:20) + coord_fixed()
@@ -89,6 +89,17 @@ png("rtdocs/figures/streduce.png", height=HI, width=WI)
 grn = streduce(gr+2)
 grn$name <- c("ABC")
 print(.plot_gr(gr+2, grn) + ggtitle("streduce(gr+2)"));
+dev.off()
+
+## gr.flatten
+png("rtdocs/figures/gr.flatten.png", height=HI, width=WI)
+grn <- with(gr.flatten(gr), GRanges(1, IRanges(start, end), name=name))
+print(.plot_gr(gr, grn) + ggtitle("gr.flatten(gr)"));
+dev.off()
+
+## gr.flipstrand
+png("rtdocs/figures/gr.flipstrand.png", height=HI, width=WI)
+print(.plot_gr(gr, gr.flipstrand(gr)) + ggtitle("gr.flipstrand(gr)"));
 dev.off()
 
 ## gr.sample

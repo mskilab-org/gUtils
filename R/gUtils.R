@@ -318,11 +318,11 @@ gr.round = function(Q, S, up = TRUE, parallel = FALSE)
 
 #' Generate random GRanges on genome
 #'
-#' Randomly generates non-overlapping GRanges with supplied widths on supplied genome
+#' Randomly generates non-overlapping GRanges with supplied widths on supplied genome.
+#' Seed can be supplied with \code{set.seed}
 #'
 #' @param w Vector of widths (length of w determines length of output)
 #' @param genome Genome which can be a \code{GRanges}, \code{GRangesList}, or \code{Seqinfo} object. Default is "hg19" from the \code{BSGenome} package.
-#' @param seed [default NA] Optionally specify a seed for the RNG. Defualt behavior is random seed.
 #' @return \code{GRanges} with random intervals on the specifed "chromosomes"
 #' @note This function is currently quite slow, needs optimization
 #' @importFrom GenomeInfoDb seqinfo seqnames<-
@@ -334,11 +334,8 @@ gr.round = function(Q, S, up = TRUE, parallel = FALSE)
 #' library(BSgenome.Hsapiens.UCSC.hg19)
 #' gr.rand(rep(10,5), Hsapiens)
 #' @export
-gr.rand = function(w, genome, seed=NA)
+gr.rand = function(w, genome)
   {
-
-    if (!is.na(seed))
-      set.seed(seed)
 
     if (!is(genome, 'Seqinfo'))
       genome = seqinfo(genome)
@@ -363,7 +360,7 @@ gr.rand = function(w, genome, seed=NA)
           {
             end(available) = end(available)-w[i]
             starts = c(1, cumsum(as.numeric(width(available))+1))
-            rstart = ceiling(runif(1)*starts[length(starts)])-starts
+            rstart = ceiling(stats::runif(1)*starts[length(starts)])-starts
             rind = max(which(rstart>0))
             new.chr = seqnames(available[rind])
             new.ir = IRanges(rstart[rind]+start(available[rind])-1, width = w[i])
@@ -439,21 +436,24 @@ gr.trim = function(gr, starts=1, ends=1)
     return(out)
 }
 
-#' Randomly sample \code{GRanges} intervals
+#' Randomly sample \code{GRanges} intervals within territory
 #'
-#' Samples k intervals of length "len" from a pile of gr's.
-#' If k is a scalar then will (uniformly) select k intervals from the summed territory of gr's
+#' Samples k intervals of length "len" from a pile of \code{GRanges}.
+#' If k is a scalar then will (uniformly) select k intervals from the summed territory of \code{GRanges}
 #' If k is a vector of length(gr) then will uniformly select k intervals from each.
 #' from a tiling of the set (and may do fewer than k samples if width(gr[i])<= k[i] *len)
 #' If k[i] = NA, will return tiling of that interval, if k = NA will return tiling of the entire
 #' gr's (with length len tiles).
 #'
-#' @param gr \code{GRanges} object to operate on
-#' @param k See function description
-#' @param len Length param. Default 100
-#' @param replace If TRUE, will bootstrap, otherwise will sample without replacement. Default TRUE
+#' @param gr \code{GRanges} object defining the territory to sample from
+#' @param k Number of ranges to sample
+#' @param len Length of the \code{GRanges} element to produce [100]
+#' @param replace If TRUE, will bootstrap, otherwise will sample without replacement. [TRUE]
 #' @return GRanges of max length sum(k) [if k is vector) or k*length(gr) (if k is scalar) with labels indicating the originating range.
 #'
+#' @examples
+#' ## sample 5 \code{GRanges} of length 10 each from territory of RefSeq genes
+#' gr.sample(reduce(gr.genes), k=5, len=10)
 #' @note This is different from overloaded sample() function implemented in GenomicRanges class, which just samples from a pile of GRanges
 #' @export
 gr.sample = function(gr, k, len = 100, replace = TRUE)
@@ -475,7 +475,7 @@ gr.sample = function(gr, k, len = 100, replace = TRUE)
             s = seq(1, terr, len)
         }
       else
-        s = terr*runif(k)
+        s = terr*stats::runif(k)
 
       # map back to original gr's
 #      si = sapply(s, function(x) {i = 1; while (st[i]<x & i<=length(st)) {i = i+1}; return(i)})
@@ -510,7 +510,7 @@ gr.sample = function(gr, k, len = 100, replace = TRUE)
                             s = seq(gr.df$start[i], gr.df$end[i], len)
                         }
                       else
-                        s = (gr.df$end[i]-gr.df$start[i]-gr.df$len[i])*runif(k[i])+gr.df$start[i]
+                        s = (gr.df$end[i]-gr.df$start[i]-gr.df$len[i])*stats::runif(k[i])+gr.df$start[i]
 
                       return(data.frame(chr = gr.df$chr[i], start=s, end =s+len-1, strand = as.character(strand(gr)[i]), query.id = i))
                     })
@@ -983,14 +983,14 @@ gr.fix = function(gr, genome = NULL, gname = NULL,  drop = FALSE)
   }
 
 
-#' gr.flatten
+#' Lay ranges end-to-end onto a derivate "chromosome"
 #'
 #' Takes pile of GRanges and returns into a data.frame with nrow = length(gr) with each
 #' representing the corresponding input range superimposed onto a single "flattened"
-#' chromosome.
-#' @param gr TODO
-#' @param gap TODO [0]
-#' @return TODO
+#' chromosome, with ranges laid end-to-end
+#' @param gr \code{GRanges} to flatten
+#' @param gap Number of bases between ranges on the new chromosome [0]
+#' @return \code{data.frame} with start and end coordinates, and all of the original metadata
 #' @name gr.flatten
 #' @importFrom GenomicRanges mcols
 #' @export
@@ -1002,10 +1002,9 @@ gr.flatten = function(gr, gap = 0)
       return(data.frame(start = 1, end = width(gr)))
     else
       {
-        starts = cumsum(c(1, width(gr[1:(length(gr)-1)])+gap))
-        ends = starts+width(gr)-1
-        #return(data.frame(start = starts, end = ends)) ## MARCIN
-		return(cbind(data.frame(start=starts, end=ends), as.data.frame(mcols(gr)))) ## JEREMIAH
+        starts = as.integer(cumsum(c(1, width(gr[1:(length(gr)-1)])+gap)))
+        ends = as.integer(starts+width(gr)-1)
+		return(cbind(data.frame(start=starts, end=ends), as.data.frame(mcols(gr))))
       }
 }
 
@@ -1791,7 +1790,7 @@ grl.in <- function(grl, windows, some = FALSE, only = FALSE, ...)
                     split(1:length(gr), factor(gr$grl.ix, 1:length(grl))),
                     split(m$query.id, factor(m$grl.id, 1:length(grl)))))
     else
-      tmp = aggregate(formula = subject.id ~ grl.id, data = m, FUN = function(x) length(setdiff(1:numwin, x))==0)
+      tmp = stats::aggregate(formula = subject.id ~ grl.id, data = m, FUN = function(x) length(setdiff(1:numwin, x))==0)
 
     out = rep(FALSE, length(grl))
     out[tmp[,1]] = tmp[,2]
@@ -1912,12 +1911,12 @@ grl.span = function(grl, chr = NULL, ir = FALSE, keep.strand = TRUE)
 
     if (is.null(chr))
       {
-        chrmap = aggregate(formula = seqnames ~ element, data = tmp, FUN = function(x) x[1]);
+        chrmap = stats::aggregate(formula = seqnames ~ element, data = tmp, FUN = function(x) x[1]);
         chrmap = structure(as.character(chrmap[,2]), names = chrmap[,1])
 
         if (keep.strand)
           {
-            strmap = aggregate(formula = as.character(strand) ~ element, data = tmp, FUN =
+            strmap = stats::aggregate(formula = as.character(strand) ~ element, data = tmp, FUN =
               function(x) {y = unique(x); if (length(y)>1) return('*') else y[1]})
             strmap = structure(as.character(strmap[,2]), names = strmap[,1])
             str = strmap[names(grl)];

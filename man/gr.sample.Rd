@@ -2,25 +2,25 @@
 % Please edit documentation in R/gUtils.R
 \name{gr.sample}
 \alias{gr.sample}
-\title{Randomly sample \code{GRanges} intervals}
+\title{Randomly sample \code{GRanges} intervals within territory}
 \usage{
 gr.sample(gr, k, len = 100, replace = TRUE)
 }
 \arguments{
-\item{gr}{\code{GRanges} object to operate on}
+\item{gr}{\code{GRanges} object defining the territory to sample from}
 
-\item{k}{See function description}
+\item{k}{Number of ranges to sample}
 
-\item{len}{Length param. Default 100}
+\item{len}{Length of the \code{GRanges} element to produce [100]}
 
-\item{replace}{If TRUE, will bootstrap, otherwise will sample without replacement. Default TRUE}
+\item{replace}{If TRUE, will bootstrap, otherwise will sample without replacement. [TRUE]}
 }
 \value{
 GRanges of max length sum(k) [if k is vector) or k*length(gr) (if k is scalar) with labels indicating the originating range.
 }
 \description{
-Samples k intervals of length "len" from a pile of gr's.
-If k is a scalar then will (uniformly) select k intervals from the summed territory of gr's
+Samples k intervals of length "len" from a pile of \code{GRanges}.
+If k is a scalar then will (uniformly) select k intervals from the summed territory of \code{GRanges}
 If k is a vector of length(gr) then will uniformly select k intervals from each.
 from a tiling of the set (and may do fewer than k samples if width(gr[i])<= k[i] *len)
 If k[i] = NA, will return tiling of that interval, if k = NA will return tiling of the entire
@@ -28,5 +28,9 @@ gr's (with length len tiles).
 }
 \note{
 This is different from overloaded sample() function implemented in GenomicRanges class, which just samples from a pile of GRanges
+}
+\examples{
+## sample 5 \\code{GRanges} of length 10 each from territory of RefSeq genes
+gr.sample(reduce(gr.genes), k=5, len=10)
 }
 

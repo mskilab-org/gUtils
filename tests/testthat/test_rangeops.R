@@ -37,7 +37,8 @@ test_that("gr.dist", {
 })
 
 test_that("gr.rand", {
-  gg <- gr.rand(c(3,5), si, 137)
+  set.seed(137)
+  gg <- gr.rand(c(3,5), si)
   print(start(gg))
   expect_equal(start(gg)[1], 59221325L)
 })
@@ -84,6 +85,48 @@ test_that("dt2gr", {
 
 })
 
+test_that("gr.sample", {
+  set.seed(137)
+  gg <- gr.sample(reduce(gr.genes), 10, len=1)
+  expect_equal(start(gg)[1], 77055451)
+  expect_equal(unique(width(gg)), 1)
+
+  expect_error(gr.sample(reduce(gr.genes), c(1:3), len=5))
+  set.seed(137)
+  gg <- gr.sample(gr.genes[1:5], c(2,2,3,4,5), len=2)
+  expect_equal(length(gg), 16)
+  expect_equal(sum(width(gg)), 32)
+})
+
+test_that("gr.chr", {
+  expect_equal(as.character(seqnames(gr.chr(GRanges(c(1,"chrX"), IRanges(c(1,2), 1))))), c("chr1","chrX"))
+})
+
+test_that("gr.string", {
+  expect_equal(gr.string(gr.genes)[1], "1:67000041-67208778+")
+})
+
+test_that("gr.fix", {
+  library(BSgenome.Hsapiens.UCSC.hg19)
+  gg <- GRanges(c("X",1), IRanges(c(1,2), width=1))
+  expect_equal(length(seqlengths(gr.fix(gg, si))), 25)
+  expect_equal(length(seqlengths(gr.fix(gg, Hsapiens))), 95)
+})
+
+test_that("gr.flipstrand", {
+  expect_identical(as.character(strand(gr.flipstrand(gr))), c("-","+","+"))
+})
+
+test_that("gr.flatten", {
+  df <- gr.flatten(gr)
+  expect_equal(as.character(class(df)), "data.frame")
+  expect_identical(colnames(df), c("start", 'end','name'))
+  expect_identical(df$start, c(1L,4L,7L))
+
+  df <- gr.flatten(gr, gap=5)
+  expect_equal(df$start[2] - df$end[1], 5 + 1)
+})
+
 test_that("grlbind", {
   grl.hiC2 <- grl.hiC[1:20]
   mcols(grl.hiC2)$test = 1
@@ -102,7 +145,6 @@ test_that("streduce", {
 
 test_that("grl.pivot", {
   gg <- grl.pivot(grl.hiC)
-  print(class(gg))
   expect_equal(as.character(class(gg)), "GRangesList")
   expect_equal(length(gg),2)
   expect_equal(length(gg[[1]]), 537341)
