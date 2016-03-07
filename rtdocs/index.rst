@@ -16,7 +16,6 @@ Contents:
    rangeops.rst
    data.rst
    utils.rst
-<<<<<<< HEAD
    rsam.rst
    tutorial.rst
 =======
