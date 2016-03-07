@@ -13,39 +13,39 @@ This section will describe additional GRanges operations provided by gUtils.
 
 .. figure:: figures/shift.png
    :alt:
-   :scale: 50 %
+   :scale: 100 %
 
 .. figure:: figures/flank.png
    :alt:
-   :scale: 50 %
+   :scale: 100 %
 
 .. figure:: figures/flank_start.png
    :alt:
-   :scale: 50 %
+   :scale: 100 %
 
 .. figure:: figures/gr.start.png
    :alt:
-   :scale: 50 %
+   :scale: 100 %
 
 .. figure:: figures/gr.start_wstrand.png
    :alt:
-   :scale: 50 %
+   :scale: 100 %
 
 .. figure:: figures/gr.end.png
    :alt:
-   :scale: 50 %
+   :scale: 100 %
 
 .. figure:: figures/gr.end_wstrand.png
    :alt:
-   :scale: 50 %
+   :scale: 100 %
 
 .. figure:: figures/gr.mid.png
    :alt:
-   :scale: 50 %
+   :scale: 100 %
 
 .. figure:: figures/streduce.png
    :alt:
-   :scale: 50 %
+   :scale: 100 %
 
 ``grbind``
 
@@ -63,7 +63,7 @@ This section will describe additional GRanges operations provided by gUtils.
 
 .. figure:: figures/streduce.png
    :alt:
-   :scale: 50 %
+   :scale: 100 %
 
 ``gr.sample(gr2, 2, len=2, replace=TRUE)``
 
@@ -79,31 +79,31 @@ This section will describe additional GRanges operations provided by gUtils.
 
 .. figure:: figures/gr.sample.png
    :alt:
-   :scale: 50 %
+   :scale: 100 %
 
 ``gr.rand(w=c(2,5,3), seqinfo(gr))``
 
 .. figure:: figures/gr.rand.png
    :alt:
-   :scale: 50 %
+   :scale: 100 %
 
 ``gr.simplify``
 
 .. figure:: figures/gr.simplify.png
    :alt:
-   :scale: 50 %
+   :scale: 100 %
 
 ``gr.tile(GRanges(1, IRanges(1,9)), w=3) + 1``
 
 .. figure:: figures/gr.tile.png
    :alt:
-   :scale: 50 %
+   :scale: 100 %
 
 ``gr.refactor``
 
 .. figure:: figures/gr.refactor.png
    :alt:
-   :scale: 50 %
+   :scale: 100 %
 
 ``gr.tile.map``
 

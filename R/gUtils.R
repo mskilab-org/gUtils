@@ -22,6 +22,14 @@ NULL
 #' @format \code{Seqinfo}
 NULL
 
+#' HiC data for chr14 from Lieberman-Aiden 2009 (in hg19)
+#'
+#' @name grl.hiC
+#' @docType data
+#' @keywords data
+#' @format \code{GRangesList}
+NULL
+
 #' Converts \code{GRanges} to \code{data.table}
 #'
 #' @importFrom data.table
@@ -36,6 +44,9 @@ NULL
 #' @export
 gr2dt <- function(gr)
   {
+    ## as.data.frame gives error if duplicated rownames
+    if (any(duplicated(names(gr))))
+        names(gr) <- NULL
     out <- as.data.table(GenomicRanges::as.data.frame(gr))
     return(out)
   }
@@ -643,8 +654,11 @@ grbind = function(x, ...)
 #' @return Concatenated GRangesList
 #' @examples
 #' ## Concatenate
-#' #grlbind(grl1, grl1)
+#' #grl.hiC2 <- grl.hiC[1:20]
+#' #mcols(grl.hiC2)$test = 1
+#' #grlbind(grl.hiC2, grl.hiC[1:30])
 #' @export
+#' @importFrom GenomicRanges mcols<- mcols split
 grlbind = function(...)
   {
     ## TODO: make this work for when underlying grs do not have matching features
@@ -654,38 +668,48 @@ grlbind = function(...)
     ## annoying acrobatics to reconcile gr and grl level features for heterogenous input gr / grls
     grls.ul = lapply(grls, grl.unlist)
     grls.ul.rb = do.call('grbind', grls.ul)
-    sp = unlist(lapply(1:length(grls), function(x) rep(x, length(grls.ul[[x]]))))
-    gix = split(grls.ul.rb$grl.ix, sp)
-    gjx = split(1:length(grls.ul.rb), sp)
+    sp = base::unlist(lapply(1:length(grls), function(x) rep(x, length(grls.ul[[x]]))))
+    gix = base::split(grls.ul.rb$grl.ix, sp)
+    gjx = base::split(1:length(grls.ul.rb), sp)
     grls.ul.rb$grl.iix = grls.ul.rb$grl.ix = NULL
 
     grls.vals = lapply(grls, function(x)
-      { if (ncol(values(x))>0)  return(as.data.frame(values(x))) else return(data.frame(dummy241421 = rep(NA, length(x))))})
+      { if (ncol(mcols(x))>0)  return(as.data.frame(mcols(x))) else return(data.frame(dummy241421 = rep(NA, length(x))))})
 
-    grls.new = mapply(function(x,y) split(grls.ul.rb[x],y), gjx, gix)
+    grls.new = mapply(function(x,y) GenomicRanges::split(grls.ul.rb[x],y), gjx, gix)
 
-    out = do.call('c', grls.new)
+    ## do.call('c', grls.new) is not working for some reason (gives back list again, not GRangesList)
+    ## have to do this instead, not ideal
+    if (length(grls.new) > 1) {
+      out = grls.new[[1]]
+        for (i in 2:length(grls.new))
+          out = c(out, grls.new[[i]])
+    } else {
+      out = grls.new[[1]]
+    }
 
-    if (is.list(out))
-      {
-        if (length(grls.new)>1)
-          {
-            bla = c(grls.new[[1]], grls.new[[2]]) ## fix R ghost
-            out = do.call('c', grls.new)
-            if (is.list(out)) ## if still is list then do manual 'c'
-                {
-                   out = grls.new[[1]]
-                   for (i in 2:length(grls.new))
-                       out = c(out, grls.new[[i]])
-                }
-          }
-        else
-          out = grls.new[[1]]
-      }
+    # out = do.call('c', grls.new)
+    #
+    # if (is.list(out))
+    #   {
+    #     if (length(grls.new)>1)
+    #       {
+    #         bla = c(grls.new[[1]], grls.new[[2]]) ## fix R ghost
+    #         out = do.call('c', grls.new)
+    #         if (is.list(out)) ## if still is list then do manual 'c'
+    #              {
+    #                out = grls.new[[1]]
+    #                for (i in 2:length(grls.new))
+    #                    out = c(out, grls.new[[i]])
+    #             }
+    #       }
+    #     else
+    #       out = grls.new[[1]]
+    #   }
 
     out.val = do.call('rrbind2', grls.vals)
     out.val$dummy241421 = NULL
-    values(out) = out.val
+    GenomicRanges::mcols(out) <- out.val
 
     return(out)
   }
@@ -714,6 +738,9 @@ gr.chr = function(gr)
 #' @param pad asdf. Default 0
 #' @param sort Flag to sort the output. Default TR#' @return GRanges
 #' @importFrom GenomicRanges reduce
+#' @examples
+#' streduce(grl.hiC, pad=10)
+#' streduce(gr.genes, pad=1000)
 #' @export
 streduce = function(gr, pad = 0, sort = TRUE)
   {
@@ -1931,16 +1958,16 @@ grl.span = function(grl, chr = NULL, ir = FALSE, keep.strand = TRUE)
 #' Assumes all grs in "x" are of equal length
 #' @name grl.pivot
 #' @param x \code{GRangesList} object to pivot
-#' @importFrom GenomicRanges GRanges GRangesList
+#' @importFrom GenomicRanges GRanges GRangesList split unlist
 #' @examples
-#' #library(BSgenome.Hsapiens.UCSC.hg19)
-#' #grl.pivot(GRangesList(list(si2gr(Hsapiens),rev(si2gr(Hsapiens) ))))
+#' grl.pivot(grl.hiC)
 #' @export
 grl.pivot = function(x)
   {
     if (length(x) == 0)
       return(GRangesList(GRanges(seqlengths = seqlengths(x)), GRanges(seqlengths = seqlengths(x))))
-    return(split(unlist(x), rep(1:length(x[[1]]), length(x))))
+    #gg <- GenomicRanges::split(GenomicRanges::unlist(x), rep(1:length(x[[1]]), length(x)))
+    return(GenomicRanges::split(GenomicRanges::unlist(x), rep(1:length(x[[1]]), length(x))))
 }
 
 
@@ -2171,6 +2198,17 @@ standardize_segs = function(seg, chr = FALSE)
     seg = cbind(seg, val)
 
   return(seg)
+}
+
+#' Remove chr prefix from GRanges seqlevels
+#'
+#' @param gr \code{GRanges} with chr seqlevel prefixes
+#' @return GRanges without chr seqlevel prefixes
+#' @export
+gr.nochr = function(gr) {
+  if (grepl('^chr', seqlevels(gr)[1]))
+    seqlevels(gr) = gsub('^chr','', seqlevels(gr))
+  return(gr)
 }
 
 

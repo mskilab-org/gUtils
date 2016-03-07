@@ -19,7 +19,6 @@ will produce a length 3 \code{GRangesList} with 50 elements per \code{GRanges}
 Assumes all grs in "x" are of equal length
 }
 \examples{
-#library(BSgenome.Hsapiens.UCSC.hg19)
-#grl.pivot(GRangesList(list(si2gr(Hsapiens),rev(si2gr(Hsapiens) ))))
+grl.pivot(grl.hiC)
 }
 

@@ -64,6 +64,10 @@ test_that("gr.findoverlaps", {
   expect_equal(length(fo), 256058)
 })
 
+test_that("gr.in", {
+  expect_equal(sum(gr.in(gr.genes, gr.DNAase)),35570)
+})
+
 test_that("gr2dt works as expected", {
   expect_identical(colnames(gr2dt(gr)), c("seqnames","start",'end','width','strand','name'))
   expect_equal(nrow(gr2dt(gr)), length(gr))
@@ -78,4 +82,41 @@ test_that("dt2gr", {
   dt <- data.table(seqns=1, start=1, end=10, strand='+', name="A")
   expect_error(dt2gr(dt))
 
+})
+
+test_that("grlbind", {
+  grl.hiC2 <- grl.hiC[1:20]
+  mcols(grl.hiC2)$test = 1
+  suppressWarnings(gg <- grlbind(grl.hiC2, grl.hiC[1:30]))
+  expect_equal(length(gg), 50)
+  expect_equal(colnames(mcols(gg)), "test")
+})
+
+test_that("streduce", {
+  gg <- streduce(grl.hiC, pad=10)
+  expect_equal(length(gg), length(reduce(gg)))
+
+  gg <- streduce(gr.genes, pad=10)
+  expect_equal(length(gg), length(reduce(gg)))
+})
+
+test_that("grl.pivot", {
+  gg <- grl.pivot(grl.hiC)
+  print(class(gg))
+  expect_equal(as.character(class(gg)), "GRangesList")
+  expect_equal(length(gg),2)
+  expect_equal(length(gg[[1]]), 537341)
+})
+
+test_that("grl.unlist", {
+  gg <- grl.unlist(grl.hiC)
+  expect_equal(length(gg), length(grl.hiC)*2)
+  expect_equal(max(mcols(gg)$grl.iix), 2)
+  expect_equal(max(mcols(gg)$grl.ix), length(grl.hiC))
+
+})
+
+test_that("grl.in", {
+  gg <- grl.in(grl.hiC[1:100], gr.genes)
+  expect_equal(length(gg), 100)
 })
