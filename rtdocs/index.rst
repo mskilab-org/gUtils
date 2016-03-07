@@ -17,6 +17,7 @@ Contents:
    data.rst
    utils.rst
    rsam.rst
+   tutorial.rst
 
 Indices and tables
 ==================
