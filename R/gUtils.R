@@ -14,21 +14,29 @@ NULL
 #' @format \code{GRanges}
 NULL
 
+#' \code{Seqinfo} object for hg19
+#'
+#' @name si
+#' @docType data
+#' @keywords data
+#' @format \code{Seqinfo}
+NULL
+
 #' Converts \code{GRanges} to \code{data.table}
 #'
 #' @importFrom data.table
 #'    as.data.table
-#' @importFrom GenomicRanges
-#'   GRanges
+#' @importFrom GenomicRanges as.data.frame
 #' @name gr2dt
 #' @param gr \code{GRanges} pile to convert to \code{data.table}
+#' @return \code{data.table} with seqnames, start, end, width, strand and all of the meta data. Width is end-inclusive (e.g. [6,7] width = 2)
 #' @examples
 #' library(gUtils)
-#' #gr2dt(GRanges("X", IRanges(1,2)))
+#' gr2dt(gr.genes)
 #' @export
 gr2dt <- function(gr)
   {
-    out <- as.data.table(as.data.frame(gr))
+    out <- as.data.table(GenomicRanges::as.data.frame(gr))
     return(out)
   }
 
@@ -109,7 +117,8 @@ gr.start <- function(x, width = 1, force = FALSE, ignore.strand = TRUE, clip = F
 #' Convert data.table to GRanges
 #'
 #' Takes as input a data.table which must have the fields: start, end, strand, seqnames.
-#' All of the remaining fields are added as meta data to the \code{\link[GenomicRanges]{GRanges}}
+#' All of the remaining fields are added as meta data to the \code{\link[GenomicRanges]{GRanges}}.
+#' Will throw an error if \code{data.table} does not contain seqnames, start and end
 #' @param dt data.table to convert to GRanges
 #' @return \code{\link[GenomicRanges]{GRanges}} object of length = nrow(dt)
 #' @importFrom data.table
@@ -125,6 +134,9 @@ gr.start <- function(x, width = 1, force = FALSE, ignore.strand = TRUE, clip = F
 #' gr <- dt2gr(data.table(start=c(1,2), seqnames=c("X", "1"), end=c(10,20), strand = c('+', '-')))
 #' @export
 dt2gr <- function(dt) {
+
+  if (any(!c("seqnames","start","end") %in% colnames(dt)))
+    stop("gUtils::dt2gr data.table must have seqnames, start, and end")
 
   rr <- IRanges(dt$start, dt$end)
   if (!'strand' %in% colnames(dt))

@@ -51,4 +51,4 @@ gr.genes <- with(tbl.genes[ix <- !grepl("(hap)|(gl)", tbl.genes$chrom),], GRange
 mcols(gr.genes) <- tbl.genes[ix,-which(colnames(tbl.genes) %in% c("chrom","strand","exonStarts","exonEnds","exonFrames"))]
 
 ## save it
-save(gr.genes, gr.DNAase, si, file="data/grdata.rda")
+save(gr.genes, gr.DNAase, si, file="data/grdata.rda", compress="gzip")

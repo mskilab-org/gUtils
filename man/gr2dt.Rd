@@ -9,11 +9,14 @@ gr2dt(gr)
 \arguments{
 \item{gr}{\code{GRanges} pile to convert to \code{data.table}}
 }
+\value{
+\code{data.table} with seqnames, start, end, width, strand and all of the meta data. Width is end-inclusive (e.g. [6,7] width = 2)
+}
 \description{
 Converts \code{GRanges} to \code{data.table}
 }
 \examples{
 library(gUtils)
-#gr2dt(GRanges("X", IRanges(1,2)))
+gr2dt(gr.genes)
 }
 

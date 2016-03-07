@@ -14,7 +14,8 @@ dt2gr(dt)
 }
 \description{
 Takes as input a data.table which must have the fields: start, end, strand, seqnames.
-All of the remaining fields are added as meta data to the \code{\link[GenomicRanges]{GRanges}}
+All of the remaining fields are added as meta data to the \code{\link[GenomicRanges]{GRanges}}.
+Will throw an error if \code{data.table} does not contain seqnames, start and end
 }
 \examples{
 library(gUtils)
