@@ -39,49 +39,25 @@ will return the subset of gr1 entries for whose metadata column $gene has “EGF
 
    ## loading gene definitions which we can use to plot windows (GRanges)
    genes = readRDS('files/genes.rds')
+  
+   ## this loads coverage data from cancer cell line (GRanges object, have to make it  into a gTrack)
+   cov = readRDS('files/coverage.rds')
 
-   ## save each gene's GRange object in a variable referenced by its name.
-   for (i in geneSymbols) { assign(i , genes %Q% (gene_name==i)) }    
+   ## loading the GENCODE gene model gTrack
+   gt.ge = track.gencode()
    
-   TLX3
-
-  '''
-   GRanges object with 1 range and 20 metadata columns:
-      seqnames                 ranges strand |   source     type     score
-         <Rle>              <IRanges>  <Rle> | <factor> <factor> <numeric>
-  [1]        5 [170736288, 170739138]      + |   HAVANA     gene      <NA>
-          phase           gene_id     transcript_id      gene_type gene_status
-      <integer>       <character>       <character>    <character> <character>
-  [1]      <NA> ENSG00000164438.5 ENSG00000164438.5 protein_coding       KNOWN
-        gene_name transcript_type transcript_status transcript_name     level
-      <character>     <character>       <character>     <character> <numeric>
-  [1]        TLX3  protein_coding             KNOWN            TLX3         1
-               havana_gene         tag havana_transcript exon_number
-               <character> <character>       <character>   <numeric>
-  [1] OTTHUMG00000163207.3        <NA>              <NA>        <NA>
-          exon_id         ont      ccdsid
-      <character> <character> <character>
-  [1]        <NA>        <NA>        <NA>
-  '''
+   # subset genes to just the genes in the COSMIC dataset 
+   genez <- genes %Q%(gene_name==geneSymbols[1])  
+   
+   # subset the rest of the genes
+   for (i in 2:length(geneSymbols)) {genez <- c( genes %Q% (gene_name==geneSymbols[i]) , genez)}
+   
+   # add the average coverage metadata column for each gene 
+   genez <- genez %$% cov
   
-  ## this loads coverage data from cancer cell line (GRanges object, have to make it  into a gTrack)
-  cov = readRDS('files/coverage.rds')
+   gt.cov = gTrack(genezz , y.field = 'mean' , circles = TRUE , col = 'blue' , name = 'Cov')
 
-  genes %$% cov 
+   # set window for plot -RB1 gene and genes around it in a 2e6 range 
+   window = genez[genez$gene_name == "RB1"] + 2e6
 
-  ## loading the GENCODE gene model gTrack
-  gt.ge = track.gencode()
-
-  ###############
-
-  genezz <- genes %Q%(gene_name==geneSymbols[1])  
-
-  for (i in 2:length(geneSymbols)) {genezz <- c( genes %Q% (gene_name==geneSymbols[i]) , genezz)}
-
-  genezz <- genezz %$% cov
-  
-  gt.cov = gTrack(genezz , y.field = 'mean' , circles = TRUE , col = 'blue' , name = 'Cov')
-
-  window = genes[genes$gene_name == "RB1"] + 1.5e6
-
-  plot(c(gt.ge , gt.cov) , window)
+   plot(c(gt.ge , gt.cov) , window)
