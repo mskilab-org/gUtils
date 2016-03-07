@@ -1,0 +1,185 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Range Operations &mdash; gUtils 1.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="gUtils 1.0.0 documentation" href="index.html" />
+    <link rel="next" title="Data manipulation" href="data.html" />
+    <link rel="prev" title="Introduction" href="introduction.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="data.html" title="Data manipulation"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="introduction.html" title="Introduction"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">gUtils 1.0.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="range-operations">
+<h1>Range Operations<a class="headerlink" href="#range-operations" title="Permalink to this headline">¶</a></h1>
+<p>This section will describe additional GRanges operations provided by gUtils.</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span><span class="c1">## make some example data sets</span>
+ref19 &lt;- readRDS<span class="o">(</span>system.file<span class="o">(</span><span class="s2">&quot;extdata&quot;</span>,<span class="s2">&quot;refGene.hg19.gr.rds&quot;</span>, <span class="nv">package</span><span class="o">=</span><span class="s2">&quot;gUtils&quot;</span><span class="o">))</span>
+gr  &lt;- GRanges<span class="o">(</span>1, IRanges<span class="o">(</span>c<span class="o">(</span>2,5,10<span class="o">)</span>, c<span class="o">(</span>4,9,16<span class="o">))</span>, <span class="nv">seqinfo</span><span class="o">=</span>Seqinfo<span class="o">(</span><span class="s2">&quot;1&quot;</span>, 20<span class="o">))</span>
+gr2 &lt;- c<span class="o">(</span>gr, GRanges<span class="o">(</span>1, IRanges<span class="o">(</span>c<span class="o">(</span>1,9<span class="o">)</span>, c<span class="o">(</span>6,14<span class="o">))</span>, <span class="nv">seqinfo</span><span class="o">=</span>Seqinfo<span class="o">(</span><span class="s2">&quot;1&quot;</span>, 20<span class="o">)))</span>
+dt &lt;- data.table<span class="o">(</span><span class="nv">seqnames</span><span class="o">=</span>1, <span class="nv">start</span><span class="o">=</span>c<span class="o">(</span>2,5,10<span class="o">)</span>, <span class="nv">end</span><span class="o">=</span>c<span class="o">(</span>3,8,15<span class="o">))</span>
+</pre></div>
+</div>
+<p><code class="docutils literal"><span class="pre">shift(gr,</span> <span class="pre">2)</span></code></p>
+<div class="figure">
+<a class="reference internal image-reference" href="_images/shift.png"><img alt="" src="_images/shift.png" /></a>
+</div>
+<p><code class="docutils literal"><span class="pre">flank(gr,</span> <span class="pre">width=2)</span></code></p>
+<div class="figure">
+<a class="reference internal image-reference" href="_images/flank.png"><img alt="" src="_images/flank.png" /></a>
+</div>
+<p><code class="docutils literal"><span class="pre">gr.start(gr,</span> <span class="pre">width=3)</span></code></p>
+<div class="figure">
+<a class="reference internal image-reference" href="_images/gr.start.png"><img alt="" src="_images/gr.start.png" /></a>
+</div>
+<p><code class="docutils literal"><span class="pre">gr.end(gr,</span> <span class="pre">width=3)</span></code></p>
+<div class="figure">
+<a class="reference internal image-reference" href="_images/gr.end.png"><img alt="" src="_images/gr.end.png" /></a>
+</div>
+<p><code class="docutils literal"><span class="pre">gr.mid(gr)</span> <span class="pre">+</span> <span class="pre">2</span></code></p>
+<div class="figure">
+<a class="reference internal image-reference" href="_images/gr.mid.png"><img alt="" src="_images/gr.mid.png" /></a>
+</div>
+<p><code class="docutils literal"><span class="pre">grbind</span></code></p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span><span class="c1">## add metadata to one field</span>
+mcols<span class="o">(</span>gr<span class="o">)</span>$<span class="nv">score</span> <span class="o">=</span> 3
+<span class="c1">## try to concatenate</span>
+c<span class="o">(</span>gr,gr2<span class="o">)</span>  <span class="c1">## ERROR</span>
+<span class="c1">## with grbind</span>
+grbind<span class="o">(</span>gr, gr2<span class="o">)</span> <span class="c1">## SUCCESS. Adds NA for missing fields</span>
+<span class="c1">## GenomicRanges::c does this already for GRangesList</span>
+</pre></div>
+</div>
+<p><code class="docutils literal"><span class="pre">streduce(gr2)</span></code></p>
+<div class="figure">
+<a class="reference internal image-reference" href="_images/streduce.png"><img alt="" src="_images/streduce.png" /></a>
+</div>
+<p><code class="docutils literal"><span class="pre">gr.sample(gr2,</span> <span class="pre">2,</span> <span class="pre">len=2,</span> <span class="pre">replace=TRUE)</span></code></p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span><span class="c1">## output GRanges</span>
+GRanges object with <span class="m">3</span> ranges and <span class="m">1</span> metadata column:
+   seqnames    ranges strand <span class="p">|</span>  query.id
+      &lt;Rle&gt; &lt;IRanges&gt;  &lt;Rle&gt; <span class="p">|</span> &lt;integer&gt;
+<span class="o">[</span>1<span class="o">]</span>        <span class="m">1</span>  <span class="o">[</span> 8,  9<span class="o">]</span>      * <span class="p">|</span>         2
+<span class="o">[</span>2<span class="o">]</span>        <span class="m">1</span>  <span class="o">[</span> 5,  6<span class="o">]</span>      * <span class="p">|</span>         2
+<span class="o">[</span>3<span class="o">]</span>        <span class="m">1</span>  <span class="o">[</span>11, 12<span class="o">]</span>      * <span class="p">|</span>         3
+</pre></div>
+</div>
+<div class="figure">
+<a class="reference internal image-reference" href="_images/gr.sample.png"><img alt="" src="_images/gr.sample.png" /></a>
+</div>
+<p><code class="docutils literal"><span class="pre">gr.rand(w=c(2,5,3),</span> <span class="pre">seqinfo(gr))</span></code></p>
+<div class="figure">
+<a class="reference internal image-reference" href="_images/gr.rand.png"><img alt="" src="_images/gr.rand.png" /></a>
+</div>
+<p><code class="docutils literal"><span class="pre">gr.simplify</span></code></p>
+<div class="figure">
+<a class="reference internal image-reference" href="_images/gr.simplify.png"><img alt="" src="_images/gr.simplify.png" /></a>
+</div>
+<p><code class="docutils literal"><span class="pre">gr.tile(GRanges(1,</span> <span class="pre">IRanges(1,9)),</span> <span class="pre">w=3)</span> <span class="pre">+</span> <span class="pre">1</span></code></p>
+<div class="figure">
+<a class="reference internal image-reference" href="_images/gr.tile.png"><img alt="" src="_images/gr.tile.png" /></a>
+</div>
+<p><code class="docutils literal"><span class="pre">gr.refactor</span></code></p>
+<div class="figure">
+<a class="reference internal image-reference" href="_images/gr.refactor.png"><img alt="" src="_images/gr.refactor.png" /></a>
+</div>
+<p><code class="docutils literal"><span class="pre">gr.tile.map</span></code></p>
+<p><code class="docutils literal"><span class="pre">gr.round</span></code></p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="introduction.html"
+                        title="previous chapter">Introduction</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="data.html"
+                        title="next chapter">Data manipulation</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/rangeops.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="data.html" title="Data manipulation"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="introduction.html" title="Introduction"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">gUtils 1.0.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015, Marcin Imielinski and Jeremiah Wala.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.
+    </div>
+  </body>
+</html>

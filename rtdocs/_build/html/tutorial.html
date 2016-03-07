@@ -1,0 +1,176 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Tutorial &mdash; gUtils 1.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="gUtils 1.0.0 documentation" href="index.html" />
+    <link rel="prev" title="BAM/SAM operations" href="rsam.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="rsam.html" title="BAM/SAM operations"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">gUtils 1.0.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="tutorial">
+<h1>Tutorial<a class="headerlink" href="#tutorial" title="Permalink to this headline">¶</a></h1>
+<p><code class="docutils literal"><span class="pre">gr1</span> <span class="pre">%^%</span> <span class="pre">gr2</span></code></p>
+<p>gives a length(gr1) logical vector with TRUE if gr1 intersects some interval in gr2</p>
+<p><code class="docutils literal"><span class="pre">gr1</span> <span class="pre">%*%</span> <span class="pre">gr2</span></code></p>
+<p>gives a length n ( where n &lt;= length(gr1)*length(gr2)) of all pairwise overlaps of gr1 and gr2 with merged meta.data</p>
+<p><code class="docutils literal"><span class="pre">gr1</span> <span class="pre">%$%</span> <span class="pre">gr2</span></code></p>
+<p>returns length(gr1) GRanges aggregating all metadata values of gr2 within gr1, taking mean if the meta data item is numeric and concatenating the value if it is a string</p>
+<p><code class="docutils literal"><span class="pre">gr1</span> <span class="pre">%Q%</span> <span class="pre">(expression)</span></code></p>
+<p>subsets gr1 using indices or logical values resulting from expression</p>
+<p><code class="docutils literal"><span class="pre">gr1</span> <span class="pre">%Q%</span> <span class="pre">(gene==</span> <span class="pre">“EGFR”)</span></code></p>
+<p>will return the subset of gr1 entries for whose metadata column $gene has “EGFR”</p>
+<div class="highlight-bash"><div class="highlight"><pre> library<span class="o">(</span>gTrack<span class="o">)</span>
+ library<span class="o">(</span>gUtils<span class="o">)</span>
+
+ <span class="c1">## tutorial on using the above operations</span>
+
+ <span class="c1">## set current working directory to the folder where the OSMIC TSV was saved in.</span>
+ setwd<span class="o">(</span><span class="s2">&quot;~/Downloads&quot;</span><span class="o">)</span>
+
+ <span class="c1">## load the load</span>
+ OSMICgenes &lt;- read.delim<span class="o">(</span><span class="s2">&quot;osmicdata.tsv&quot;</span><span class="o">)</span>
+
+ <span class="c1">## save the gene symbols into a factor</span>
+ geneSymbols &lt;- OSMICgenes<span class="o">[</span>,1<span class="o">]</span>
+
+ <span class="c1">## loading gene definitions which we can use to plot windows (GRanges)</span>
+ <span class="nv">genes</span> <span class="o">=</span> readRDS<span class="o">(</span><span class="s1">&#39;files/genes.rds&#39;</span><span class="o">)</span>
+
+ <span class="c1">## save each gene&#39;s GRange object in a variable referenced by its name.</span>
+ <span class="k">for</span> <span class="o">(</span>i in geneSymbols<span class="o">)</span> <span class="o">{</span> assign<span class="o">(</span>i , genes %Q% <span class="o">(</span><span class="nv">gene_name</span><span class="o">==</span>i<span class="o">))</span> <span class="o">}</span>
+
+ TLX3
+
+<span class="s1">&#39;&#39;&#39;</span>
+<span class="s1"> GRanges object with 1 range and 20 metadata columns:</span>
+<span class="s1">    seqnames                 ranges strand |   source     type     score</span>
+<span class="s1">       &lt;Rle&gt;              &lt;IRanges&gt;  &lt;Rle&gt; | &lt;factor&gt; &lt;factor&gt; &lt;numeric&gt;</span>
+<span class="s1">[1]        5 [170736288, 170739138]      + |   HAVANA     gene      &lt;NA&gt;</span>
+<span class="s1">        phase           gene_id     transcript_id      gene_type gene_status</span>
+<span class="s1">    &lt;integer&gt;       &lt;character&gt;       &lt;character&gt;    &lt;character&gt; &lt;character&gt;</span>
+<span class="s1">[1]      &lt;NA&gt; ENSG00000164438.5 ENSG00000164438.5 protein_coding       KNOWN</span>
+<span class="s1">      gene_name transcript_type transcript_status transcript_name     level</span>
+<span class="s1">    &lt;character&gt;     &lt;character&gt;       &lt;character&gt;     &lt;character&gt; &lt;numeric&gt;</span>
+<span class="s1">[1]        TLX3  protein_coding             KNOWN            TLX3         1</span>
+<span class="s1">             havana_gene         tag havana_transcript exon_number</span>
+<span class="s1">             &lt;character&gt; &lt;character&gt;       &lt;character&gt;   &lt;numeric&gt;</span>
+<span class="s1">[1] OTTHUMG00000163207.3        &lt;NA&gt;              &lt;NA&gt;        &lt;NA&gt;</span>
+<span class="s1">        exon_id         ont      ccdsid</span>
+<span class="s1">    &lt;character&gt; &lt;character&gt; &lt;character&gt;</span>
+<span class="s1">[1]        &lt;NA&gt;        &lt;NA&gt;        &lt;NA&gt;</span>
+<span class="s1">&#39;&#39;&#39;</span>
+
+<span class="c1">## this loads coverage data from cancer cell line (GRanges object, have to make it  into a gTrack)</span>
+<span class="nv">cov</span> <span class="o">=</span> readRDS<span class="o">(</span><span class="s1">&#39;files/coverage.rds&#39;</span><span class="o">)</span>
+
+genes %$% cov
+
+<span class="c1">## loading the GENCODE gene model gTrack</span>
+gt.ge <span class="o">=</span> track.gencode<span class="o">()</span>
+
+<span class="c1">###############</span>
+
+genezz &lt;- genes %Q%<span class="o">(</span><span class="nv">gene_name</span><span class="o">==</span>geneSymbols<span class="o">[</span>1<span class="o">])</span>
+
+<span class="k">for</span> <span class="o">(</span>i in 2:length<span class="o">(</span>geneSymbols<span class="o">))</span> <span class="o">{</span>genezz &lt;- c<span class="o">(</span> genes %Q% <span class="o">(</span><span class="nv">gene_name</span><span class="o">==</span>geneSymbols<span class="o">[</span>i<span class="o">])</span> , genezz<span class="o">)}</span>
+
+genezz &lt;- genezz %$% cov
+
+gt.cov <span class="o">=</span> gTrack<span class="o">(</span>genezz , y.field <span class="o">=</span> <span class="s1">&#39;mean&#39;</span> , <span class="nv">circles</span> <span class="o">=</span> TRUE , <span class="nv">col</span> <span class="o">=</span> <span class="s1">&#39;blue&#39;</span> , <span class="nv">name</span> <span class="o">=</span> <span class="s1">&#39;Cov&#39;</span><span class="o">)</span>
+
+<span class="nv">window</span> <span class="o">=</span> genes<span class="o">[</span>genes$<span class="nv">gene_name</span> <span class="o">==</span> <span class="s2">&quot;RB1&quot;</span><span class="o">]</span> + 1.5e6
+
+plot<span class="o">(</span>c<span class="o">(</span>gt.ge , gt.cov<span class="o">)</span> , window<span class="o">)</span>
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="rsam.html"
+                        title="previous chapter">BAM/SAM operations</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/tutorial.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="rsam.html" title="BAM/SAM operations"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">gUtils 1.0.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015, Marcin Imielinski and Jeremiah Wala.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.
+    </div>
+  </body>
+</html>
