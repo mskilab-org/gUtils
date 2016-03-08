@@ -51,6 +51,10 @@ This section will describe additional GRanges operations provided by gUtils.
    :alt:
    :scale: 125 %
 
+.. figure:: figures/gr.tile.png
+   :alt:
+   :scale: 125 %
+
 .. figure:: figures/streduce.png
    :alt:
    :scale: 125 %

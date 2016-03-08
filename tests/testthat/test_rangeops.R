@@ -102,6 +102,10 @@ test_that("gr.chr", {
   expect_equal(as.character(seqnames(gr.chr(GRanges(c(1,"chrX"), IRanges(c(1,2), 1))))), c("chr1","chrX"))
 })
 
+test_that("gr.nochr",{
+  expect_identical(gr.nochr(gr.chr(gr.genes)), gr.genes)
+})
+
 test_that("gr.string", {
   expect_equal(gr.string(gr.genes)[1], "1:67000041-67208778+")
 })
@@ -149,6 +153,15 @@ test_that("grl.pivot", {
   expect_equal(length(gg),2)
   expect_equal(length(gg[[1]]), 537341)
 })
+
+test_that("gr.tile", {
+  expect_identical(start(gr.tile(gr, w=3)), c(3L, 7L, 13L, 16L))
+  expect_equal(length(gr.tile(GRanges())), 0)
+})
+
+#test_that("grl.string", {
+#  expect_equal(grl.string(grl.hiC[1:5])[1]=="14:29864023-29864023+,14:19001056-19001056+", TRUE)
+#})
 
 test_that("grl.unlist", {
   gg <- grl.unlist(grl.hiC)

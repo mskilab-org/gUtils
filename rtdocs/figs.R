@@ -40,8 +40,9 @@ WI=600
 #HI=2
 #WI=9
 ## make the granges
-gr <- GRanges(1, IRanges(c(3,7,13), c(5,9,16)), strand=c('+','-','-'), seqinfo=Seqinfo("1", 25), name=c("A","B","C"))
-gr2 <- GRanges(1, IRanges(c(1,9), c(6,14)), seqinfo=Seqinfo("1", 20))
+gr  <- GRanges(1, IRanges(c(3,7,13), c(5,9,16)), strand=c('+','-','-'), seqinfo=Seqinfo("1", 25), name=c("A","B","C"))
+gr2 <- GRanges(1, IRanges(c(2,4,6), c(3,7,9)), seqinfo=Seqinfo("1", 25), name=c("A","B","C"))
+#gr2 <- GRanges(1, IRanges(c(1,9), c(6,14)), seqinfo=Seqinfo("1", 20))
 dt <- data.table(seqnames=1, start=c(2,5,10), end=c(3,8,15))
 
 ## gr.start
@@ -97,9 +98,23 @@ grn <- with(gr.flatten(gr), GRanges(1, IRanges(start, end), name=name))
 print(.plot_gr(gr, grn) + ggtitle("gr.flatten(gr)"));
 dev.off()
 
+## gr.simplify
+png("rtdocs/figures/gr.simplify.png", height=HI, width=WI)
+grn <- gr.simplify(gr2)
+grn$name = "ABC"
+print(.plot_gr(gr2, grn) + ggtitle("gr.simplify(gr2)"));
+dev.off()
+
 ## gr.flipstrand
 png("rtdocs/figures/gr.flipstrand.png", height=HI, width=WI)
 print(.plot_gr(gr, gr.flipstrand(gr)) + ggtitle("gr.flipstrand(gr)"));
+dev.off()
+
+## gr.tile
+png("rtdocs/figures/gr.tile.png", height=HI, width=WI)
+grn=gr.tile(gr,w=2)
+grn$name = c("A1","A2","B1","B2","C1","C2")
+print(.plot_gr(gr, grn) + ggtitle("gr.tile(gr,w=2)"));
 dev.off()
 
 ## gr.sample
