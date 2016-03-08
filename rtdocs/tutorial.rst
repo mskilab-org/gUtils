@@ -31,8 +31,8 @@ will return the subset of gr1 entries for whose metadata column $gene has “EGF
    ## set current working directory to the folder where the OSMIC TSV was saved in.
    setwd("~/Downloads")
    
-   ## load the load 
-   OSMICgenes <- read.delim("osmicdata.tsv")
+   ## load the load. Need to download cosmic data set - http://cancer.sanger.ac.uk/census 
+   COSMICgenes <- read.delim("cosmicdata.tsv")
 
    ## save the gene symbols into a factor
    geneSymbols <- OSMICgenes[,1]
