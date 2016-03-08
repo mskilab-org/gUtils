@@ -64,4 +64,4 @@ will return the subset of gr1 entries for whose metadata column $gene has “EGF
 
 .. figure:: figures/COSMICplot.png 
    :alt:
-   :scale: 50 % 
+   :scale: 70 % 
