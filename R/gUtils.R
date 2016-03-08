@@ -22,6 +22,14 @@ NULL
 #' @format \code{Seqinfo}
 NULL
 
+#' HiC data for chr14 from Lieberman-Aiden 2009 (in hg19)
+#'
+#' @name grl.hiC
+#' @docType data
+#' @keywords data
+#' @format \code{GRangesList}
+NULL
+
 #' Converts \code{GRanges} to \code{data.table}
 #'
 #' @importFrom data.table
@@ -36,6 +44,9 @@ NULL
 #' @export
 gr2dt <- function(gr)
   {
+    ## as.data.frame gives error if duplicated rownames
+    if (any(duplicated(names(gr))))
+        names(gr) <- NULL
     out <- as.data.table(GenomicRanges::as.data.frame(gr))
     return(out)
   }
@@ -307,11 +318,11 @@ gr.round = function(Q, S, up = TRUE, parallel = FALSE)
 
 #' Generate random GRanges on genome
 #'
-#' Randomly generates non-overlapping GRanges with supplied widths on supplied genome
+#' Randomly generates non-overlapping GRanges with supplied widths on supplied genome.
+#' Seed can be supplied with \code{set.seed}
 #'
 #' @param w Vector of widths (length of w determines length of output)
 #' @param genome Genome which can be a \code{GRanges}, \code{GRangesList}, or \code{Seqinfo} object. Default is "hg19" from the \code{BSGenome} package.
-#' @param seed [default NA] Optionally specify a seed for the RNG. Defualt behavior is random seed.
 #' @return \code{GRanges} with random intervals on the specifed "chromosomes"
 #' @note This function is currently quite slow, needs optimization
 #' @importFrom GenomeInfoDb seqinfo seqnames<-
@@ -323,11 +334,8 @@ gr.round = function(Q, S, up = TRUE, parallel = FALSE)
 #' library(BSgenome.Hsapiens.UCSC.hg19)
 #' gr.rand(rep(10,5), Hsapiens)
 #' @export
-gr.rand = function(w, genome, seed=NA)
+gr.rand = function(w, genome)
   {
-
-    if (!is.na(seed))
-      set.seed(seed)
 
     if (!is(genome, 'Seqinfo'))
       genome = seqinfo(genome)
@@ -352,7 +360,7 @@ gr.rand = function(w, genome, seed=NA)
           {
             end(available) = end(available)-w[i]
             starts = c(1, cumsum(as.numeric(width(available))+1))
-            rstart = ceiling(runif(1)*starts[length(starts)])-starts
+            rstart = ceiling(stats::runif(1)*starts[length(starts)])-starts
             rind = max(which(rstart>0))
             new.chr = seqnames(available[rind])
             new.ir = IRanges(rstart[rind]+start(available[rind])-1, width = w[i])
@@ -428,21 +436,24 @@ gr.trim = function(gr, starts=1, ends=1)
     return(out)
 }
 
-#' Randomly sample \code{GRanges} intervals
+#' Randomly sample \code{GRanges} intervals within territory
 #'
-#' Samples k intervals of length "len" from a pile of gr's.
-#' If k is a scalar then will (uniformly) select k intervals from the summed territory of gr's
+#' Samples k intervals of length "len" from a pile of \code{GRanges}.
+#' If k is a scalar then will (uniformly) select k intervals from the summed territory of \code{GRanges}
 #' If k is a vector of length(gr) then will uniformly select k intervals from each.
 #' from a tiling of the set (and may do fewer than k samples if width(gr[i])<= k[i] *len)
 #' If k[i] = NA, will return tiling of that interval, if k = NA will return tiling of the entire
 #' gr's (with length len tiles).
 #'
-#' @param gr \code{GRanges} object to operate on
-#' @param k See function description
-#' @param len Length param. Default 100
-#' @param replace If TRUE, will bootstrap, otherwise will sample without replacement. Default TRUE
+#' @param gr \code{GRanges} object defining the territory to sample from
+#' @param k Number of ranges to sample
+#' @param len Length of the \code{GRanges} element to produce [100]
+#' @param replace If TRUE, will bootstrap, otherwise will sample without replacement. [TRUE]
 #' @return GRanges of max length sum(k) [if k is vector) or k*length(gr) (if k is scalar) with labels indicating the originating range.
 #'
+#' @examples
+#' ## sample 5 \code{GRanges} of length 10 each from territory of RefSeq genes
+#' gr.sample(reduce(gr.genes), k=5, len=10)
 #' @note This is different from overloaded sample() function implemented in GenomicRanges class, which just samples from a pile of GRanges
 #' @export
 gr.sample = function(gr, k, len = 100, replace = TRUE)
@@ -464,7 +475,7 @@ gr.sample = function(gr, k, len = 100, replace = TRUE)
             s = seq(1, terr, len)
         }
       else
-        s = terr*runif(k)
+        s = terr*stats::runif(k)
 
       # map back to original gr's
 #      si = sapply(s, function(x) {i = 1; while (st[i]<x & i<=length(st)) {i = i+1}; return(i)})
@@ -499,7 +510,7 @@ gr.sample = function(gr, k, len = 100, replace = TRUE)
                             s = seq(gr.df$start[i], gr.df$end[i], len)
                         }
                       else
-                        s = (gr.df$end[i]-gr.df$start[i]-gr.df$len[i])*runif(k[i])+gr.df$start[i]
+                        s = (gr.df$end[i]-gr.df$start[i]-gr.df$len[i])*stats::runif(k[i])+gr.df$start[i]
 
                       return(data.frame(chr = gr.df$chr[i], start=s, end =s+len-1, strand = as.character(strand(gr)[i]), query.id = i))
                     })
@@ -643,8 +654,11 @@ grbind = function(x, ...)
 #' @return Concatenated GRangesList
 #' @examples
 #' ## Concatenate
-#' #grlbind(grl1, grl1)
+#' #grl.hiC2 <- grl.hiC[1:20]
+#' #mcols(grl.hiC2)$test = 1
+#' #grlbind(grl.hiC2, grl.hiC[1:30])
 #' @export
+#' @importFrom GenomicRanges mcols<- mcols split
 grlbind = function(...)
   {
     ## TODO: make this work for when underlying grs do not have matching features
@@ -654,38 +668,48 @@ grlbind = function(...)
     ## annoying acrobatics to reconcile gr and grl level features for heterogenous input gr / grls
     grls.ul = lapply(grls, grl.unlist)
     grls.ul.rb = do.call('grbind', grls.ul)
-    sp = unlist(lapply(1:length(grls), function(x) rep(x, length(grls.ul[[x]]))))
-    gix = split(grls.ul.rb$grl.ix, sp)
-    gjx = split(1:length(grls.ul.rb), sp)
+    sp = base::unlist(lapply(1:length(grls), function(x) rep(x, length(grls.ul[[x]]))))
+    gix = base::split(grls.ul.rb$grl.ix, sp)
+    gjx = base::split(1:length(grls.ul.rb), sp)
     grls.ul.rb$grl.iix = grls.ul.rb$grl.ix = NULL
 
     grls.vals = lapply(grls, function(x)
-      { if (ncol(values(x))>0)  return(as.data.frame(values(x))) else return(data.frame(dummy241421 = rep(NA, length(x))))})
+      { if (ncol(mcols(x))>0)  return(as.data.frame(mcols(x))) else return(data.frame(dummy241421 = rep(NA, length(x))))})
 
-    grls.new = mapply(function(x,y) split(grls.ul.rb[x],y), gjx, gix)
+    grls.new = mapply(function(x,y) GenomicRanges::split(grls.ul.rb[x],y), gjx, gix)
 
-    out = do.call('c', grls.new)
+    ## do.call('c', grls.new) is not working for some reason (gives back list again, not GRangesList)
+    ## have to do this instead, not ideal
+    if (length(grls.new) > 1) {
+      out = grls.new[[1]]
+        for (i in 2:length(grls.new))
+          out = c(out, grls.new[[i]])
+    } else {
+      out = grls.new[[1]]
+    }
 
-    if (is.list(out))
-      {
-        if (length(grls.new)>1)
-          {
-            bla = c(grls.new[[1]], grls.new[[2]]) ## fix R ghost
-            out = do.call('c', grls.new)
-            if (is.list(out)) ## if still is list then do manual 'c'
-                {
-                   out = grls.new[[1]]
-                   for (i in 2:length(grls.new))
-                       out = c(out, grls.new[[i]])
-                }
-          }
-        else
-          out = grls.new[[1]]
-      }
+    # out = do.call('c', grls.new)
+    #
+    # if (is.list(out))
+    #   {
+    #     if (length(grls.new)>1)
+    #       {
+    #         bla = c(grls.new[[1]], grls.new[[2]]) ## fix R ghost
+    #         out = do.call('c', grls.new)
+    #         if (is.list(out)) ## if still is list then do manual 'c'
+    #              {
+    #                out = grls.new[[1]]
+    #                for (i in 2:length(grls.new))
+    #                    out = c(out, grls.new[[i]])
+    #             }
+    #       }
+    #     else
+    #       out = grls.new[[1]]
+    #   }
 
     out.val = do.call('rrbind2', grls.vals)
     out.val$dummy241421 = NULL
-    values(out) = out.val
+    GenomicRanges::mcols(out) <- out.val
 
     return(out)
   }
@@ -714,6 +738,9 @@ gr.chr = function(gr)
 #' @param pad asdf. Default 0
 #' @param sort Flag to sort the output. Default TR#' @return GRanges
 #' @importFrom GenomicRanges reduce
+#' @examples
+#' streduce(grl.hiC, pad=10)
+#' streduce(gr.genes, pad=1000)
 #' @export
 streduce = function(gr, pad = 0, sort = TRUE)
   {
@@ -730,60 +757,6 @@ streduce = function(gr, pad = 0, sort = TRUE)
 #    out <- gr.tfix(out)
     end(out) = pmin(end(out), seqlengths(out)[as.character(seqnames(out))])
 
-
-    return(out)
-  }
-
-#' Simplify \code{GRanges} by collapsing all non-overlapping adjacent ranges that share a given "field" value
-#'
-#' Note that adjacent == adjacent in the input GRanges object
-#'
-#' @param gr takes in gr or grl
-#' @param field character scalar, corresponding to value field of gr
-#' @param val TODO
-#' @param include.val scalar logical, will include in out gr values field of first matching record in input gr
-#' @param split TODO
-#' @param pad TODO [1]
-#' @importFrom IRanges pintersect
-#' @return Simplified GRanges with "field" populated with uniquely contiguous values
-#' @export
-gr.simplify = function(gr, field = NULL, val = NULL, include.val = TRUE, split = FALSE, pad = 1)
-  {
-    tmp = as.logical(suppressWarnings(width(pintersect(ranges(gr[-length(gr)]), ranges(gr[-1]+pad), resolve.empty = 'max.start'))>0) &
-      seqnames(gr[-length(gr)]) == seqnames(gr[-1]) & strand(gr[-length(gr)]) == strand(gr[-1]))
-
-    tmp = as.vector(c(0, cumsum(!tmp)))
-
-    if (!is.null(field))
-      tmp = paste(tmp, values(gr)[, field])
-
-    if (!is.null(val))
-      tmp = paste(tmp, val)
-
-    r = rle(tmp)
-
-    lix = unlist(lapply(1:length(r$lengths), function(x) rep(x, r$lengths[x])))
-    sn.gr = split(as.character(seqnames(gr)), lix)
-    st.gr = split(start(gr), lix)
-    en.gr = split(end(gr), lix)
-    str.gr = split(as.character(strand(gr)), lix)
-
-    st.gr.min = sapply(st.gr, min)
-    en.gr.max = sapply(en.gr, max)
-
-    out = GRanges(sapply(sn.gr, function(x) x[1]), IRanges(st.gr.min, en.gr.max),
-            strand = sapply(str.gr, function(x) x[1]), seqinfo = seqinfo(gr))
-
-    ix = match(1:length(out), lix)
-
-    if (include.val)
-      values(out) = values(gr)[ix, ]
-
-    if (split)
-      if (!is.null(field))
-        out = split(out, values(gr)[ix, field])
-      else
-        out = GRangesList(out)
 
     return(out)
   }
@@ -956,14 +929,14 @@ gr.fix = function(gr, genome = NULL, gname = NULL,  drop = FALSE)
   }
 
 
-#' gr.flatten
+#' Lay ranges end-to-end onto a derivate "chromosome"
 #'
 #' Takes pile of GRanges and returns into a data.frame with nrow = length(gr) with each
 #' representing the corresponding input range superimposed onto a single "flattened"
-#' chromosome.
-#' @param gr TODO
-#' @param gap TODO [0]
-#' @return TODO
+#' chromosome, with ranges laid end-to-end
+#' @param gr \code{GRanges} to flatten
+#' @param gap Number of bases between ranges on the new chromosome [0]
+#' @return \code{data.frame} with start and end coordinates, and all of the original metadata
 #' @name gr.flatten
 #' @importFrom GenomicRanges mcols
 #' @export
@@ -975,10 +948,9 @@ gr.flatten = function(gr, gap = 0)
       return(data.frame(start = 1, end = width(gr)))
     else
       {
-        starts = cumsum(c(1, width(gr[1:(length(gr)-1)])+gap))
-        ends = starts+width(gr)-1
-        #return(data.frame(start = starts, end = ends)) ## MARCIN
-		return(cbind(data.frame(start=starts, end=ends), as.data.frame(mcols(gr)))) ## JEREMIAH
+        starts = as.numeric(cumsum(c(1, width(gr[1:(length(gr)-1)])+gap)))
+        ends = as.numeric(starts+width(gr)-1)
+		return(cbind(data.frame(start=starts, end=ends), as.data.frame(mcols(gr))))
       }
 }
 
@@ -1031,7 +1003,6 @@ gr.flipstrand <- function(gr)
 #' @export
 gr.tile = function(gr, w = 1e3)
   {
-
     numw = tile.id = query.id = NULL ## getting past NOTE
     if (!is(gr, 'GRanges'))
       gr = si2gr(gr);
@@ -1055,98 +1026,6 @@ gr.tile = function(gr, w = 1e3)
     out = GRanges(rep(as.character(seqnames(gr)), ws), IRanges(start, end), strand = strand, query.id = ix[dt$query.id], tile.id = 1:length(start), seqinfo = seqinfo(gr))
 
     return(out)
-}
-
-
-#' gr.flatmap
-#'
-#' Takes \code{GRanges} pile and maps onto a flattened coordinate system defined by windows (GRanges object)
-#' a provided "gap" (in sequence units).  If squeeze == TRUE then will additionally squeeze ranges into xlim.
-#'
-#' output is list with two fields corresponding to data frames:
-#' $grl.segs = data frame of input gr's "lifted" onto new flattened coordinate space (NOTE: nrow of this not necessarily equal to length(gr))
-#' $window.segs = the coordinates of input windows in the new flattened (and squeezed) space
-#' @param gr \code{GRanges} pile to flatten
-#' @param windows \code{GRanges} pile of windows defining the coordinate system
-#' @param gap TODO
-#' @param strand.agnostic TODO
-#' @param squeeze TODO
-#' @param xlim TODO
-#' @param pintersect TODO
-#' @return TODO
-#' @name gr.flatmap
-#' @export
-gr.flatmap = function(gr, windows, gap = 0, strand.agnostic = TRUE, squeeze = FALSE, xlim = c(0, 1), pintersect=FALSE)
-  {
-    if (strand.agnostic)
-      strand(windows) = "*"
-
-    ## now flatten "window" coordinates, so we first map gr to windows
-    ## (replicating some gr if necessary)
-#    h = findOverlaps(gr, windows)
-
-    h = gr.findoverlaps(gr, windows, pintersect=pintersect);
-
-    window.segs = gr.flatten(windows, gap = gap)
-
-    grl.segs = as.data.frame(gr);
-    grl.segs = grl.segs[values(h)$query.id, ];
-    grl.segs$query.id = values(h)$query.id;
-    grl.segs$window = values(h)$subject.id
-    grl.segs$start = start(h);
-    grl.segs$end = end(h);
-    grl.segs$pos1 = pmax(window.segs[values(h)$subject.id, ]$start,
-      window.segs[values(h)$subject.id, ]$start + grl.segs$start - start(windows)[values(h)$subject.id])
-    grl.segs$pos2 = pmin(window.segs[values(h)$subject.id, ]$end,
-      window.segs[values(h)$subject.id, ]$start + grl.segs$end - start(windows)[values(h)$subject.id])
-    grl.segs$chr = grl.segs$seqnames
-
-    if (squeeze)
-      {
-        min.win = min(window.segs$start)
-        max.win = max(window.segs$end)
-        grl.segs$pos1 = affine.map(grl.segs$pos1, xlim = c(min.win, max.win), ylim = xlim)
-        grl.segs$pos2 = affine.map(grl.segs$pos2, xlim = c(min.win, max.win), ylim = xlim)
-        window.segs$start = affine.map(window.segs$start, xlim = c(min.win, max.win), ylim = xlim)
-        window.segs$end = affine.map(window.segs$end, xlim = c(min.win, max.win), ylim = xlim)
-       }
-
-    return(list(grl.segs = grl.segs, window.segs = window.segs))
-  }
-
-#' affine.map
-#'
-#' affinely maps 1D points in vector x from interval xlim to interval ylim,
-#' ie takes points that lie in
-#' interval xlim and mapping onto interval ylim using linear / affine map defined by:
-#' (x0,y0) = c(xlim(1), ylim(1)),
-#' (x1,y1) = c(xlim(2), ylim(2))
-#' (using two point formula for line)
-#' useful for plotting.
-#'
-#' if cap.max or cap.min == TRUE then values outside of the range will be capped at min or max
-#' @keywords internal
-affine.map = function(x, ylim = c(0,1), xlim = c(min(x), max(x)), cap = FALSE, cap.min = cap, cap.max = cap)
-{
-  #  xlim[2] = max(xlim);
-  #  ylim[2] = max(ylim);
-
-  if (xlim[2]==xlim[1])
-    y = rep(mean(ylim), length(x))
-  else
-    y = (ylim[2]-ylim[1]) / (xlim[2]-xlim[1])*(x-xlim[1]) + ylim[1]
-
-  if (cap.min)
-    y[x<min(xlim)] = ylim[which.min(xlim)]
-  else
-    y[x<min(xlim)] = NA;
-
-  if (cap.max)
-    y[x>max(xlim)] = ylim[which.max(xlim)]
-  else
-    y[x>max(xlim)] = NA;
-
-  return(y)
 }
 
 #' Faster replacement for \code{GRanges} version of \code{findOverlaps}
@@ -1178,27 +1057,25 @@ affine.map = function(x, ylim = c(0,1), xlim = c(min(x), max(x)), cap = FALSE, c
 #' @param first TODO
 #' @param qcol \code{character} vector of query meta-data columns to add to results
 #' @param scol \code{character} vector of subject meta-data columns to add to results
-#' @param max.chunk Maximum number of ranges to consider in one chunk (to keep down memory) [1e13]
-#' @param foverlaps Use \code{data.table::foverlaps} instead of \code{IRanges::findOverlaps}
-#' @param pintersect TODO
+#' @param foverlaps Use \code{data.table::foverlaps} instead of \code{IRanges::findOverlaps}. Overrules \code{pintersect}
+#' @param pintersect Use \code{IRanges::pintersect} function. Useful for overlaps with many, many chromosomes. Default is TRUE if \code{length(unique(seqnames)) > 50}
 #' @param verbose Increase the verbosity during runtime [FALSE]
 #' @param type TODO
 #' @param by Meta-data column to consider when performing overlaps [NULL]
-#' @param mc.cores Number of cores to use, if ranges exceed \code{max.chunk} [1]
-#' @param return.type TODO
+#' @param return.type Select data format to return: \code{same}, \code{data.table}, \code{GRanges}
 #' @param ... TODO
 #' @return \code{GRanges} pile of the intersection regions, with \code{query.id} and \code{subject.id} marking sources
 #' @export
 gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE,
     qcol = NULL, ## any query meta data columns to add to result
     scol = NULL, ## any subject meta data columns to add to resultx
-    max.chunk = 1e13,
+    ###max.chunk = 1e13, ## broken, see note below
     foverlaps = ifelse(is.na(as.logical(Sys.getenv('GRFO_FOVERLAPS'))), FALSE, as.logical(Sys.getenv('GRFO_FOVERLAPS'))) & exists('foverlaps'),
     pintersect = NA,
     verbose = FALSE,
     type = 'any',
     by = NULL,
-    mc.cores = 1,
+    ###mc.cores = 1,
     return.type = 'same',
     ...)
   {
@@ -1244,36 +1121,40 @@ gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE,
     if (!(by %in% names(values(query)) & by %in% names(values(subject))))
       stop('"by" field must be meta data column of both query and subject')
 
-    if ((as.numeric(length(query)) * as.numeric(length(subject))) > max.chunk)
-      {
-        if (verbose)
-          cat('Overflow .. computing overlaps in chunks.  Adjust max.chunk parameter to gr.findoverlaps to avoid chunked computation\n')
-        chunk.size = floor(sqrt(max.chunk));
-        ix1 = c(seq(1, length(query), chunk.size), length(query)+1)
-        ix2 = c(seq(1, length(subject), chunk.size), length(subject)+1)
-        ij = cbind(rep(1:(length(ix1)-1), length(ix2)-1), rep(1:(length(ix2)-1), each = length(ix1)-1))
-        if (verbose)
-          print(paste('Number of chunks:', nrow(ij)))
-
-        out = do.call('c', mclapply(1:nrow(ij),
-            function(x)
-                        {
-                          if (verbose)
-                            cat(sprintf('chunk i = %s-%s (%s), j = %s-%s (%s)\n', ix1[ij[x,1]], ix1[ij[x,1]+1]-1, length(query),
-                                        ix2[ij[x,2]], (ix2[ij[x,2]+1]-1), length(subject)))
-                          i.chunk = ix1[ij[x,1]]:(ix1[ij[x,1]+1]-1)
-                          j.chunk = ix2[ij[x,2]]:(ix2[ij[x,2]+1]-1)
-                          out = gr.findoverlaps(query[i.chunk], subject[j.chunk],  ignore.strand = ignore.strand, first = first, pintersect=pintersect, by = by, qcol = qcol, verbose = verbose, foverlaps = foverlaps, scol = scol, type = type, ...)
-                          out$query.id = i.chunk[out$query.id]
-                          out$subject.id = j.chunk[out$subject.id]
-                          return(out)
-                        }, mc.cores=mc.cores))
-
-        convert = FALSE
-        if ((return.type == 'same' & is(query, 'data.table')) | return.type == 'data.table')
-            out = gr2dt(out)
-        return(out)
-      }
+    ### @param mc.cores Number of cores to use, if ranges exceed \code{max.chunk} [1]
+    ### BROKEN @param max.chunk Maximum number of ranges to consider in one chunk (to keep down memory) [1e13]
+    ## Jeremiah 3/8/16 - This is broken, as the output of gr.findoverlaps is different
+    ## depending on max.chunk. Only support one chunk for now
+    # if ((as.numeric(length(query)) * as.numeric(length(subject))) > max.chunk)
+    #   {
+    #     if (verbose)
+    #       cat('Overflow .. computing overlaps in chunks.  Adjust max.chunk parameter to gr.findoverlaps to avoid chunked computation\n')
+    #     chunk.size = floor(sqrt(max.chunk));
+    #     ix1 = c(seq(1, length(query), chunk.size), length(query)+1)
+    #     ix2 = c(seq(1, length(subject), chunk.size), length(subject)+1)
+    #     ij = cbind(rep(1:(length(ix1)-1), length(ix2)-1), rep(1:(length(ix2)-1), each = length(ix1)-1))
+    #     if (verbose)
+    #       print(paste('Number of chunks:', nrow(ij)))
+    #
+    #     out = do.call('c', mclapply(1:nrow(ij),
+    #         function(x)
+    #                     {
+    #                       if (verbose)
+    #                         cat(sprintf('chunk i = %s-%s (%s), j = %s-%s (%s)\n', ix1[ij[x,1]], ix1[ij[x,1]+1]-1, length(query),
+    #                                     ix2[ij[x,2]], (ix2[ij[x,2]+1]-1), length(subject)))
+    #                       i.chunk = ix1[ij[x,1]]:(ix1[ij[x,1]+1]-1)
+    #                       j.chunk = ix2[ij[x,2]]:(ix2[ij[x,2]+1]-1)
+    #                       out = gr.findoverlaps(query[i.chunk], subject[j.chunk],  ignore.strand = ignore.strand, first = first, pintersect=pintersect, by = by, qcol = qcol, verbose = verbose, foverlaps = foverlaps, scol = scol, type = type, ...)
+    #                       out$query.id = i.chunk[out$query.id]
+    #                       out$subject.id = j.chunk[out$subject.id]
+    #                       return(out)
+    #                     }, mc.cores=mc.cores))
+    #
+    #     convert = FALSE
+    #     if ((return.type == 'same' & is(query, 'data.table')) | return.type == 'data.table')
+    #         out = gr2dt(out)
+    #     return(out)
+    #   }
 
   if (foverlaps)
       {
@@ -1318,13 +1199,12 @@ gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE,
           querydt = querydt[start<=end, ]
           subjectdt = subjectdt[start<=end, ]
 
-          querydt = querydt[, c('query.id', by), with = F]
-          subjectdt = subjectdt[, c('subject.id', by), with = F]
+          querydt = querydt[, c('query.id', by), with = FALSE]
+          subjectdt = subjectdt[, c('subject.id', by), with = FALSE]
           setkeyv(querydt, by)
           setkeyv(subjectdt, by)
 
-
-          h.df = foverlaps(querydt, subjectdt, by.x = by, by.y = by, mult = 'all', type = 'any', verbose = verbose)
+          h.df = data.table::foverlaps(querydt, subjectdt, by.x = by, by.y = by, mult = 'all', type = 'any', verbose = verbose)
           h.df = h.df[!is.na(subject.id) & !is.na(query.id), ]
           h.df[, start := pmax(start, i.start)]
           h.df[, end := pmin(end, i.end)]
@@ -1482,7 +1362,7 @@ gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE,
                if (!is.null(scol))
                    values(out.gr) = cbind(values(out.gr), values(subject)[out.gr$subject.id, scol, drop = FALSE])
 
-               return(out.gr)
+               return(sort(out.gr))
            }
        else
          return(GRanges(seqlengths = seqlengths(query)))
@@ -1764,7 +1644,7 @@ grl.in <- function(grl, windows, some = FALSE, only = FALSE, ...)
                     split(1:length(gr), factor(gr$grl.ix, 1:length(grl))),
                     split(m$query.id, factor(m$grl.id, 1:length(grl)))))
     else
-      tmp = aggregate(formula = subject.id ~ grl.id, data = m, FUN = function(x) length(setdiff(1:numwin, x))==0)
+      tmp = stats::aggregate(formula = subject.id ~ grl.id, data = m, FUN = function(x) length(setdiff(1:numwin, x))==0)
 
     out = rep(FALSE, length(grl))
     out[tmp[,1]] = tmp[,2]
@@ -1885,12 +1765,12 @@ grl.span = function(grl, chr = NULL, ir = FALSE, keep.strand = TRUE)
 
     if (is.null(chr))
       {
-        chrmap = aggregate(formula = seqnames ~ element, data = tmp, FUN = function(x) x[1]);
+        chrmap = stats::aggregate(formula = seqnames ~ element, data = tmp, FUN = function(x) x[1]);
         chrmap = structure(as.character(chrmap[,2]), names = chrmap[,1])
 
         if (keep.strand)
           {
-            strmap = aggregate(formula = as.character(strand) ~ element, data = tmp, FUN =
+            strmap = stats::aggregate(formula = as.character(strand) ~ element, data = tmp, FUN =
               function(x) {y = unique(x); if (length(y)>1) return('*') else y[1]})
             strmap = structure(as.character(strmap[,2]), names = strmap[,1])
             str = strmap[names(grl)];
@@ -1931,16 +1811,16 @@ grl.span = function(grl, chr = NULL, ir = FALSE, keep.strand = TRUE)
 #' Assumes all grs in "x" are of equal length
 #' @name grl.pivot
 #' @param x \code{GRangesList} object to pivot
-#' @importFrom GenomicRanges GRanges GRangesList
+#' @importFrom GenomicRanges GRanges GRangesList split unlist
 #' @examples
-#' #library(BSgenome.Hsapiens.UCSC.hg19)
-#' #grl.pivot(GRangesList(list(si2gr(Hsapiens),rev(si2gr(Hsapiens) ))))
+#' grl.pivot(grl.hiC)
 #' @export
 grl.pivot = function(x)
   {
     if (length(x) == 0)
       return(GRangesList(GRanges(seqlengths = seqlengths(x)), GRanges(seqlengths = seqlengths(x))))
-    return(split(unlist(x), rep(1:length(x[[1]]), length(x))))
+    #gg <- GenomicRanges::split(GenomicRanges::unlist(x), rep(1:length(x[[1]]), length(x)))
+    return(GenomicRanges::split(GenomicRanges::unlist(x), rep(1:length(x[[1]]), length(x))))
 }
 
 
@@ -2171,6 +2051,17 @@ standardize_segs = function(seg, chr = FALSE)
     seg = cbind(seg, val)
 
   return(seg)
+}
+
+#' Remove chr prefix from GRanges seqlevels
+#'
+#' @param gr \code{GRanges} with chr seqlevel prefixes
+#' @return GRanges without chr seqlevel prefixes
+#' @export
+gr.nochr = function(gr) {
+  if (grepl('^chr', seqlevels(gr)[1]))
+    seqlevels(gr) = gsub('^chr','', seqlevels(gr))
+  return(gr)
 }
 
 

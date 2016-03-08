@@ -16,4 +16,8 @@ streduce(gr, pad = 0, sort = TRUE)
 \description{
 Shortcut for \code{reduce(sort(gr.stripstrand(unlist(x))))}
 }
+\examples{
+streduce(grl.hiC, pad=10)
+streduce(gr.genes, pad=1000)
+}
 

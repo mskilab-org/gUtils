@@ -50,5 +50,16 @@ tbl.genes <- getTable( ucscTableQuery(mySession, track=track.name, table=table.n
 gr.genes <- with(tbl.genes[ix <- !grepl("(hap)|(gl)", tbl.genes$chrom),], GRanges(gsub("chr(.*?)", "\\1", chrom), IRanges(cdsStart, cdsEnd), strand=strand, seqinfo=si))
 mcols(gr.genes) <- tbl.genes[ix,-which(colnames(tbl.genes) %in% c("chrom","strand","exonStarts","exonEnds","exonFrames"))]
 
+## import some HiC data
+library(LiebermanAidenHiC2009)
+library(rtracklayer)
+data("HiC_GM_chr14")
+chain <- import.chain("/Users/jwala/hg18ToHg19.over.chain")
+gr1 <- with(HiC_GM_chr14,GRanges(paste("chr",c(chromosome1,chromosome2),sep=""), IRanges(c(position1, position2),width=1), strand=ifelse(c(strand1, strand2)==0,"+","-"), id=c(seq_along(strand1), seq_along(strand1))))
+gr1.hg19 <- gr.fix(gr.nochr(unlist(liftOver(gr1, chain))), si)
+tab <- table(gr1.hg19$id)
+gr1.hg19 <- gr1.hg19[as.character(gr1.hg19$id) %in% names(tab[tab==2])]
+grl.hiC <- GenomicRanges::split(gr1.hg19, gr1.hg19$id)
+
 ## save it
-save(gr.genes, gr.DNAase, si, file="data/grdata.rda", compress="gzip")
+save(gr.genes, gr.DNAase, si, grl.hiC, file="data/grdata.rda", compress="gzip")

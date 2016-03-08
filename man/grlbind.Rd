@@ -17,6 +17,8 @@ Concatenates \code{GRangesList} objects taking the union of their \code{mcols} f
 }
 \examples{
 ## Concatenate
-#grlbind(grl1, grl1)
+#grl.hiC2 <- grl.hiC[1:20]
+#mcols(grl.hiC2)$test = 1
+#grlbind(grl.hiC2, grl.hiC[1:30])
 }
 
