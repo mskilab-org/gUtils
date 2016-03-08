@@ -5,11 +5,11 @@
 \title{Faster replacement for \code{GRanges} version of \code{findOverlaps}}
 \usage{
 gr.findoverlaps(query, subject, ignore.strand = TRUE, first = FALSE,
-  qcol = NULL, scol = NULL, max.chunk = 1e+13,
+  qcol = NULL, scol = NULL,
   foverlaps = ifelse(is.na(as.logical(Sys.getenv("GRFO_FOVERLAPS"))), FALSE,
   as.logical(Sys.getenv("GRFO_FOVERLAPS"))) & exists("foverlaps"),
   pintersect = NA, verbose = FALSE, type = "any", by = NULL,
-  mc.cores = 1, return.type = "same", ...)
+  return.type = "same", ...)
 }
 \arguments{
 \item{query}{Query \code{GRanges} pile}
@@ -24,11 +24,9 @@ gr.findoverlaps(query, subject, ignore.strand = TRUE, first = FALSE,
 
 \item{scol}{\code{character} vector of subject meta-data columns to add to results}
 
-\item{max.chunk}{Maximum number of ranges to consider in one chunk (to keep down memory) [1e13]}
+\item{foverlaps}{Use \code{data.table::foverlaps} instead of \code{IRanges::findOverlaps}. Overrules \code{pintersect}}
 
-\item{foverlaps}{Use \code{data.table::foverlaps} instead of \code{IRanges::findOverlaps}}
-
-\item{pintersect}{TODO}
+\item{pintersect}{Use \code{IRanges::pintersect} function. Useful for overlaps with many, many chromosomes. Default is TRUE if \code{length(unique(seqnames)) > 50}}
 
 \item{verbose}{Increase the verbosity during runtime [FALSE]}
 
@@ -36,9 +34,7 @@ gr.findoverlaps(query, subject, ignore.strand = TRUE, first = FALSE,
 
 \item{by}{Meta-data column to consider when performing overlaps [NULL]}
 
-\item{mc.cores}{Number of cores to use, if ranges exceed \code{max.chunk} [1]}
-
-\item{return.type}{TODO}
+\item{return.type}{Select data format to return: \code{same}, \code{data.table}, \code{GRanges}}
 
 \item{...}{TODO}
 }

@@ -948,8 +948,8 @@ gr.flatten = function(gr, gap = 0)
       return(data.frame(start = 1, end = width(gr)))
     else
       {
-        starts = as.integer(cumsum(c(1, width(gr[1:(length(gr)-1)])+gap)))
-        ends = as.integer(starts+width(gr)-1)
+        starts = as.numeric(cumsum(c(1, width(gr[1:(length(gr)-1)])+gap)))
+        ends = as.numeric(starts+width(gr)-1)
 		return(cbind(data.frame(start=starts, end=ends), as.data.frame(mcols(gr))))
       }
 }
@@ -1003,7 +1003,6 @@ gr.flipstrand <- function(gr)
 #' @export
 gr.tile = function(gr, w = 1e3)
   {
-
     numw = tile.id = query.id = NULL ## getting past NOTE
     if (!is(gr, 'GRanges'))
       gr = si2gr(gr);
@@ -1027,98 +1026,6 @@ gr.tile = function(gr, w = 1e3)
     out = GRanges(rep(as.character(seqnames(gr)), ws), IRanges(start, end), strand = strand, query.id = ix[dt$query.id], tile.id = 1:length(start), seqinfo = seqinfo(gr))
 
     return(out)
-}
-
-
-#' gr.flatmap
-#'
-#' Takes \code{GRanges} pile and maps onto a flattened coordinate system defined by windows (GRanges object)
-#' a provided "gap" (in sequence units).  If squeeze == TRUE then will additionally squeeze ranges into xlim.
-#'
-#' output is list with two fields corresponding to data frames:
-#' $grl.segs = data frame of input gr's "lifted" onto new flattened coordinate space (NOTE: nrow of this not necessarily equal to length(gr))
-#' $window.segs = the coordinates of input windows in the new flattened (and squeezed) space
-#' @param gr \code{GRanges} pile to flatten
-#' @param windows \code{GRanges} pile of windows defining the coordinate system
-#' @param gap TODO
-#' @param strand.agnostic TODO
-#' @param squeeze TODO
-#' @param xlim TODO
-#' @param pintersect TODO
-#' @return TODO
-#' @name gr.flatmap
-#' @export
-gr.flatmap = function(gr, windows, gap = 0, strand.agnostic = TRUE, squeeze = FALSE, xlim = c(0, 1), pintersect=FALSE)
-  {
-    if (strand.agnostic)
-      strand(windows) = "*"
-
-    ## now flatten "window" coordinates, so we first map gr to windows
-    ## (replicating some gr if necessary)
-#    h = findOverlaps(gr, windows)
-
-    h = gr.findoverlaps(gr, windows, pintersect=pintersect);
-
-    window.segs = gr.flatten(windows, gap = gap)
-
-    grl.segs = as.data.frame(gr);
-    grl.segs = grl.segs[values(h)$query.id, ];
-    grl.segs$query.id = values(h)$query.id;
-    grl.segs$window = values(h)$subject.id
-    grl.segs$start = start(h);
-    grl.segs$end = end(h);
-    grl.segs$pos1 = pmax(window.segs[values(h)$subject.id, ]$start,
-      window.segs[values(h)$subject.id, ]$start + grl.segs$start - start(windows)[values(h)$subject.id])
-    grl.segs$pos2 = pmin(window.segs[values(h)$subject.id, ]$end,
-      window.segs[values(h)$subject.id, ]$start + grl.segs$end - start(windows)[values(h)$subject.id])
-    grl.segs$chr = grl.segs$seqnames
-
-    if (squeeze)
-      {
-        min.win = min(window.segs$start)
-        max.win = max(window.segs$end)
-        grl.segs$pos1 = affine.map(grl.segs$pos1, xlim = c(min.win, max.win), ylim = xlim)
-        grl.segs$pos2 = affine.map(grl.segs$pos2, xlim = c(min.win, max.win), ylim = xlim)
-        window.segs$start = affine.map(window.segs$start, xlim = c(min.win, max.win), ylim = xlim)
-        window.segs$end = affine.map(window.segs$end, xlim = c(min.win, max.win), ylim = xlim)
-       }
-
-    return(list(grl.segs = grl.segs, window.segs = window.segs))
-  }
-
-#' affine.map
-#'
-#' affinely maps 1D points in vector x from interval xlim to interval ylim,
-#' ie takes points that lie in
-#' interval xlim and mapping onto interval ylim using linear / affine map defined by:
-#' (x0,y0) = c(xlim(1), ylim(1)),
-#' (x1,y1) = c(xlim(2), ylim(2))
-#' (using two point formula for line)
-#' useful for plotting.
-#'
-#' if cap.max or cap.min == TRUE then values outside of the range will be capped at min or max
-#' @keywords internal
-affine.map = function(x, ylim = c(0,1), xlim = c(min(x), max(x)), cap = FALSE, cap.min = cap, cap.max = cap)
-{
-  #  xlim[2] = max(xlim);
-  #  ylim[2] = max(ylim);
-
-  if (xlim[2]==xlim[1])
-    y = rep(mean(ylim), length(x))
-  else
-    y = (ylim[2]-ylim[1]) / (xlim[2]-xlim[1])*(x-xlim[1]) + ylim[1]
-
-  if (cap.min)
-    y[x<min(xlim)] = ylim[which.min(xlim)]
-  else
-    y[x<min(xlim)] = NA;
-
-  if (cap.max)
-    y[x>max(xlim)] = ylim[which.max(xlim)]
-  else
-    y[x>max(xlim)] = NA;
-
-  return(y)
 }
 
 #' Faster replacement for \code{GRanges} version of \code{findOverlaps}
@@ -1150,27 +1057,25 @@ affine.map = function(x, ylim = c(0,1), xlim = c(min(x), max(x)), cap = FALSE, c
 #' @param first TODO
 #' @param qcol \code{character} vector of query meta-data columns to add to results
 #' @param scol \code{character} vector of subject meta-data columns to add to results
-#' @param max.chunk Maximum number of ranges to consider in one chunk (to keep down memory) [1e13]
-#' @param foverlaps Use \code{data.table::foverlaps} instead of \code{IRanges::findOverlaps}
-#' @param pintersect TODO
+#' @param foverlaps Use \code{data.table::foverlaps} instead of \code{IRanges::findOverlaps}. Overrules \code{pintersect}
+#' @param pintersect Use \code{IRanges::pintersect} function. Useful for overlaps with many, many chromosomes. Default is TRUE if \code{length(unique(seqnames)) > 50}
 #' @param verbose Increase the verbosity during runtime [FALSE]
 #' @param type TODO
 #' @param by Meta-data column to consider when performing overlaps [NULL]
-#' @param mc.cores Number of cores to use, if ranges exceed \code{max.chunk} [1]
-#' @param return.type TODO
+#' @param return.type Select data format to return: \code{same}, \code{data.table}, \code{GRanges}
 #' @param ... TODO
 #' @return \code{GRanges} pile of the intersection regions, with \code{query.id} and \code{subject.id} marking sources
 #' @export
 gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE,
     qcol = NULL, ## any query meta data columns to add to result
     scol = NULL, ## any subject meta data columns to add to resultx
-    max.chunk = 1e13,
+    ###max.chunk = 1e13, ## broken, see note below
     foverlaps = ifelse(is.na(as.logical(Sys.getenv('GRFO_FOVERLAPS'))), FALSE, as.logical(Sys.getenv('GRFO_FOVERLAPS'))) & exists('foverlaps'),
     pintersect = NA,
     verbose = FALSE,
     type = 'any',
     by = NULL,
-    mc.cores = 1,
+    ###mc.cores = 1,
     return.type = 'same',
     ...)
   {
@@ -1216,36 +1121,40 @@ gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE,
     if (!(by %in% names(values(query)) & by %in% names(values(subject))))
       stop('"by" field must be meta data column of both query and subject')
 
-    if ((as.numeric(length(query)) * as.numeric(length(subject))) > max.chunk)
-      {
-        if (verbose)
-          cat('Overflow .. computing overlaps in chunks.  Adjust max.chunk parameter to gr.findoverlaps to avoid chunked computation\n')
-        chunk.size = floor(sqrt(max.chunk));
-        ix1 = c(seq(1, length(query), chunk.size), length(query)+1)
-        ix2 = c(seq(1, length(subject), chunk.size), length(subject)+1)
-        ij = cbind(rep(1:(length(ix1)-1), length(ix2)-1), rep(1:(length(ix2)-1), each = length(ix1)-1))
-        if (verbose)
-          print(paste('Number of chunks:', nrow(ij)))
-
-        out = do.call('c', mclapply(1:nrow(ij),
-            function(x)
-                        {
-                          if (verbose)
-                            cat(sprintf('chunk i = %s-%s (%s), j = %s-%s (%s)\n', ix1[ij[x,1]], ix1[ij[x,1]+1]-1, length(query),
-                                        ix2[ij[x,2]], (ix2[ij[x,2]+1]-1), length(subject)))
-                          i.chunk = ix1[ij[x,1]]:(ix1[ij[x,1]+1]-1)
-                          j.chunk = ix2[ij[x,2]]:(ix2[ij[x,2]+1]-1)
-                          out = gr.findoverlaps(query[i.chunk], subject[j.chunk],  ignore.strand = ignore.strand, first = first, pintersect=pintersect, by = by, qcol = qcol, verbose = verbose, foverlaps = foverlaps, scol = scol, type = type, ...)
-                          out$query.id = i.chunk[out$query.id]
-                          out$subject.id = j.chunk[out$subject.id]
-                          return(out)
-                        }, mc.cores=mc.cores))
-
-        convert = FALSE
-        if ((return.type == 'same' & is(query, 'data.table')) | return.type == 'data.table')
-            out = gr2dt(out)
-        return(out)
-      }
+    ### @param mc.cores Number of cores to use, if ranges exceed \code{max.chunk} [1]
+    ### BROKEN @param max.chunk Maximum number of ranges to consider in one chunk (to keep down memory) [1e13]
+    ## Jeremiah 3/8/16 - This is broken, as the output of gr.findoverlaps is different
+    ## depending on max.chunk. Only support one chunk for now
+    # if ((as.numeric(length(query)) * as.numeric(length(subject))) > max.chunk)
+    #   {
+    #     if (verbose)
+    #       cat('Overflow .. computing overlaps in chunks.  Adjust max.chunk parameter to gr.findoverlaps to avoid chunked computation\n')
+    #     chunk.size = floor(sqrt(max.chunk));
+    #     ix1 = c(seq(1, length(query), chunk.size), length(query)+1)
+    #     ix2 = c(seq(1, length(subject), chunk.size), length(subject)+1)
+    #     ij = cbind(rep(1:(length(ix1)-1), length(ix2)-1), rep(1:(length(ix2)-1), each = length(ix1)-1))
+    #     if (verbose)
+    #       print(paste('Number of chunks:', nrow(ij)))
+    #
+    #     out = do.call('c', mclapply(1:nrow(ij),
+    #         function(x)
+    #                     {
+    #                       if (verbose)
+    #                         cat(sprintf('chunk i = %s-%s (%s), j = %s-%s (%s)\n', ix1[ij[x,1]], ix1[ij[x,1]+1]-1, length(query),
+    #                                     ix2[ij[x,2]], (ix2[ij[x,2]+1]-1), length(subject)))
+    #                       i.chunk = ix1[ij[x,1]]:(ix1[ij[x,1]+1]-1)
+    #                       j.chunk = ix2[ij[x,2]]:(ix2[ij[x,2]+1]-1)
+    #                       out = gr.findoverlaps(query[i.chunk], subject[j.chunk],  ignore.strand = ignore.strand, first = first, pintersect=pintersect, by = by, qcol = qcol, verbose = verbose, foverlaps = foverlaps, scol = scol, type = type, ...)
+    #                       out$query.id = i.chunk[out$query.id]
+    #                       out$subject.id = j.chunk[out$subject.id]
+    #                       return(out)
+    #                     }, mc.cores=mc.cores))
+    #
+    #     convert = FALSE
+    #     if ((return.type == 'same' & is(query, 'data.table')) | return.type == 'data.table')
+    #         out = gr2dt(out)
+    #     return(out)
+    #   }
 
   if (foverlaps)
       {
@@ -1290,13 +1199,12 @@ gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE,
           querydt = querydt[start<=end, ]
           subjectdt = subjectdt[start<=end, ]
 
-          querydt = querydt[, c('query.id', by), with = F]
-          subjectdt = subjectdt[, c('subject.id', by), with = F]
+          querydt = querydt[, c('query.id', by), with = FALSE]
+          subjectdt = subjectdt[, c('subject.id', by), with = FALSE]
           setkeyv(querydt, by)
           setkeyv(subjectdt, by)
 
-
-          h.df = foverlaps(querydt, subjectdt, by.x = by, by.y = by, mult = 'all', type = 'any', verbose = verbose)
+          h.df = data.table::foverlaps(querydt, subjectdt, by.x = by, by.y = by, mult = 'all', type = 'any', verbose = verbose)
           h.df = h.df[!is.na(subject.id) & !is.na(query.id), ]
           h.df[, start := pmax(start, i.start)]
           h.df[, end := pmin(end, i.end)]
@@ -1454,7 +1362,7 @@ gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE,
                if (!is.null(scol))
                    values(out.gr) = cbind(values(out.gr), values(subject)[out.gr$subject.id, scol, drop = FALSE])
 
-               return(out.gr)
+               return(sort(out.gr))
            }
        else
          return(GRanges(seqlengths = seqlengths(query)))
