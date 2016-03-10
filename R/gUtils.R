@@ -623,7 +623,7 @@ grbind = function(x, ...)
             out = tryCatch(do.call('c', bare.grs), error = function(e) NULL)
 
             if (is.null(out) | is.list(out)) ## now we are really reaching
-                out = seg2gr(do.call('rrbind2', lapply(bare.grs, as.data.frame)), seqlengths = sl.new)[, c()]
+                out = seg2gr(do.call('rrbind', lapply(bare.grs, as.data.frame)), seqlengths = sl.new)[, c()]
         }
 
 
@@ -633,7 +633,7 @@ grbind = function(x, ...)
         vals[ix] = lapply(which(ix), function(x) data.frame(col.4214124124124 = rep(NA, length(grs[[x]]))))
 
     if (!force.rrbind)
-      tmp = tryCatch(do.call('rrbind2', vals), error = function(e) NULL)
+      tmp = tryCatch(do.call('rrbind', vals), error = function(e) NULL)
     else
         tmp = NULL
 
@@ -707,7 +707,7 @@ grlbind = function(...)
     #       out = grls.new[[1]]
     #   }
 
-    out.val = do.call('rrbind2', grls.vals)
+    out.val = do.call('rrbind', grls.vals)
     out.val$dummy241421 = NULL
     GenomicRanges::mcols(out) <- out.val
 
@@ -1824,14 +1824,17 @@ grl.pivot = function(x)
 }
 
 
-#' Improved rbind for intersecting columns of data.frames or data.tables
+#' Improved \code{rbind} for intersecting/union columns of data.frames or data.tables
 #'
-#' like rbind, but takes the intersecting columns of the dfs
+#' Like \code{rbind}, but takes the intersecting columns of the data
 #' rrbind = function(df1, df2, [df3 ... etc], )
-#' @param union if union flag is used then will take union of columns (and put NA's for columns of df1 not in df2 and vice versa). Default TRUE
-#' @keywords internal
+#' @param ... Any number of \code{data.frame} or \code{data.table} objects
+#' @param union Take union of columns (and put NA's for columns of df1 not in df2 and vice versa). [TRUE]
+#' @param as.data.table Return the binded data as a \code{data.table}
+#' @return A\code{data.frame} or \code{data.table} of the rbind operation
+#' @export
 #' @importFrom data.table data.table rbindlist
-rrbind2 = function(..., union = TRUE, as.data.table = FALSE)
+rrbind = function(..., union = TRUE, as.data.table = FALSE)
 {
   dfs = list(...);  # gets list of data frames
   dfs = dfs[!sapply(dfs, is.null)]
