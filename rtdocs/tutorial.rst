@@ -1,6 +1,8 @@
 Tutorial
 --------
 
+gr1 and gr2 are GRanges objects 
+
 ``gr1 %^% gr2``        
 
 gives a length(gr1) logical vector with TRUE if gr1 intersects some interval in gr2
