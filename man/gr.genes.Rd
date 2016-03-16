@@ -3,10 +3,10 @@
 \docType{data}
 \name{gr.genes}
 \alias{gr.genes}
-\title{RefSeq genes from UCSC Table Browser hg19}
+\title{RefSeq genes from UCSC Table Browser hg19, subsampled to 10,000 genes}
 \format{\code{GRanges}}
 \description{
-RefSeq genes from UCSC Table Browser hg19
+RefSeq genes from UCSC Table Browser hg19, subsampled to 10,000 genes
 }
 \keyword{data}
 

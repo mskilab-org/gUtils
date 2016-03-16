@@ -51,7 +51,7 @@ test_that("si2gr", {
 })
 
 test_that("grbind", {
-  expect_equal(length(grbind(gr.genes, gr.DNAase)), 310779)
+  expect_equal(length(grbind(gr.genes, gr.DNAase)), 20000)
   expect_equal(colnames(mcols(grbind(gr.genes, gr.DNAase)))[10], "cdsStartStat")
 })
 
@@ -61,8 +61,8 @@ test_that("gr.dice", {
 
 test_that("gr.findoverlaps", {
   fo <- gr.findoverlaps(gr.genes, gr.DNAase, verbose=TRUE)
-  expect_equal(start(fo)[3], 762902)
-  expect_equal(length(fo), 256058)
+  expect_equal(start(fo)[3], 5946813)
+  expect_equal(length(fo), 1856)
 })
 
 test_that("gr.findoverlaps ignore.strand", {
@@ -114,7 +114,7 @@ test_that("gr.findoverlaps pintersect",{
 })
 
 test_that("gr.in", {
-  expect_equal(sum(gr.in(gr.genes, gr.DNAase)),35570)
+  expect_equal(sum(gr.in(gr.genes, gr.DNAase)),1309)
 })
 
 test_that("gr2dt works as expected", {
@@ -143,7 +143,7 @@ test_that("dt2gr", {
 test_that("gr.sample", {
   set.seed(137)
   gg <- gr.sample(reduce(gr.genes), 10, len=1)
-  expect_equal(start(gg)[1], 77055451)
+  expect_equal(start(gg)[1], 131788860)
   expect_equal(unique(width(gg)), 1)
 
   expect_error(gr.sample(reduce(gr.genes), c(1:3), len=5))
@@ -162,7 +162,7 @@ test_that("gr.nochr",{
 })
 
 test_that("gr.string", {
-  expect_equal(gr.string(gr.genes)[1], "1:67000041-67208778+")
+  expect_equal(gr.string(gr.genes)[1], "12:10772742-10787217-")
 })
 
 test_that("gr.fix", {
@@ -206,7 +206,7 @@ test_that("grl.pivot", {
   gg <- grl.pivot(grl.hiC)
   expect_equal(as.character(class(gg)), "GRangesList")
   expect_equal(length(gg),2)
-  expect_equal(length(gg[[1]]), 537341)
+  expect_equal(length(gg[[1]]), 10000)
 })
 
 test_that("gr.tile", {
@@ -214,9 +214,10 @@ test_that("gr.tile", {
   expect_equal(length(gr.tile(GRanges())), 0)
 })
 
-#test_that("grl.string", {
-#  expect_equal(grl.string(grl.hiC[1:5])[1]=="14:29864023-29864023+,14:19001056-19001056+", TRUE)
-#})
+test_that("grl.string", {
+  exp_result = structure(names="450448", "14:66569495-66569495-,14:66716403-66716403+")
+  expect_identical(grl.string(grl.hiC[1:5])[1], exp_result)
+})
 
 test_that("grl.unlist", {
   gg <- grl.unlist(grl.hiC)

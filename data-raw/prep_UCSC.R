@@ -62,4 +62,8 @@ gr1.hg19 <- gr1.hg19[as.character(gr1.hg19$id) %in% names(tab[tab==2])]
 grl.hiC <- GenomicRanges::split(gr1.hg19, gr1.hg19$id)
 
 ## save it
-save(gr.genes, gr.DNAase, si, grl.hiC, file="data/grdata.rda", compress="gzip")
+set.seed(137)
+gr.genes <- gr.genes[sample(length(gr.genes), 10000)]
+gr.DNAase <- gr.DNAase[sample(length(gr.DNAase), 10000)]
+grl.hiC <- grl.hiC[sample(length(grl.hiC), 10000)]
+save(gr.genes, gr.DNAase, si, grl.hiC, file="data/grdata.rda", compress='xz')

@@ -105,12 +105,4 @@ This section will describe additional GRanges operations provided by gUtils.
    :alt:
    :scale: 125 %
 
-``gr.refactor``
-
-.. figure:: figures/gr.refactor.png
-   :alt:
-   :scale: 125 %
-
 ``gr.tile.map``
-
-``gr.round``

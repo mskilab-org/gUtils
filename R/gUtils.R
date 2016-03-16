@@ -1,4 +1,5 @@
-#' DNAaseI hypersensitivity sites from UCSC Table Browser hg19
+#' DNAaseI hypersensitivity sites from UCSC Table Browser hg19,
+#' subsampled to 10,000 sites
 #'
 #' @name gr.DNAase
 #' @docType data
@@ -6,7 +7,7 @@
 #' @format \code{GRanges}
 NULL
 
-#' RefSeq genes from UCSC Table Browser hg19
+#' RefSeq genes from UCSC Table Browser hg19, subsampled to 10,000 genes
 #'
 #' @name gr.genes
 #' @docType data
@@ -22,7 +23,8 @@ NULL
 #' @format \code{Seqinfo}
 NULL
 
-#' HiC data for chr14 from Lieberman-Aiden 2009 (in hg19)
+#' HiC data for chr14 from Lieberman-Aiden 2009 (in hg19), subsampled
+#' to 10,000 interactions
 #'
 #' @name grl.hiC
 #' @docType data
@@ -258,63 +260,63 @@ gr.mid = function(x)
       return(x)
   }
 
-#' Round a set of GRanges to another set
+# Round a set of GRanges to another set
 #
-#' "rounds" a set of query ranges Q to a given interval set S using the following rule:
-#' 1) If q in Q is partially / fully within S then return intersection of q with S.
-#' 2) If q intersects multiple ranges in S and \code{up = F} then return the "first" range, otherwise the last range
-#' 3) If q in Q is fully outside of S (ie fully inside not S) then return the \code{start-1} (if \code{up = TRUE}) or \code{end+1} (if \code{up = F})
-#' of the matching range in not S
-#'
-#' @param Q Query \code{GRanges} (strand is ignored)
-#' @param S Subject \code{GRanges} (strand is ignored)
-#' @param up [default T] See description.
-#' @param parallel [default F] If \code{TRUE}, assumes Q and S are same length and this analysis is only performed between the corresponding Q and S pairs.
-#' @return Rounded \code{GRanges}
-#' @examples
-#' query   <- GRanges(1, IRanges(c(100,110),width=201), seqinfo=Seqinfo("1", 500))
-#' subject <- GRanges(1, IRanges(c(160,170),width=201), seqinfo=Seqinfo("1", 500))
-#' gr.round(query, subject)
-#' @export
-gr.round = function(Q, S, up = TRUE, parallel = FALSE)
-  {
-    str = strand(Q)
-    Q = gr.stripstrand(Q)
-    S = gr.stripstrand(S)
-    nS = gaps(S);
-    QS = gr.findoverlaps(Q, S)
-    tmp = gr.findoverlaps(Q, nS)
-    QnotS = nS[tmp$subject.id]
-    QnotS$query.id = tmp$query.id
-
-    if (parallel)
-      {
-        QS = QS[QS$query.id==QS$subject.id]
-        QnotS = QnotS[QnotS$query.id==QnotS$subject.id]
-      }
-
-    if (up)
-      suppressWarnings(end(QnotS) <- start(QnotS) <- end(QnotS)+1)
-    else
-      suppressWarnings(start(QnotS) <- end(QnotS) <- start(QnotS)-1)
-
-    suppressWarnings(out <- sort(grbind(QS, QnotS)))
-
-    if (up)
-      {
-        out = rev(out)
-        out = out[!duplicated(out$query.id)]
-      }
-    else
-      out = out[!duplicated(out$query.id)]
-
-    out = out[order(out$query.id)]
-    values(out) = values(Q)
-    names(out) = names(Q)
-    strand(out) = str;
-    return(out)
-  }
-
+# "rounds" a set of query ranges Q to a given interval set S using the following rule:
+# 1) If q in Q is partially / fully within S then return intersection of q with S.
+# 2) If q intersects multiple ranges in S and \code{up = F} then return the "first" range, otherwise the last range
+# 3) If q in Q is fully outside of S (ie fully inside not S) then return the \code{start-1} (if \code{up = TRUE}) or \code{end+1} (if \code{up = F})
+# of the matching range in not S
+#
+# @param Q Query \code{GRanges} (strand is ignored)
+# @param S Subject \code{GRanges} (strand is ignored)
+# @param up [default T] See description.
+# @param parallel [default F] If \code{TRUE}, assumes Q and S are same length and this analysis is only performed between the corresponding Q and S pairs.
+# @return Rounded \code{GRanges}
+# @examples
+# query   <- GRanges(1, IRanges(c(100,110),width=201), seqinfo=Seqinfo("1", 500))
+# subject <- GRanges(1, IRanges(c(160,170),width=201), seqinfo=Seqinfo("1", 500))
+# gr.round(query, subject)
+# @export
+# gr.round = function(Q, S, up = TRUE, parallel = FALSE)
+#   {
+#     str = strand(Q)
+#     Q = gr.stripstrand(Q)
+#     S = gr.stripstrand(S)
+#     nS = gaps(S);
+#     QS = gr.findoverlaps(Q, S)
+#     tmp = gr.findoverlaps(Q, nS)
+#     QnotS = nS[tmp$subject.id]
+#     QnotS$query.id = tmp$query.id
+#
+#     if (parallel)
+#       {
+#         QS = QS[QS$query.id==QS$subject.id]
+#         QnotS = QnotS[QnotS$query.id==QnotS$subject.id]
+#       }
+#
+#     if (up)
+#       suppressWarnings(end(QnotS) <- start(QnotS) <- end(QnotS)+1)
+#     else
+#       suppressWarnings(start(QnotS) <- end(QnotS) <- start(QnotS)-1)
+#
+#     suppressWarnings(out <- sort(grbind(QS, QnotS)))
+#
+#     if (up)
+#       {
+#         out = rev(out)
+#         out = out[!duplicated(out$query.id)]
+#       }
+#     else
+#       out = out[!duplicated(out$query.id)]
+#
+#     out = out[order(out$query.id)]
+#     values(out) = values(Q)
+#     names(out) = names(Q)
+#     strand(out) = str;
+#     return(out)
+#   }
+#
 
 #' Generate random GRanges on genome
 #'
@@ -808,6 +810,13 @@ gr.string = function(gr, add.chr = FALSE, mb = FALSE, round = 3, other.cols = c(
 #' @export
 grl.string = function(grl, mb= FALSE, sep = ',', ...)
   {
+
+    if (class(grl) == "GRanges")
+      return(gr.string(grl, mb=mb, ...))
+
+    if (class(grl) != "GRangesList")
+      stop("Input must be GRangesList (or GRanges, which is sent to gr.string)")
+
     gr = grl.unlist(grl)
     if (!is.null(names(grl)))
       nm = names(grl)
@@ -1730,75 +1739,74 @@ grl.unlist = function(grl)
     return(out)
   }
 
-#' grl.span
-#'
-#' Returns GRanges object representing the left / right extent of each GRL item.  In case of "chimeric" GRL items (ie that map
-#' to two chromosomes) there are two options:
-#' (1) specify "chr" chromosome as argument to subset GRL's that are on that chromosome, and compute GRL extents from this, any GRL
-#'     full outside of that chromosome will get a 0 width GRL
-#' (2) (default) allow chimeric GRL items to get an extent that is with respect to the first chromosome in that GRL
-#'
-#' If a grl item contains ranges that lie on different chromosomes, then corresponding grange will have chromosome "NA" and IRange(0, 0)
-#' @name grl.span
-#' @keywords internal
-########################
-grl.span = function(grl, chr = NULL, ir = FALSE, keep.strand = TRUE)
-  {
-    if (is.null(names(grl)))
-      names(grl) = 1:length(grl);
-
-    tmp = tryCatch(as.data.frame(grl), error = function(e) e)
-
-    if (inherits(tmp, 'error')) ## gr names are screwy so do some gymnastics
-      {
-        if (is.null(names(grl)))
-          names.grl = 1:length(grl)
-        else
-          names.grl = names(grl);
-
-        element = as.character(Rle(names.grl, sapply(grl, length)))
-        tmp.gr = unlist(grl)
-        names(tmp.gr) = NULL;
-        tmp = as.data.frame(tmp.gr);
-        tmp$element = element;
-      }
-
-    if (is.null(chr))
-      {
-        chrmap = stats::aggregate(formula = seqnames ~ element, data = tmp, FUN = function(x) x[1]);
-        chrmap = structure(as.character(chrmap[,2]), names = chrmap[,1])
-
-        if (keep.strand)
-          {
-            strmap = stats::aggregate(formula = as.character(strand) ~ element, data = tmp, FUN =
-              function(x) {y = unique(x); if (length(y)>1) return('*') else y[1]})
-            strmap = structure(as.character(strmap[,2]), names = strmap[,1])
-            str = strmap[names(grl)];
-          }
-        else
-          str = '*'
-
-        tmp = tmp[tmp$seqnames == chrmap[tmp$element], ]; ## remove all gr from each GRL item that don't map to the chr of the first gr
-        chr = chrmap[names(grl)];
-        out.gr = GRanges(chr, IRanges(1,0), seqlengths = seqlengths(grl), strand = str)
-      }
-    else
-      {
-        if (length(chr)>1)
-          warning('chr has length greater than 1, only the first element will be used')
-        tmp = tmp[tmp$seqnames == chr[1], ]
-        out.gr = rep(GRanges(chr, IRanges(1, 0)), length(grl)) # missing values
-      }
-
-    if (nrow(tmp)>0)
-      {
-        tmp = split(GRanges(tmp$seqnames, IRanges(tmp$start, tmp$end)), tmp$element)
-        out.gr[match(names(tmp), names(grl))] = GRanges(chr[names(tmp)],
-                IRanges(sapply(start(tmp), min), sapply(end(tmp), max)), strand = strand(out.gr)[match(names(tmp), names(grl))]);
-        names(out.gr) = names(grl)
-      }
-    return(out.gr)
-  }
+# grl.span
+#
+# Returns GRanges object representing the left / right extent of each GRL item.  In case of "chimeric" GRL items (ie that map
+# to two chromosomes) there are two options:
+# (1) specify "chr" chromosome as argument to subset GRL's that are on that chromosome, and compute GRL extents from this, any GRL
+#     full outside of that chromosome will get a 0 width GRL
+# (2) (default) allow chimeric GRL items to get an extent that is with respect to the first chromosome in that GRL
+#
+# If a grl item contains ranges that lie on different chromosomes, then corresponding grange will have chromosome "NA" and IRange(0, 0)
+# @name grl.span
+# @keywords internal
+# grl.span = function(grl, chr = NULL, ir = FALSE, keep.strand = TRUE)
+#   {
+#     if (is.null(names(grl)))
+#       names(grl) = 1:length(grl);
+#
+#     tmp = tryCatch(as.data.frame(grl), error = function(e) e)
+#
+#     if (inherits(tmp, 'error')) ## gr names are screwy so do some gymnastics
+#       {
+#         if (is.null(names(grl)))
+#           names.grl = 1:length(grl)
+#         else
+#           names.grl = names(grl);
+#
+#         element = as.character(Rle(names.grl, sapply(grl, length)))
+#         tmp.gr = unlist(grl)
+#         names(tmp.gr) = NULL;
+#         tmp = as.data.frame(tmp.gr);
+#         tmp$element = element;
+#       }
+#
+#     if (is.null(chr))
+#       {
+#         chrmap = stats::aggregate(formula = seqnames ~ element, data = tmp, FUN = function(x) x[1]);
+#         chrmap = structure(as.character(chrmap[,2]), names = chrmap[,1])
+#
+#         if (keep.strand)
+#           {
+#             strmap = stats::aggregate(formula = as.character(strand) ~ element, data = tmp, FUN =
+#               function(x) {y = unique(x); if (length(y)>1) return('*') else y[1]})
+#             strmap = structure(as.character(strmap[,2]), names = strmap[,1])
+#             str = strmap[names(grl)];
+#           }
+#         else
+#           str = '*'
+#
+#         tmp = tmp[tmp$seqnames == chrmap[tmp$element], ]; ## remove all gr from each GRL item that don't map to the chr of the first gr
+#         chr = chrmap[names(grl)];
+#         out.gr = GRanges(chr, IRanges(1,0), seqlengths = seqlengths(grl), strand = str)
+#       }
+#     else
+#       {
+#         if (length(chr)>1)
+#           warning('chr has length greater than 1, only the first element will be used')
+#         tmp = tmp[tmp$seqnames == chr[1], ]
+#         out.gr = rep(GRanges(chr, IRanges(1, 0)), length(grl)) # missing values
+#       }
+#
+#     if (nrow(tmp)>0)
+#       {
+#         tmp = split(GRanges(tmp$seqnames, IRanges(tmp$start, tmp$end)), tmp$element)
+#         out.gr[match(names(tmp), names(grl))] = GRanges(chr[names(tmp)],
+#                 IRanges(sapply(start(tmp), min), sapply(end(tmp), max)), strand = strand(out.gr)[match(names(tmp), names(grl))]);
+#         names(out.gr) = names(grl)
+#       }
+#     return(out.gr)
+#   }
 
 
 #' Pivot a \code{GRangesList}, inverting "x" and "y"
