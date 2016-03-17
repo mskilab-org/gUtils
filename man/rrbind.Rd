@@ -2,19 +2,22 @@
 % Please edit documentation in R/gUtils.R
 \name{rrbind}
 \alias{rrbind}
-\title{rrbind = function(df1, df2, [df3 ... etc], )}
+\title{Improved \code{rbind} for intersecting/union columns of data.frames or data.tables}
 \usage{
-rrbind(..., union = TRUE)
+rrbind(..., union = TRUE, as.data.table = FALSE)
 }
 \arguments{
-\item{...}{list of data frames to concatenate}
+\item{...}{Any number of \code{data.frame} or \code{data.table} objects}
 
-\item{union}{if union flag is used then will take union of columns (and put NA's for columns of df1 not in df2 and vice versa). Default TRUE}
+\item{union}{Take union of columns (and put NA's for columns of df1 not in df2 and vice versa). [TRUE]}
+
+\item{as.data.table}{Return the binded data as a \code{data.table}}
+}
+\value{
+A\code{data.frame} or \code{data.table} of the rbind operation
 }
 \description{
-like rbind, but takes the intersecting columns of the dfs
-}
-\details{
-if union flag is used then will take union of columns (and put NA's for columns of df1 not in df2 and vice versa)
+Like \code{rbind}, but takes the intersecting columns of the data
+rrbind = function(df1, df2, [df3 ... etc], )
 }
 

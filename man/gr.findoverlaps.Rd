@@ -2,48 +2,46 @@
 % Please edit documentation in R/gUtils.R
 \name{gr.findoverlaps}
 \alias{gr.findoverlaps}
-\title{Faster version of GRanges::findOverlaps}
+\title{Faster replacement for \code{GRanges} version of \code{findOverlaps}}
 \usage{
 gr.findoverlaps(query, subject, ignore.strand = TRUE, first = FALSE,
-  qcol = NULL, scol = NULL, max.chunk = 1e+13,
+  qcol = NULL, scol = NULL,
   foverlaps = ifelse(is.na(as.logical(Sys.getenv("GRFO_FOVERLAPS"))), FALSE,
   as.logical(Sys.getenv("GRFO_FOVERLAPS"))) & exists("foverlaps"),
-  pintersect = NA, verbose = F, type = "any", by = NULL, mc.cores = 1,
+  pintersect = NA, verbose = FALSE, type = "any", by = NULL,
   return.type = "same", ...)
 }
 \arguments{
-\item{query}{Query \code{GRanges}}
+\item{query}{Query \code{GRanges} pile}
 
-\item{subject}{Subject \code{GRanges}}
+\item{subject}{Subject \code{GRanges} pile}
 
-\item{ignore.strand}{[Default TRUE] Ignore the strand when doing overlap queries}
+\item{ignore.strand}{Don't consider strand information during overlaps [TRUE]}
 
-\item{first}{[Default FALSE]}
+\item{first}{TODO}
 
-\item{qcol}{any query metadata columns to add to result}
+\item{qcol}{\code{character} vector of query meta-data columns to add to results}
 
-\item{scol}{any subject metadata columns to add to result}
+\item{scol}{\code{character} vector of subject meta-data columns to add to results}
 
-\item{max.chunk}{[Default 1e13] If query is bigger than this, chunks into smaller pieces and sends to multi-cores}
+\item{foverlaps}{Use \code{data.table::foverlaps} instead of \code{IRanges::findOverlaps}. Overrules \code{pintersect}}
 
-\item{foverlaps}{Should we use data.table::foverlaps? Auto detects this}
+\item{pintersect}{Use \code{IRanges::pintersect} function. Useful for overlaps with many, many chromosomes. Default is TRUE if \code{length(unique(seqnames)) > 50}}
 
-\item{pintersect}{Should we use IRanges::pintersect? Auto determines this if NA}
+\item{verbose}{Increase the verbosity during runtime [FALSE]}
 
-\item{verbose}{Default FALSE}
+\item{type}{TODO}
 
-\item{type}{Default "any"}
+\item{by}{Meta-data column to consider when performing overlaps [NULL]}
 
-\item{by}{Do overlaps within groups}
+\item{return.type}{Select data format to return: \code{same}, \code{data.table}, \code{GRanges}}
 
-\item{mc.cores}{Default 1. Only active if exceeded max.chunk (ideally should not use)}
-
-\item{return.type}{Default "same"}
-
-\item{...}{= additional args for findOverlaps (IRanges version)}
+\item{...}{TODO}
+}
+\value{
+\code{GRanges} pile of the intersection regions, with \code{query.id} and \code{subject.id} marking sources
 }
 \description{
-(faster) replacement for GRanges version of findOverlaps
 returns granges of matches with two additional fields
 $query.id - index of matching query
 $subject.id - index of matching subject
@@ -56,5 +54,7 @@ max.chunk controls the maximum number of range pairs that compared at once
 Optional "by" field is a character scalar that specifies a metadata column present in both query and subject
 that will be used to additionally restrict matches, i.e. to pairs of ranges that overlap and also
 have the same values of their "by" fields
+
+... = additional args for \code{findOverlaps} (IRanges version)
 }
 

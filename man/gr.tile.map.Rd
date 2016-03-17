@@ -4,19 +4,20 @@
 \alias{gr.tile.map}
 \title{gr.tile.map}
 \usage{
-gr.tile.map(query, subject, mc.cores = 1, verbose = FALSE)
+gr.tile.map(query, subject, verbose = FALSE)
 }
 \arguments{
-\item{query}{Query}
+\item{query}{Query \code{GRanges} pile}
 
-\item{subject}{Subject}
+\item{subject}{Subject \code{GRanges} pile}
 
-\item{mc.cores}{number of cores}
-
-\item{verbose}{Default FALSE}
+\item{verbose}{Increase the verbosity of the output}
+}
+\value{
+TODO
 }
 \description{
-Given two tilings of the genome (eg at different resolution)
+Given two tilings of the genome (e.g. at different resolution)
 query and subject outputs a length(query) list whose items are integer vectors of indices in subject
 overlapping that overlap that query (strand non-specific)
 }

@@ -3,7 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-elcome to gUtils's documentation!
+Welcome to gUtils's documentation!
 ==================================
 
 Contents:
@@ -12,11 +12,10 @@ Contents:
    :maxdepth: 2
 
    introduction
-   hello
    rangeops.rst
    data.rst
    utils.rst
-   rsam.rst
+   tutorial.rst
 
 Indices and tables
 ==================

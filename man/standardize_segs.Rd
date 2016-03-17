@@ -4,13 +4,15 @@
 \alias{standardize_segs}
 \title{standardize_segs}
 \usage{
-standardize_segs(seg, chr = F)
+standardize_segs(seg, chr = FALSE)
 }
 \description{
 (data frame seg function)
 }
 \details{
 Takes and returns segs data frame standardized to a single format (ie $chr, $pos1, $pos2)
-if chr = T will ensure "chr" prefix is added to chromossome(if does not exist)
+
+if chr = TRUE will ensure "chr" prefix is added to chromossome(if does not exist)
 }
+\keyword{internal}
 

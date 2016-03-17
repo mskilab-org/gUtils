@@ -2,29 +2,27 @@
 % Please edit documentation in R/gUtils.R
 \name{gr.match}
 \alias{gr.match}
-\title{Faster implementatin of GenomicRangs::match}
+\title{Faster \code{GenomicRanges::match}}
 \usage{
 gr.match(query, subject, max.slice = Inf, verbose = FALSE, mc.cores = 1,
   ...)
 }
 \arguments{
-\item{query}{\code{GRanges} object as query}
+\item{query}{Query \code{GRanges} pile}
 
-\item{subject}{\code{GRanges} object as subject}
+\item{subject}{Subject \code{GRanges} pile}
 
-\item{max.slice}{Default Inf. If query is bigger than this, chunk into smaller on different cores}
+\item{max.slice}{Maximum number of ranges to consider at once [Inf]}
 
-\item{verbose}{Default FALSE}
+\item{verbose}{Increase the verbosity during runtime}
 
-\item{mc.cores}{Default 1. Only works if exceeded max.slice}
+\item{mc.cores}{Number of cores to use, if ranges exceed \code{max.slice}}
 
-\item{...}{arguments to be passed to \link{gr.findoverlaps}}
-}
-\value{
-returns indices of query in subject or NA if none found
+\item{...}{Additional arguments to be passed along to \code{gr.findoverlaps}}
 }
 \description{
 Faster implementation of GRanges match (uses gr.findoverlaps)
 returns indices of query in subject or NA if none found
+... = additional args for findOverlaps (IRanges version)
 }
 

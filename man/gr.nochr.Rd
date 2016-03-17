@@ -7,7 +7,7 @@
 gr.nochr(gr)
 }
 \arguments{
-\item{gr}{GRanges with chr seqlevel prefixes}
+\item{gr}{\code{GRanges} with chr seqlevel prefixes}
 }
 \value{
 GRanges without chr seqlevel prefixes

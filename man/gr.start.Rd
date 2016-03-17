@@ -14,19 +14,25 @@ gr.start(x, width = 1, force = FALSE, ignore.strand = TRUE,
 
 \item{force}{[default = F] Allows returned \code{GRanges} to have ranges outside of its \code{Seqinfo} bounds.}
 
-\item{ignore.strand}{[default = T] If set to \code{FALSE}, will extend '-' strands from the other direction.}
+\item{ignore.strand}{If set to \code{FALSE}, will extend '-' strands from the other direction [TRUE].}
 
 \item{clip}{[default = F] Trims returned \code{GRanges} so that it does not extend beyond bounds of the input \code{GRanges}}
 }
 \value{
-GRanges object of width 1 ranges representing start of each genomic range in the input.
+\code{GRanges} object of width 1 ranges representing start of each genomic range in the input.
 }
 \description{
-Alternative to \code{flank} that will provide start positions *within* intervals
+Get GRanges corresponding to beginning of range
 }
 \examples{
+<<<<<<< HEAD
   \dontrun{st <- c(1,2,3)
   si <- Seqinfo("1",3)
   gr.start(GRanges(1, IRanges(st, width=101), seqinfo=si), width=20)}
+=======
+library(gUtils)
+gr.start(gr.DNAase, width=200)
+gr.start(gr.DNAase, width=200, clip=TRUE)
+>>>>>>> 60083aa350ab9c4388ffd83f1d307cb2446af96b
 }
 

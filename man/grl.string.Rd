@@ -2,22 +2,30 @@
 % Please edit documentation in R/gUtils.R
 \name{grl.string}
 \alias{grl.string}
-\title{grl.string}
+\title{Create string representation of \code{GRangesList}}
 \usage{
-grl.string(grl, sep = ",", ...)
+grl.string(grl, mb = FALSE, sep = ",", ...)
 }
 \arguments{
-\item{grl}{GenomicRangesList to get strings from}
+\item{grl}{\code{GRangesList} to convert to string vector}
 
-\item{sep}{[Default ","]}
+\item{mb}{Will return as MB and round to "round" [FALSE]}
 
-\item{...}{dummy}
+\item{sep}{Character to separate single \code{GRanges} ranges [,]}
+
+\item{...}{Additional arguments to be passed to \code{gr.string}}
 }
+<<<<<<< HEAD
 \description{
 return ucsc style interval string corresponding to each gr in each grl, one line per grl item, with gr's in 
 grl separated by sep
+=======
+\value{
+Character vector where each element is a \code{GRanges} pile corresponding to a single \code{GRangesList} element
+>>>>>>> 60083aa350ab9c4388ffd83f1d307cb2446af96b
 }
-\details{
-if mb will return as MB and round to "round"
+\description{
+Return ucsc style interval string corresponding to each \code{GRanges} in the \code{GRangesList}.
+One line per per \code{GRangesList} item. \code{GRanges} elements themselves are separated by \code{sep}
 }
 

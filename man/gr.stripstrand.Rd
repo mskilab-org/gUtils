@@ -6,10 +6,8 @@
 \usage{
 gr.stripstrand(gr)
 }
-\arguments{
-\item{gr}{\code{GRanges} to remove the strand from}
-}
 \description{
 sets strand to "*"
 }
+\keyword{internal}
 

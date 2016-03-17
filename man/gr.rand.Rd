@@ -4,26 +4,28 @@
 \alias{gr.rand}
 \title{Generate random GRanges on genome}
 \usage{
-gr.rand(w, genome = Seqinfo(names(hg_seqlengths()), hg_seqlengths()))
+gr.rand(w, genome)
 }
 \arguments{
 \item{w}{Vector of widths (length of w determines length of output)}
 
-\item{genome}{Genome which can be a \code{GRanges}, \code{GRangesList}, or \code{Seqinfo} object. Default is "hg19" from the \code{\link{BSgenome}} package.}
+\item{genome}{Genome which can be a \code{GRanges}, \code{GRangesList}, or \code{Seqinfo} object. Default is "hg19" from the \code{BSGenome} package.}
 }
 \value{
 \code{GRanges} with random intervals on the specifed "chromosomes"
 }
 \description{
-Randomly generates non-overlapping GRanges with supplied widths on supplied genome
+Randomly generates non-overlapping GRanges with supplied widths on supplied genome.
+Seed can be supplied with \code{set.seed}
 }
 \note{
 This function is currently quite slow, needs optimization
 }
 \examples{
 ## Generate a single random interval of width 10, on "chr" of length 1000
-\dontrun{gr.rand(10, Seqinfo("1", 1000))
+gr.rand(10, Seqinfo("1", 1000))
 ## Generate 5 non-overlapping regions of width 10 on hg19
-gr.rand(rep(10,5))}
+library(BSgenome.Hsapiens.UCSC.hg19)
+gr.rand(rep(10,5), Hsapiens)
 }
 

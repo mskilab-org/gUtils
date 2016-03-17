@@ -2,26 +2,22 @@
 % Please edit documentation in R/gUtils.R
 \name{gr.string}
 \alias{gr.string}
-\title{gr.string}
+\title{Return UCSC style interval string corresponding to \code{GRanges} pile (ie chr:start-end)}
 \usage{
-gr.string(gr, add.chr = FALSE, mb = FALSE, round = 3, other.cols = c(),
-  pretty = FALSE)
+gr.string(gr, add.chr = FALSE, mb = FALSE, round = 3, other.cols = c())
 }
 \arguments{
-\item{gr}{dummy}
+\item{gr}{\code{GRanges} pile to get intervals from}
 
-\item{add.chr}{dummy}
+\item{add.chr}{Prepend seqnames with "chr" [FALSE]}
 
-\item{mb}{dummy}
+\item{mb}{Round to the nearest megabase [FALSE]}
 
-\item{round}{dummy}
+\item{round}{If \code{mb} supplied, how many digits to round to}
 
-\item{other.cols}{dummyz}
+\item{other.cols}{TODO}
 }
 \description{
-return ucsc style interval string corresponding to gr pile (ie chr:start-end)
-}
-\details{
-if mb will return as MB and round to "round"
+If mb will return as MB and round to "round"
 }
 

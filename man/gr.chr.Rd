@@ -2,7 +2,7 @@
 % Please edit documentation in R/gUtils.R
 \name{gr.chr}
 \alias{gr.chr}
-\title{Add "chr" to GRanges seqlevels}
+\title{Prepend "chr" to GRanges seqlevels}
 \usage{
 gr.chr(gr)
 }
@@ -10,9 +10,13 @@ gr.chr(gr)
 \item{gr}{GRanges object to append 'chr' to}
 }
 \value{
-Identical GRanges, but with 'chr' appended to each seqlevel
+Identical \code{GRanges}, but with 'chr' prepended to each seqlevel
 }
 \description{
-Adds "chr" to seqlevels of gr / grl object to make compatible with UCSC genome
+Prepend "chr" to GRanges seqlevels
+}
+\examples{
+library(gUtils)
+gr.chr(GRanges(c(1,"chrX"), IRanges(c(1,2), 1)))
 }
 

@@ -9,4 +9,5 @@ gr.sub(gr, a = c("(^chr)(\\\\.1$)", "MT"), b = c("", "M"))
 \description{
 will apply gsub to seqlevels of gr, by default removing 'chr', and "0.1" suffixes, and replacing "MT" with "M"
 }
+\keyword{internal}
 

@@ -11,11 +11,11 @@ gr.end(x, width = 1, force = FALSE, ignore.strand = TRUE, clip = TRUE)
 
 \item{width}{[default = 1] Specify subranges of greater width including the start of the range.}
 
-\item{force}{[default = FALSE] Allows returned \code{GRanges} to have ranges outside of its \code{Seqinfo} bounds.}
+\item{force}{[default = F] Allows returned \code{GRanges} to have ranges outside of its \code{Seqinfo} bounds.}
 
-\item{ignore.strand}{[default = T] If set to \code{FALSE}, will extend '-' strands from the other direction.}
+\item{ignore.strand}{[default = TRUE] If set to \code{FALSE}, will extend '-' strands from the other direction.}
 
-\item{clip}{[default = FALSE] Trims returned \code{GRanges} so that it does not extend beyond bounds of the input \code{GRanges}}
+\item{clip}{[default = F] Trims returned \code{GRanges} so that it does not extend beyond bounds of the input \code{GRanges}}
 }
 \value{
 GRanges object of width 1 ranges representing end of each genomic range in the input.
@@ -24,8 +24,13 @@ GRanges object of width 1 ranges representing end of each genomic range in the i
 Alternative to \code{flank} that will provide end positions *within* intervals
 }
 \examples{
+<<<<<<< HEAD
   \dontrun{st <- c(1,2,3)
   si <- Seqinfo("1",3)
   gr.end(GRanges(1, IRanges(st, width=101), seqinfo=si), width=200, clip=TRUE)}
+=======
+library(gUtils)
+gr.end(gr.DNAase, width=200, clip=TRUE)
+>>>>>>> 60083aa350ab9c4388ffd83f1d307cb2446af96b
 }
 

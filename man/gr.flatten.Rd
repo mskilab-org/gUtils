@@ -2,18 +2,21 @@
 % Please edit documentation in R/gUtils.R
 \name{gr.flatten}
 \alias{gr.flatten}
-\title{gr.flatten}
+\title{Lay ranges end-to-end onto a derivate "chromosome"}
 \usage{
 gr.flatten(gr, gap = 0)
 }
 \arguments{
 \item{gr}{\code{GRanges} to flatten}
 
-\item{gap}{Default 0}
+\item{gap}{Number of bases between ranges on the new chromosome [0]}
+}
+\value{
+\code{data.frame} with start and end coordinates, and all of the original metadata
 }
 \description{
 Takes pile of GRanges and returns into a data.frame with nrow = length(gr) with each
 representing the corresponding input range superimposed onto a single "flattened"
-chromosome.
+chromosome, with ranges laid end-to-end
 }
 

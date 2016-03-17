@@ -2,28 +2,31 @@
 % Please edit documentation in R/gUtils.R
 \name{grbind}
 \alias{grbind}
-\title{Concatenate GRanges}
+\title{Concatenate GRanges, robust to different \code{mcols}}
 \usage{
 grbind(x, ...)
 }
 \arguments{
 \item{x}{First \code{GRanges}}
 
-\item{...}{Additional \code{GRanges} to concatenate to}
+\item{...}{additional \code{GRanges}}
 }
 \value{
+<<<<<<< HEAD
 Concatenated \code{GRanges} 
 gr1 <- GRanges(1, IRanges(100,1000), my.gene='X', seqinfo=Seqinfo("1", 1000))
 gr2 <- GRanges(1, IRanges(200,2000), my.annot='Y', seqinfo=Seqinfo("1",2000))
 gr3 <- GRanges(2, IRanges(1,3000), my.annot='Z', seqinfo=Seqinfo("2",3000))
 grbind(gr1, gr2, gr3)
+=======
+Concatenated \code{GRanges}
+grbind(gr.genes, gr.DNAase)
+>>>>>>> 60083aa350ab9c4388ffd83f1d307cb2446af96b
 }
 \description{
 Concatenates \code{GRanges} objects, taking the union of their features if they have non-overlapping features
 }
 \note{
-Wraps a call to \code{\link{rrbind}}
-
 Does not fill in the \code{Seqinfo} for the output \code{GRanges}
 }
 
