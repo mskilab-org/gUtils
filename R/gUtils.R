@@ -385,7 +385,7 @@ gr.sample = function(gr, k, len = 100, replace = TRUE)
   
   if (length(k)==1)
     {
-      gr.f = gr.flatten(trim(gr, starts = 1, ends = width(gr)-len), gap = 0);
+      gr.f = gr.flatten(gr.trim(gr, starts = 1, ends = width(gr)-len), gap = 0);
       terr = sum(gr.f$end-gr.f$start)
       st = gr.f$start;
 

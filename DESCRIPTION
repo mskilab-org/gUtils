@@ -23,6 +23,7 @@ Imports:
     methods
 Suggests:
     parallel,
-    VariantAnnotation (>= 1.12),	
+    VariantAnnotation (>= 1.12),
 License: GPL-2
 LazyData: true
+RoxygenNote: 5.0.1
