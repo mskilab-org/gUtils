@@ -17,9 +17,6 @@ Imports:
     S4Vectors (>= 0.8),
     GenomeInfoDb (>= 1.6),
     parallel,
-<<<<<<< HEAD
-    VariantAnnotation (>= 1.12),
-=======
     BiocGenerics(>= 0.16)
 Suggests:
     BSgenome.Hsapiens.UCSC.hg19,
