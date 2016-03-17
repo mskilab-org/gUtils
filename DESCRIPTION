@@ -13,11 +13,11 @@ Depends:
     GenomicRanges (>= 1.18),
     data.table (>= 1.9)
 Imports:
-    IRanges (>= 2.4),
-    S4Vectors (>= 0.8),
-    GenomeInfoDb (>= 1.6),
+    IRanges (>= 2.0),
+    S4Vectors (>= 0.4),
+    GenomeInfoDb (>= 1.2),
     parallel,
-    BiocGenerics(>= 0.16)
+    BiocGenerics(>= 0.12)
 Suggests:
     BSgenome.Hsapiens.UCSC.hg19,
     testthat,
