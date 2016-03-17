@@ -23,7 +23,6 @@ Suggests:
     testthat,
     covr,
     rtracklayer
->>>>>>> 60083aa350ab9c4388ffd83f1d307cb2446af96b
 License: GPL-2
 BugReports: http://github.com/mskilab/gUtils/issues
 LazyData: true
