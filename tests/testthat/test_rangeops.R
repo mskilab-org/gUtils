@@ -151,6 +151,7 @@ test_that("gr.sample", {
   gg <- gr.sample(gr.genes[1:5], c(2,2,3,4,5), len=2)
   expect_equal(length(gg), 16)
   expect_equal(sum(width(gg)), 32)
+
 })
 
 
@@ -162,9 +163,8 @@ test_that("gr.sample without replace", {
 
   expect_error(gr.sample(reduce(gr.genes)[1:3], 10000, len=1, replace=FALSE))
 
-  expect_error(gr.sample(reduce(gr.genes), c(1:3), len=5, replace=TRUE))
   set.seed(137)
-  gg <- gr.sample(gr.genes[1:5], c(2,2,3,4,5), len=2, replace=TRUE)
+  gg <- gr.sample(gr.genes[1:5], c(2,2,3,4,5), len=2, replace=FALSE)
   expect_equal(length(gg), 16)
   expect_equal(sum(width(gg)), 32)
 })
@@ -246,4 +246,31 @@ test_that("grl.unlist", {
 test_that("grl.in", {
   gg <- grl.in(grl.hiC[1:100], gr.genes)
   expect_equal(length(gg), 100)
+})
+
+test_that("gr.fix with null genome", {
+  gg <- GRanges(c("X",1), IRanges(c(1,2), width=1))
+  es <- structure(c(1L,2L), names=c("X","1"))
+  expect_identical(seqlengths(seqinfo(gr.fix(gg))), es)
+
+  es <- structure(c("gen","gen"), names=c("X","1"))
+  expect_identical(genome(seqinfo(gr.fix(gg, gname='gen'))), es)
+
+})
+
+test_that("gr.match", {
+  gg <- gr.match(gr.genes[1:100], gr.DNAase)
+  fo <- sort(gr.findoverlaps(gr.genes[1:100], gr.DNAase))
+  fo2 <- sort(fo[!duplicated(fo$query.id)]$subject.id)
+  identical(fo2, sort(gg[!is.na(gg)]))
+})
+
+test_that("gr.tile.map", {
+
+  gr1 <- gr.tile(GRanges(1, IRanges(1,100)), w=10)
+  gr2 <- gr.tile(GRanges(1, IRanges(1,100)), w=5)
+  gg <- gr.tile.map(gr1, gr2, verbose=TRUE)
+  expect_equal(length(gg), 10)
+  expect_equal(length(unlist(gg)), 20)
+
 })

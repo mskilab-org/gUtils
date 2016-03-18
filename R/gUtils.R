@@ -573,13 +573,13 @@ grbind = function(x, ...)
     else
       grs <- c(x, list(...))
 
-    force.rrbind = F
-    if ('force.rrbind' %in% names(grs))
-      {
-        if (is.logical(grs[['force.rrbind']]))
-          force.rrbind = grs[['force.rrbind']]
-        grs = grs[-match('force.rrbind', names(grs))]
-      }
+    force.rrbind = FALSE
+    # if ('force.rrbind' %in% names(grs))
+    #   {
+    #     if (is.logical(grs[['force.rrbind']]))
+    #       force.rrbind = grs[['force.rrbind']]
+    #     grs = grs[-match('force.rrbind', names(grs))]
+    #   }
 
     #grs = list(...);  # gets list of gr's
     keep = sapply(grs, length)>0 & sapply(grs, function(x) inherits(x, 'GRanges'))
@@ -619,15 +619,14 @@ grbind = function(x, ...)
     bare.grs = lapply(grs, function(x) gr.fix(x[,c()], sl.new))
     out = tryCatch(do.call('c', bare.grs), error = function(e) NULL)
 
-    if (is.null(out) | is.list(out)) ## something failed with concatenation, likely some weird ghost with concatenating GRanges with 'c', below is a temp fix
-        {
-            getsridofghostsomehow =  c(bare.grs[[1]], bare.grs[[2]])
-            out = tryCatch(do.call('c', bare.grs), error = function(e) NULL)
-
-            if (is.null(out) | is.list(out)) ## now we are really reaching
-                out = seg2gr(do.call('rrbind', lapply(bare.grs, as.data.frame)), seqlengths = sl.new)[, c()]
-        }
-
+    # if (is.null(out) | is.list(out)) ## something failed with concatenation, likely some weird ghost with concatenating GRanges with 'c', below is a temp fix
+    #     {
+    #         getsridofghostsomehow =  c(bare.grs[[1]], bare.grs[[2]])
+    #         out = tryCatch(do.call('c', bare.grs), error = function(e) NULL)
+    #
+    #         if (is.null(out) | is.list(out)) ## now we are really reaching
+    #             out = seg2gr(do.call('rrbind', lapply(bare.grs, as.data.frame)), seqlengths = sl.new)[, c()]
+    #     }
 
     # hack to deal with empty value columns
     ix <- (sapply(vals, ncol)==0)
@@ -829,17 +828,6 @@ grl.string = function(grl, mb= FALSE, sep = ',', ...)
     return(out)
   }
 
-#' gr.sub
-#'
-#' will apply gsub to seqlevels of gr, by default removing 'chr', and "0.1" suffixes, and replacing "MT" with "M"
-#' @name gr.sub
-#' @keywords internal
-gr.sub = function(gr, a = c('(^chr)(\\.1$)', 'MT'), b= c('', 'M'))
-  {
-    tmp = mapply(function(x, y) seqlevels(gr) <<- gsub(x, y, seqlevels(gr)), a, b)
-    return(gr)
-  }
-
 #' "Fixes" seqlengths / seqlevels
 #'
 #' If "genome" not specified will replace NA seq lengths in GR to reflect largest coordinate per seqlevel
@@ -882,19 +870,19 @@ gr.fix = function(gr, genome = NULL, gname = NULL,  drop = FALSE)
             }
           else
             lens = structure(seqlengths(genome), names = seqlevels(genome))
-        else
-          {
-            if (is.character(genome))
-              genome = structure(rep(NA, length(genome)), names = genome)
-
-            lens = structure(NA, names = union(names(genome), seqlevels(gr)));
-
-            lens[seqlevels(gr)] = seqlengths(gr);
-            lens[names(genome)[!is.na(genome)]] = pmax(lens[names(genome)[!is.na(genome)]], genome[!is.na(genome)], na.rm = TRUE)
-
-            if (drop)
-              lens = lens[names(genome)]
-          }
+        # else
+        #   {
+        #     if (is.character(genome))
+        #       genome = structure(rep(NA, length(genome)), names = genome)
+        #
+        #     lens = structure(NA, names = union(names(genome), seqlevels(gr)));
+        #
+        #     lens[seqlevels(gr)] = seqlengths(gr);
+        #     lens[names(genome)[!is.na(genome)]] = pmax(lens[names(genome)[!is.na(genome)]], genome[!is.na(genome)], na.rm = TRUE)
+        #
+        #     if (drop)
+        #       lens = lens[names(genome)]
+        #   }
 
         seqlevels(gr, force = TRUE) = names(lens)
         seqlengths(gr) = lens;
@@ -1395,8 +1383,10 @@ gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE,
 
 #' Faster \code{GenomicRanges::match}
 #'
-#' Faster implementation of GRanges match (uses gr.findoverlaps)
-#' returns indices of query in subject or NA if none found
+#' Faster implementation of \code{GenomicRanges::match} (uses \code{gr.findoverlaps})
+#' @return Vector of length = \code{length(query)} with subject indices of *first* subject in query, or NA if none found.
+#' gThis behavior is different from \code{gr.findoverlaps}, which will
+#' return *all* indicies of subject in query (in the case of one query overlaps with multiple subject)
 #' ... = additional args for findOverlaps (IRanges version)
 #' @name gr.match
 #' @param query Query \code{GRanges} pile
@@ -1434,26 +1424,32 @@ gr.match = function(query, subject, max.slice = Inf, verbose = FALSE, mc.cores =
 #' query and subject outputs a length(query) list whose items are integer vectors of indices in subject
 #' overlapping that overlap that query (strand non-specific)
 #'
-#' @param query Query \code{GRanges} pile
-#' @param subject Subject \code{GRanges} pile
+#' @param query Query \code{GRanges} pile, perhaps created from some tile (e.g. \code{gr.tile}), and assumed to have no gaps
+#' @param subject Subject \code{GRanges} pile, perhaps created from some tile (e.g. \code{gr.tile}), and assumed to have no gaps
 #' @param verbose Increase the verbosity of the output
-#' @return TODO
+#' @return \code{list} of length = \code{length(query)}, where each element \code{i} is a vector of indicies in \code{subject} that overlaps element \code{i} of \code{query}
 #' @note Assumes that input query and subject have no gaps (including at end) or overlaps, i.e. ignores end()
 #' coordinates and only uses "starts"
 #' @export
 gr.tile.map = function(query, subject, verbose = FALSE)
   {
+
+  if (length(GenomicRanges::gaps(query)) > 0)
+    warning("Query GRanges has gaps. Unexpected behavior may follow")
+  if (length(GenomicRanges::gaps(subject)) > 0)
+    warning("Subject GRanges has gaps. Unexpected behavior may follow")
+
     ix.q = order(query)
     ix.s = order(subject)
 
     q.chr = as.character(seqnames(query))[ix.q]
     s.chr = as.character(seqnames(subject))[ix.s]
 
-    ql = split(ix.q, q.chr)
-    sl = split(ix.s, s.chr)
+    ql = base::split(ix.q, q.chr)
+    sl = base::split(ix.s, s.chr)
 
-    #tmp = mcmapply(
-    tmp <- lapply(
+    tmp <- parallel::mcmapply(
+    #tmp <- lapply(
       function(x,y)
       {
         if (length(y)==0)
@@ -1494,9 +1490,8 @@ gr.tile.map = function(query, subject, verbose = FALSE)
           }
         out = out[rowSums(is.na(out))==0, ]
         return(out)
-      #}, ql, sl[names(ql)], mc.cores = mc.cores, SIMPLIFY = FALSE)
-      }, ql, sl[names(ql)], SIMPLIFY = FALSE)
-
+      }, ql, sl[names(ql)], mc.cores = mc.cores, SIMPLIFY = FALSE)
+      #}, ql, sl[names(ql)], SIMPLIFY = FALSE)
 
     m = munlist(tmp)[, -c(1:2), drop = FALSE]
     out = split(m[,2], m[,1])[as.character(1:length(query))]
@@ -1654,51 +1649,51 @@ grl.in <- function(grl, windows, some = FALSE, only = FALSE, ...)
     return(out)
   }
 
-#' grl.split
-#'
-#' splits GRL's with respect to their seqnames and strand (default), returning
-#' new grl whose items only contain ranges with a single seqname / strand
-#'
-#' can also split by arbitrary (specified) genomic ranges value fields
-#' @name grl.split
-#' @keywords internal
-grl.split = function(grl, seqname = TRUE, strand = TRUE,
-  values = c() # columns of values field in grl
-  )
-  {
-    ele = tryCatch(as.data.frame(grl)$element, error = function(e) e)
-    if (inherits(ele, 'error'))
-      {
-        if (is.null(names(grl)))
-          nm = 1:length(names(grl))
-        else
-          nm = names(grl)
-
-        ele = unlist(lapply(1:length(grl), function(x) rep(nm[x], length(grl[[x]]))))
-      }
-
-    gr = unlist(grl)
-    names(gr) = NULL;
-
-    by = ele;
-    if (seqname)
-      by = paste(by, seqnames(gr))
-
-    if (strand)
-      by = paste(by, strand(gr))
-
-    values = intersect(names(values(gr)), values);
-    if (length(values)>0)
-      for (val in values)
-        by = paste(by, values(gr)[, val])
-
-    out = split(gr, by);
-    names(out) = ele[!duplicated(by)]
-
-    values(out) = values(grl[ele[!duplicated(by)]])
-
-    return(out)
-  }
+# grl.split
+#
+# splits GRL's with respect to their seqnames and strand (default), returning
+# new grl whose items only contain ranges with a single seqname / strand
+#
+# can also split by arbitrary (specified) genomic ranges value fields
+# @name grl.split
+# @keywords internal
+# grl.split = function(grl, seqname = TRUE, strand = TRUE,
+#   values = c() # columns of values field in grl
+#   )
+#   {
+#     ele = tryCatch(as.data.frame(grl)$element, error = function(e) e)
+#     if (inherits(ele, 'error'))
+#       {
+#         if (is.null(names(grl)))
+#           nm = 1:length(names(grl))
+#         else
+#           nm = names(grl)
+#
+#         ele = unlist(lapply(1:length(grl), function(x) rep(nm[x], length(grl[[x]]))))
+#       }
+#
+#     gr = unlist(grl)
+#     names(gr) = NULL;
+#
+#     by = ele;
+#     if (seqname)
+#       by = paste(by, seqnames(gr))
+#
+#     if (strand)
+#       by = paste(by, strand(gr))
+#
+#     values = intersect(names(values(gr)), values);
+#     if (length(values)>0)
+#       for (val in values)
+#         by = paste(by, values(gr)[, val])
+#
+#     out = split(gr, by);
+#     names(out) = ele[!duplicated(by)]
+#
+#     values(out) = values(grl[ele[!duplicated(by)]])
+#
+#     return(out)
+#   }
 
 #' Robust unlisting of \code{GRangesList} that keeps track of origin
 #'
@@ -2065,4 +2060,44 @@ gr.nochr = function(gr) {
   if (grepl('^chr', seqlevels(gr)[1]))
     seqlevels(gr) = gsub('^chr','', seqlevels(gr))
   return(gr)
+}
+
+#############################################################
+# munlist
+#
+# unlists a list of vectors, matrices, data frames into a n x k matrix
+# whose first column specifies the list item index of the entry
+# and second column specifies the sublist item index of the entry
+# and the remaining columns specifies the value(s) of the vector
+# or matrices.
+#
+# force.cbind = T will force concatenation via 'cbind'
+# force.rbind = T will force concatenation via 'rxsbind'
+#############################################################
+munlist = function(x, force.rbind = FALSE, force.cbind = FALSE, force.list = FALSE)
+{
+  if (!any(c(force.list, force.cbind, force.rbind)))
+  {
+    if (any(sapply(x, function(y) is.null(dim(y)))))
+      force.list = TRUE
+    if (length(unique(sapply(x, function(y) dim(y)[2]))) == 1)
+      force.rbind = TRUE
+    if ((length(unique(sapply(x, function(y) dim(y)[1]))) == 1))
+      force.cbind = TRUE
+  }
+  else
+    force.list = TRUE
+
+  if (force.list)
+    return(cbind(ix = unlist(lapply(1:length(x), function(y) rep(y, length(x[[y]])))),
+                 iix = unlist(lapply(1:length(x), function(y) if (length(x[[y]])>0) 1:length(x[[y]]) else NULL)),
+                 unlist(x)))
+  else if (force.rbind)
+    return(cbind(ix = unlist(lapply(1:length(x), function(y) rep(y, nrow(x[[y]])))),
+                 iix = unlist(lapply(1:length(x), function(y) if (nrow(x[[y]])>0) 1:nrow(x[[y]]) else NULL)),
+                 do.call('rbind', x)))
+  else if (force.cbind)
+    return(t(rbind(ix = unlist(lapply(1:length(x), function(y) rep(y, ncol(x[[y]])))),
+                   iix = unlist(lapply(1:length(x), function(y) if (ncol(x[[y]])>0) 1:ncol(x[[y]]) else NULL)),
+                   do.call('cbind', x))))
 }

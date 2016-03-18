@@ -59,17 +59,6 @@ This section will describe additional GRanges operations provided by gUtils.
    :alt:
    :scale: 125 %
 
-``grbind``
-
-.. code-block:: bash
-
-   ## add metadata to one field
-   mcols(gr)$score = 3
-   ## try to concatenate
-   c(gr,gr2)  ## ERROR
-   ## with grbind
-   grbind(gr, gr2) ## SUCCESS. Adds NA for missing fields
-   ## GenomicRanges::c does this already for GRangesList
 
 ``gr.sample(gr2, 2, len=2, replace=TRUE)``
 
