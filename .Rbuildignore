@@ -12,3 +12,4 @@ install_bioc.sh
 ^data-raw$
 ^inst
 .*.pdf$
+cran-comments.md

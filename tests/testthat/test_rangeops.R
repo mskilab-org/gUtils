@@ -60,9 +60,21 @@ test_that("gr.dice", {
 })
 
 test_that("gr.findoverlaps", {
-  fo <- gr.findoverlaps(gr.genes, gr.DNAase, verbose=TRUE)
+  fo <- gr.findoverlaps(gr.genes, gr.DNAase)
   expect_equal(start(fo)[3], 5946813)
   expect_equal(length(fo), 1856)
+
+  ## null input
+  expect_equal(length(gr.findoverlaps(gr.genes, GRanges())), 0)
+  expect_equal(length(gr.findoverlaps(GRanges(), GRanges())), 0)
+  expect_equal(length(gr.findoverlaps(GRanges(), gr.DNAase)), 0)
+})
+
+test_that("gr.findoverlaps, return as data.table", {
+  expect_error(gr.findoverlaps(gr.genes, gr.DNAase, return.type = "data.frame"))
+
+  fo <- gr.findoverlaps(gr.genes, gr.DNAase, return.type = 'data.table')
+  expect_identical(colnames(fo), c("start", "end", "query.id", "subject.id", "seqnames", "strand"))
 })
 
 test_that("gr.findoverlaps ignore.strand", {
@@ -82,35 +94,34 @@ test_that("gr.findoverlaps ignore.strand", {
   expect_that(!any(strand(gr.DNAase2)[fo1$query.id] != strand(gr.genes)[fo1$subject.id]), is_true())
 })
 
-test_that("gr.findoverlaps foverlaps", {
-  ## make stranded DNAase track (for testing only)
-  gr.DNAase2 = gr.DNAase
-  set.seed(137)
-  strand(gr.DNAase2) <- ifelse(runif(length(gr.DNAase)) > 0.5, '+', '-')
+# test_that("gr.findoverlaps foverlaps", {
+#   ## make stranded DNAase track (for testing only)
+#   gr.DNAase2 = gr.DNAase
+#   set.seed(137)
+#   strand(gr.DNAase2) <- ifelse(runif(length(gr.DNAase)) > 0.5, '+', '-')
+#
+#   ## assure that things are same with/without foverlaps
+#   fo1 <- gr.findoverlaps(gr.DNAase, gr.genes, foverlaps=TRUE)
+#   fo1b <- gr.findoverlaps(gr.genes, gr.DNAase, foverlaps=TRUE)
+#   expect_identical(fo1$query.id, fo1b$subject.id)
+#   expect_identical(fo1$subject.id, fo1b$query.id)
+#   expect_identical(start(fo1), start(fo1b))
+#
+#   fo2 <- gr.findoverlaps(gr.DNAase, gr.genes, foverlaps=FALSE)
+#   fo2b <- gr.findoverlaps(gr.genes, gr.DNAase, foverlaps=FALSE)
+#   expect_identical(fo1$query.id, fo1b$subject.id)
+#   expect_identical(fo1$subject.id, fo1b$query.id)
+#   expect_identical(start(fo1), start(fo1b))
+#
+#   expect_identical(start(fo1), start(fo2))
+#   expect_identical(end(fo1), end(fo2))
+#   ## sort subject id because order for multi-overlaps is different, but it's OK
+#   expect_identical(sort(fo1$subject.id), sort(fo2$subject.id))
+# })
 
-  ## assure that things are same with/without foverlaps
-  fo1 <- gr.findoverlaps(gr.DNAase, gr.genes, foverlaps=TRUE)
-  fo1b <- gr.findoverlaps(gr.genes, gr.DNAase, foverlaps=TRUE)
-  expect_identical(fo1$query.id, fo1b$subject.id)
-  expect_identical(fo1$subject.id, fo1b$query.id)
-  expect_identical(start(fo1), start(fo1b))
-
-  fo2 <- gr.findoverlaps(gr.DNAase, gr.genes, foverlaps=FALSE)
-  fo2b <- gr.findoverlaps(gr.genes, gr.DNAase, foverlaps=FALSE)
-  expect_identical(fo1$query.id, fo1b$subject.id)
-  expect_identical(fo1$subject.id, fo1b$query.id)
-  expect_identical(start(fo1), start(fo1b))
-
-  expect_identical(start(fo1), start(fo2))
-  expect_identical(end(fo1), end(fo2))
-  ## sort subject id because order for multi-overlaps is different, but it's OK
-  expect_identical(sort(fo1$subject.id), sort(fo2$subject.id))
-})
-
-test_that("gr.findoverlaps pintersect",{
-  fo1 <- gr.findoverlaps(gr.DNAase[1:100], gr.genes[1:500], pintersect = TRUE)
-  fo2 <- gr.findoverlaps(gr.DNAase[1:100], gr.genes[1:500], pintersect = FALSE)
-  expect_identical(fo1, fo2)
+test_that("gr.findoverlap by", {
+  expect_error(gr.findoverlaps(gr.genes, gr.DNAase, by = "dummy"))
+  gr.findoverlaps(gr.genes, gr.DNAase, by = "bin")
 })
 
 test_that("gr.in", {

@@ -252,64 +252,6 @@ gr.mid = function(x)
       return(x)
   }
 
-# Round a set of \code{GRanges} to another set
-#
-# "rounds" a set of query ranges Q to a given interval set S using the following rule:
-# 1) If q in Q is partially / fully within S then return intersection of q with S.
-# 2) If q intersects multiple ranges in S and \code{up = F} then return the "first" range, otherwise the last range
-# 3) If q in Q is fully outside of S (ie fully inside not S) then return the \code{start-1} (if \code{up = TRUE}) or \code{end+1} (if \code{up = F})
-# of the matching range in not S
-#
-# @param Q Query \code{GRanges} (strand is ignored)
-# @param S Subject \code{GRanges} (strand is ignored)
-# @param up [default T] See description.
-# @param parallel [default F] If \code{TRUE}, assumes Q and S are same length and this analysis is only performed between the corresponding Q and S pairs.
-# @return Rounded \code{GRanges}
-# @examples
-# query   <- GRanges(1, IRanges(c(100,110),width=201), seqinfo=Seqinfo("1", 500))
-# subject <- GRanges(1, IRanges(c(160,170),width=201), seqinfo=Seqinfo("1", 500))
-# gr.round(query, subject)
-# @export
-# gr.round = function(Q, S, up = TRUE, parallel = FALSE)
-#   {
-#     str = strand(Q)
-#     Q = gr.stripstrand(Q)
-#     S = gr.stripstrand(S)
-#     nS = gaps(S);
-#     QS = gr.findoverlaps(Q, S)
-#     tmp = gr.findoverlaps(Q, nS)
-#     QnotS = nS[tmp$subject.id]
-#     QnotS$query.id = tmp$query.id
-#
-#     if (parallel)
-#       {
-#         QS = QS[QS$query.id==QS$subject.id]
-#         QnotS = QnotS[QnotS$query.id==QnotS$subject.id]
-#       }
-#
-#     if (up)
-#       suppressWarnings(end(QnotS) <- start(QnotS) <- end(QnotS)+1)
-#     else
-#       suppressWarnings(start(QnotS) <- end(QnotS) <- start(QnotS)-1)
-#
-#     suppressWarnings(out <- sort(grbind(QS, QnotS)))
-#
-#     if (up)
-#       {
-#         out = rev(out)
-#         out = out[!duplicated(out$query.id)]
-#       }
-#     else
-#       out = out[!duplicated(out$query.id)]
-#
-#     out = out[order(out$query.id)]
-#     values(out) = values(Q)
-#     names(out) = names(Q)
-#     strand(out) = str;
-#     return(out)
-#   }
-#
-
 #' Generate random \code{GRanges} on genome
 #'
 #' Randomly generates non-overlapping \code{GRanges} with supplied widths on supplied genome.
@@ -1009,364 +951,6 @@ gr.tile = function(gr, w = 1e3)
     return(out)
 }
 
-#' Faster replacement for \code{GRanges} version of \code{GenomicRanges::findOverlaps}
-#'
-#' Returns \code{GRanges} of matches with two additional fields:
-#' \itemize{
-#' \code{$query.id} - index of matching query
-#' \code{$subject.id} - index of matching subject
-#' }
-#' Optional \code{"by"} field is a character scalar that specifies a metadata column present in both query and subject
-#' that will be used to additionally restrict matches, i.e. to pairs of ranges that overlap and also
-#' have the same values of their \code{"by"} fields
-#'
-#' @name gr.findoverlaps
-#' @importFrom GenomeInfoDb seqlengths seqlengths<-
-#' @importFrom GenomicRanges values ranges width strand values<- strand<- seqnames
-#' @importFrom data.table is.data.table := setkeyv
-#' @importFrom IRanges findOverlaps
-#' @importFrom S4Vectors queryHits subjectHits
-#' @param query Query \code{GRanges} pile
-#' @param subject Subject \code{GRanges} pile
-#' @param ignore.strand Don't consider strand information during overlaps [TRUE]
-#' @param first Restrict to only the first match of the subject (default is to return all matches). \code{[FALSE]}
-#' @param qcol \code{character} vector of query meta-data columns to add to results
-#' @param scol \code{character} vector of subject meta-data columns to add to results
-#' @param foverlaps Use \code{data.table::foverlaps} instead of \code{IRanges::findOverlaps}. Overrules \code{pintersect}
-#' @param pintersect Use \code{IRanges::pintersect} function. In general this is slower, but can be much faster and with lower memory for large ranges on many different seqnames (e.g. transcriptome). Default is \code{FALSE} unless \code{length(unique(seqnames)) > 50}
-#' @param verbose Increase the verbosity during runtime [FALSE]
-#' @param type \code{type} argument as defined by \code{IRanges::findOverlaps} (\code{"any"}, \code{"start"}, \code{"end"}, \code{"within"}, \code{"equal"}). If value other than \code{"any"} is supplied, will force call to \code{IRanges::findOverlaps}. Otherwise, may use \code{IRanges::pintersect} or \code{data.table::foverlaps}. \code{["any"]}
-#' @param by Meta-data column to consider when performing overlaps [NULL]
-#' @param return.type Select data format to return (supplied as character): \code{"same"}, \code{"data.table"}, \code{"GRanges"}. \code{["same"]}
-#' @param ... Additional arguments sent to \code{IRanges::pintersect} if \code{pintersect = TRUE}.
-#' @return \code{GRanges} pile of the intersection regions, with \code{query.id} and \code{subject.id} marking sources
-#' @export
-gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE,
-    qcol = NULL, ## any query meta data columns to add to result
-    scol = NULL, ## any subject meta data columns to add to resultx
-    ###max.chunk = 1e13, ## broken, see note below
-    foverlaps = ifelse(is.na(as.logical(Sys.getenv('GRFO_FOVERLAPS'))), FALSE, as.logical(Sys.getenv('GRFO_FOVERLAPS'))) & exists('foverlaps'),
-    pintersect = NA,
-    verbose = FALSE,
-    type = 'any',
-    by = NULL,
-    ###mc.cores = 1,
-    return.type = 'same',
-    ...)
-  {
-
-    subject.id = query.id = i.start = i.end = NULL ## for NOTE
-     if (type != 'any')
-         {
-             foverlaps = FALSE
-             pintersect = FALSE
-         }
-
-  if (nchar(foverlaps)==0)
-      foverlaps = TRUE
-
-  if (is.na(foverlaps))
-      foverlaps = TRUE
-
-  isdt <- any(class(query) == 'data.table' )
-  if (return.type == 'same')
-    return.type <- ifelse(isdt, 'data.table', 'GRanges')
-
-  if (!((inherits(subject, 'GRanges') | inherits(subject, 'data.table')) & (inherits(query, 'GRanges') | inherits(query, 'data.table'))))
-      stop('both subject and query have to be GRanges or data.table')
-
-  if (is.na(pintersect))
-    if (isdt)
-      pintersect <- length(unique(query$seqnames)) > 50 & length(unique(subject$seqnames)) > 50
-    else
-      pintersect <- seqlevels(query) > 50 && seqlevels(subject) > 50
-  if (is.na(pintersect))
-    pintersect <- FALSE
-
-
-  if (!is.null(qcol))
-      if (!all(qcol %in% names(values(query))))
-          stop('Some qcol are not present in meta data of query')
-
-  if (!is.null(scol))
-      if (!all(scol %in% names(values(subject))))
-          stop('Some scol are not present in meta data of subject')
-
-  if (!is.null(by))
-    if (!(by %in% names(values(query)) & by %in% names(values(subject))))
-      stop('"by" field must be meta data column of both query and subject')
-
-    ### @param mc.cores Number of cores to use, if ranges exceed \code{max.chunk} [1]
-    ### BROKEN @param max.chunk Maximum number of ranges to consider in one chunk (to keep down memory) [1e13]
-    ## Jeremiah 3/8/16 - This is broken, as the output of gr.findoverlaps is different
-    ## depending on max.chunk. Only support one chunk for now
-    # if ((as.numeric(length(query)) * as.numeric(length(subject))) > max.chunk)
-    #   {
-    #     if (verbose)
-    #       cat('Overflow .. computing overlaps in chunks.  Adjust max.chunk parameter to gr.findoverlaps to avoid chunked computation\n')
-    #     chunk.size = floor(sqrt(max.chunk));
-    #     ix1 = c(seq(1, length(query), chunk.size), length(query)+1)
-    #     ix2 = c(seq(1, length(subject), chunk.size), length(subject)+1)
-    #     ij = cbind(rep(1:(length(ix1)-1), length(ix2)-1), rep(1:(length(ix2)-1), each = length(ix1)-1))
-    #     if (verbose)
-    #       print(paste('Number of chunks:', nrow(ij)))
-    #
-    #     out = do.call('c', mclapply(1:nrow(ij),
-    #         function(x)
-    #                     {
-    #                       if (verbose)
-    #                         cat(sprintf('chunk i = %s-%s (%s), j = %s-%s (%s)\n', ix1[ij[x,1]], ix1[ij[x,1]+1]-1, length(query),
-    #                                     ix2[ij[x,2]], (ix2[ij[x,2]+1]-1), length(subject)))
-    #                       i.chunk = ix1[ij[x,1]]:(ix1[ij[x,1]+1]-1)
-    #                       j.chunk = ix2[ij[x,2]]:(ix2[ij[x,2]+1]-1)
-    #                       out = gr.findoverlaps(query[i.chunk], subject[j.chunk],  ignore.strand = ignore.strand, first = first, pintersect=pintersect, by = by, qcol = qcol, verbose = verbose, foverlaps = foverlaps, scol = scol, type = type, ...)
-    #                       out$query.id = i.chunk[out$query.id]
-    #                       out$subject.id = j.chunk[out$subject.id]
-    #                       return(out)
-    #                     }, mc.cores=mc.cores))
-    #
-    #     convert = FALSE
-    #     if ((return.type == 'same' & is(query, 'data.table')) | return.type == 'data.table')
-    #         out = gr2dt(out)
-    #     return(out)
-    #   }
-
-  if (foverlaps)
-      {
-          if (verbose)
-              print('overlaps by data.table::foverlaps')
-          if (ignore.strand)
-              by = c(by, 'seqnames',  'start', 'end')
-          else
-              by = c(by, 'seqnames', 'strand', 'start', 'end')
-
-          if (!is.data.table(query))
-              {
-                  names(query) = NULL
-                  querydt = gr2dt(query[, setdiff(by, c('seqnames', 'start', 'end', 'strand'))])
-              }
-          else
-              {
-                  if (!all(by %in% names(query)))
-                      stop(paste('the following columns are missing from query:',
-                                 paste(by, collapse = ',')))
-
-                  querydt = query[, by, with = FALSE]
-              }
-
-          if (!is.data.table(subject))
-              {
-                  names(subject) = NULL
-                  subjectdt = gr2dt(subject[, setdiff(by, c('seqnames', 'start', 'end', 'strand'))])
-              }
-          else
-              {
-                  if (!all(by %in% names(subject)))
-                      stop(paste('the following columns are missing from subejct:',
-                                 paste(by, collapse = ',')))
-                  subjectdt = subject[, by, with = FALSE]
-              }
-
-
-          ix1 = querydt$query.id = 1:nrow(querydt)
-          ix2 = subjectdt$subject.id = 1:nrow(subjectdt)
-
-          querydt = querydt[start<=end, ]
-          subjectdt = subjectdt[start<=end, ]
-
-          querydt = querydt[, c('query.id', by), with = FALSE]
-          subjectdt = subjectdt[, c('subject.id', by), with = FALSE]
-          setkeyv(querydt, by)
-          setkeyv(subjectdt, by)
-
-          h.df = data.table::foverlaps(querydt, subjectdt, by.x = by, by.y = by, mult = 'all', type = 'any', verbose = verbose)
-          h.df = h.df[!is.na(subject.id) & !is.na(query.id), ]
-          h.df[, start := pmax(start, i.start)]
-          h.df[, end := pmin(end, i.end)]
-
-          if (verbose)
-              cat(sprintf('Generated %s overlaps\n', nrow(h.df)))
-      }
-  else
-      {
-
-          if (isdt) {
-              sn1 <- query$seqnames
-              sn2 <- subject$seqnames
-          } else {
-              sn1 = as.character(seqnames(query))
-              sn2 = as.character(seqnames(subject))
-          }
-          if (is.null(by))
-              {
-                  ix1 = which(sn1 %in% sn2)
-                  ix2 = which(sn2 %in% sn1)
-              }
-          else
-              {
-                  by1 = values(query)[, by]
-                  by2 = values(subject)[, by]
-                  ix1 = which(sn1 %in% sn2 & by1 %in% by2)
-                  ix2 = which(sn2 %in% sn1 & by2 %in% by1)
-                  by1 = by1[ix1]
-                  by2 = by2[ix2]
-              }
-
-          query.ix = query[ix1]
-          subject.ix = subject[ix2]
-          sn1 = sn1[ix1]
-          sn2 = sn2[ix2]
-
-
-          if (pintersect)
-              {
-                  if (verbose)
-                      print('overlaps by pintersect')
-                  if (length(sn1)>0 & length(sn2)>0)
-                      {
-
-                          if (is.null(by))
-                              {
-                                  dt1 <- data.table(i=seq_along(sn1), sn=sn1, key="sn")
-                                  dt2 <- data.table(j=seq_along(sn2), sn=sn2, key="sn")
-                                  ij <- merge(dt1, dt2, by = 'sn', allow.cartesian=TRUE)
-                              }
-                          else
-                              {
-                                  dt1 <- data.table(i=seq_along(sn1), sn=sn1, by = by1, key=c("sn", "by"))
-                                  dt2 <- data.table(j=seq_along(sn2), sn=sn2, by = by2, key=c("sn", "by"))
-                                  ij <- merge(dt1, dt2, by = c('sn', 'by'), allow.cartesian=TRUE)
-                              }
-
-                          if (ignore.strand && isdt)
-                              subject$strand <- '*'
-                          else if (ignore.strand)
-                              strand(subject) = '*'
-
-                          qr <- query.ix[ij$i]
-                          sb <- subject.ix[ij$j]
-                          if (!isdt) {
-                              seqlengths(qr) <- rep(NA, length(seqlengths(qr)))
-                              seqlengths(sb) <- rep(NA, length(seqlengths(sb)))
-                          }
-
-                          if (!isdt && any(as.character(seqnames(qr)) != as.character(seqnames(sb))))
-                              warning('gr.findoverlaps: violated pintersect assumption')
-
-                          ## changed to ranges(qr) etc rather than just GRanges call. Major problem if too many seqlevels
-                          if (isdt) {
-                              rqr <- IRanges(start=qr$start, end=qr$end)
-                              rsb <- IRanges(start=sb$start, end=sb$end)
-                          } else {
-                              rqr <- ranges(qr)
-                              rsb <- ranges(sb)
-                          }
-                          tmp <- IRanges::pintersect(rqr, rsb, resolve.empty = 'start.x', ...)
-                          names(tmp) = NULL
-                          non.empty = which(width(tmp)!=0)
-                          h.df = as.data.frame(tmp[non.empty])
-                          if (isdt)
-                              h.df$seqnames <- qr$seqnames[non.empty]
-                          else
-                              h.df$seqnames <- as.character(seqnames(qr))[non.empty]
-                          h.df$query.id = ij$i[non.empty]
-                          h.df$subject.id = ij$j[non.empty]
-                      }
-                  else
-                      h.df = data.frame()
-              }
-          else
-              {
-                  if (verbose)
-                      print('overlaps by findOverlaps')
-                  if (isdt) {
-                      rqr <- IRanges(start=query.ix$start, end=query.ix$end)
-                      rsb <- IRanges(start=subject.ix$start, end=subject.ix$end)
-                  } else {
-                      rqr <- ranges(query.ix)
-                      rsb <- ranges(subject.ix)
-                  }
-
-                  h <- findOverlaps(rqr, rsb, type = type)
-                  r <- ranges(h, rqr, rsb)
-                  h.df <- data.frame(start = start(r), end = end(r), query.id = queryHits(h), subject.id = subjectHits(h), stringsAsFactors = FALSE);
-                                        #        sn.query = as.character(seqnames(query))[h.df$query.id]
-                                        #        sn.subject = as.character(seqnames(subject))[h.df$subject.id]
-                  sn.query <- sn1[h.df$query.id]
-                  sn.subject <- sn2[h.df$subject.id]
-
-                  if (is.null(by))
-                      keep.ix <- sn.query == sn.subject
-                  else
-                      {
-                          by.query <- by1[h.df$query.id]
-                          by.subject <- by2[h.df$subject.id]
-                          keep.ix <- sn.query == sn.subject & by.query == by.subject
-                      }
-
-                  h.df <- h.df[keep.ix, ]
-                  h.df$seqnames <- sn.query[keep.ix];
-              }
-
-          if (!ignore.strand)
-              {
-                  h.df$strand <- str.query <- as.character(strand(query)[ix1[h.df$query.id]])
-                  str.subject <- as.character(strand(subject)[ix2[h.df$subject.id]])
-                  h.df <- h.df[which(str.query == str.subject | str.query == '*' | str.subject == '*'),]
-              }
-          else if (nrow(h.df)>0)
-              h.df$strand = '*'
-      }
-
-    if (first)
-      h.df = h.df[!duplicated(h.df$query.id), ]
-
-     if (return.type=='GRanges')
-       if (nrow(h.df)>0)
-           {
-               if (('strand' %in% names(h.df)))
-                   out.gr = GRanges(h.df$seqnames, IRanges(h.df$start, h.df$end),
-                       query.id = ix1[h.df$query.id], subject.id = ix2[h.df$subject.id], strand = h.df$strand, seqlengths = seqlengths(query))
-               else
-                   out.gr = GRanges(h.df$seqnames, IRanges(h.df$start, h.df$end),
-                       query.id = ix1[h.df$query.id], subject.id = ix2[h.df$subject.id], seqlengths = seqlengths(query))
-
-               if (!is.null(qcol))
-                   values(out.gr) = cbind(values(out.gr), values(query)[out.gr$query.id, qcol, drop = FALSE])
-
-               if (!is.null(scol))
-                   values(out.gr) = cbind(values(out.gr), values(subject)[out.gr$subject.id, scol, drop = FALSE])
-
-               return(sort(out.gr))
-           }
-       else
-         return(GRanges(seqlengths = seqlengths(query)))
-     else
-         if (nrow(h.df)>0) {
-
-             if (!is.data.table(h.df))
-                 h.df = as.data.table(h.df)
-             h.df$query.id <- ix1[h.df$query.id]
-             h.df$subject.id <- ix2[h.df$subject.id]
-
-             if (!is.null(qcol))
-                 h.df = cbind(h.df, as.data.table(as.data.frame(values(query))[h.df$query.id, qcol, drop = FALSE]))
-
-             if (!is.null(scol))
-                 h.df = cbind(h.df, as.data.table(as.data.frame(values(subject))[h.df$subject.id, scol, drop = FALSE]))
-
-             if ('i.start' %in% colnames(h.df))
-                 h.df[, i.start := NULL]
-
-             if ('i.end' %in% colnames(h.df))
-                 h.df[, i.end := NULL]
-
-             return(h.df)
-       } else {
-         return(data.table())
-       }
-   }
-
 #' Faster \code{GenomicRanges::match}
 #'
 #' Faster implementation of \code{GenomicRanges::match} (uses \code{\link{gr.findoverlaps}})
@@ -2045,4 +1629,142 @@ munlist = function(x, force.rbind = FALSE, force.cbind = FALSE, force.list = FAL
     return(t(rbind(ix = unlist(lapply(1:length(x), function(y) rep(y, ncol(x[[y]])))),
                    iix = unlist(lapply(1:length(x), function(y) if (ncol(x[[y]])>0) 1:ncol(x[[y]]) else NULL)),
                    do.call('cbind', x))))
+}
+
+#' Wrapper to \code{GenomicRanges::findOverlaps} with added functionality
+#'
+#' Returns \code{GRanges} of matches with two additional fields:
+#' \itemize{
+#' \code{$query.id} - index of matching query
+#' \code{$subject.id} - index of matching subject
+#' }
+#' Optional \code{"by"} field is a character scalar that specifies a metadata column present in both query and subject
+#' that will be used to additionally restrict matches, i.e. to pairs of ranges that overlap and also
+#' have the same values of their \code{"by"} fields
+#'
+#' @name gr.findoverlaps
+#' @importFrom GenomeInfoDb seqlengths seqlengths<-
+#' @importFrom GenomicRanges values ranges width strand values<- strand<- seqnames
+#' @importFrom data.table is.data.table := setkeyv
+#' @importFrom IRanges findOverlaps
+#' @importFrom S4Vectors queryHits subjectHits
+#' @param query Query \code{GRanges} pile
+#' @param subject Subject \code{GRanges} pile
+#' @param ignore.strand Don't consider strand information during overlaps. \code{[TRUE]}
+#' @param first Restrict to only the first match of the subject (default is to return all matches). \code{[FALSE]}
+#' @param qcol \code{character} vector of query meta-data columns to add to results
+#' @param scol \code{character} vector of subject meta-data columns to add to results
+#' @param type \code{type} argument as defined by \code{IRanges::findOverlaps} (\code{"any"}, \code{"start"}, \code{"end"}, \code{"within"}, \code{"equal"}). \code{["any"]}
+#' @param by Meta-data column to consider when performing overlaps [NULL]
+#' @param return.type Select data format to return (supplied as character): \code{"same"}, \code{"data.table"}, \code{"GRanges"}. \code{["same"]}
+#' @param ... Additional arguments sent to \code{IRanges::findOverlaps}.
+#' @return \code{GRanges} pile of the intersection regions, with \code{query.id} and \code{subject.id} marking sources
+#' @export
+gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE,
+                           qcol = NULL, ## any query meta data columns to add to result
+                           scol = NULL, ## any subject meta data columns to add to resultx
+                           type = 'any',
+                           by = NULL,
+                           return.type = 'same',
+                           ...)
+{
+
+  subject.id = query.id = i.start = i.end = NULL ## for NOTE
+
+  isdt <- any(class(query) == 'data.table' )
+  if (return.type == 'same')
+    return.type <- ifelse(isdt, 'data.table', 'GRanges')
+
+  if (!return.type %in% c("data.table", "GRanges"))
+    stop("return.type must be one of: same, data.table, GRanges")
+
+  if (!((inherits(subject, 'GRanges') | inherits(subject, 'data.table')) & (inherits(query, 'GRanges') | inherits(query, 'data.table'))))
+    stop('both subject and query have to be GRanges or data.table')
+
+  if (!is.null(qcol))
+    if (!all(qcol %in% names(values(query))))
+      stop('Some qcol are not present in meta data of query')
+
+  if (!is.null(scol))
+    if (!all(scol %in% names(values(subject))))
+      stop('Some scol are not present in meta data of subject')
+
+  if (!is.null(by))
+    if (!(by %in% names(values(query)) & by %in% names(values(subject))))
+      stop('"by" field must be meta data column of both query and subject')
+
+  if (is.data.table(query))
+    query   <- dt2gr(query)
+  if (is.data.table(subject))
+    subject <- dt2gr(subject)
+
+  ## perform the actual overlaps
+  h <- GenomicRanges::findOverlaps(query, subject, type = type, ignore.strand = ignore.strand, ...)
+  r <- ranges(h, ranges(query), ranges(subject))
+  h.df <- data.table(start = start(r), end = end(r), query.id = queryHits(h),
+                     subject.id = subjectHits(h), seqnames = as.character(seqnames(query)[queryHits(h)]))
+
+  ## add the seqnames, and subset if have a "by"
+  if (nrow(h.df) > 0) {
+    if (!is.null(by)) {
+      by.query <- values(query)[h.df$query.id, by]
+      by.subject <- values(subject)[h.df$subject.id, by]
+      keep.ix <- by.query == by.subject
+      h.df <- h.df[keep.ix, ]
+    }
+  }
+
+  ## if empty, return now
+  if (nrow(h.df) == 0) {
+    if (return.type == "GRanges")
+      return(GRanges(seqlengths = seqlengths(query)))
+    else
+      return(data.table())
+  }
+
+  ## write the strand
+  if (!ignore.strand)
+    h.df$strand <- as.character(strand(query)[h.df$query.id])
+  else
+    h.df$strand = '*'
+
+  ## limit to first hits?
+  if (first)
+    h.df = h.df[!duplicated(h.df$query.id), ]
+
+  ## format into correct output format
+  if (return.type=='GRanges') {
+    ## this takes a while, I think because of validity check. Way to hack it with direct slot access via @?
+    # out.gr = GRanges()
+    # out.gr@seqnames = S4Vectors::Rle(factor(h.df$seqnames))
+    # out.gr@ranges = IRanges::IRanges(h.df$start, h.df$end)
+    # out.gr@elementMetadata = S4Vectors::DataFrame(query.id = h.df$query.id, subject.id = h.df$subject.id)
+    # out.gr@strand = S4Vectors::Rle(h.df$strand)
+    # out.gr@seqinfo = seqinfo(query)
+    out.gr = GRanges(h.df$seqnames, IRanges(h.df$start, h.df$end), query.id = h.df$query.id, subject.id = h.df$subject.id, seqlengths = seqlengths(query),
+                     strand = h.df$strand)
+
+    if (!is.null(qcol))
+      values(out.gr) = cbind(values(out.gr), values(query)[out.gr$query.id, qcol, drop = FALSE])
+
+    if (!is.null(scol))
+      values(out.gr) = cbind(values(out.gr), values(subject)[out.gr$subject.id, scol, drop = FALSE])
+
+    return(sort(out.gr))
+  } else { ## return data.table
+
+    if (!is.null(qcol))
+      h.df = cbind(h.df, as.data.table(as.data.frame(values(query))[h.df$query.id, qcol, drop = FALSE]))
+
+    if (!is.null(scol))
+      h.df = cbind(h.df, as.data.table(as.data.frame(values(subject))[h.df$subject.id, scol, drop = FALSE]))
+
+    if ('i.start' %in% colnames(h.df))
+      h.df[, i.start := NULL]
+
+    if ('i.end' %in% colnames(h.df))
+      h.df[, i.end := NULL]
+
+    return(h.df)
+  }
 }

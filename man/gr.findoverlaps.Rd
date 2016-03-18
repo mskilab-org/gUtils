@@ -2,13 +2,10 @@
 % Please edit documentation in R/gUtils.R
 \name{gr.findoverlaps}
 \alias{gr.findoverlaps}
-\title{Faster replacement for \code{GRanges} version of \code{GenomicRanges::findOverlaps}}
+\title{Wrapper to \code{GenomicRanges::findOverlaps} with added functionality}
 \usage{
 gr.findoverlaps(query, subject, ignore.strand = TRUE, first = FALSE,
-  qcol = NULL, scol = NULL,
-  foverlaps = ifelse(is.na(as.logical(Sys.getenv("GRFO_FOVERLAPS"))), FALSE,
-  as.logical(Sys.getenv("GRFO_FOVERLAPS"))) & exists("foverlaps"),
-  pintersect = NA, verbose = FALSE, type = "any", by = NULL,
+  qcol = NULL, scol = NULL, type = "any", by = NULL,
   return.type = "same", ...)
 }
 \arguments{
@@ -16,7 +13,7 @@ gr.findoverlaps(query, subject, ignore.strand = TRUE, first = FALSE,
 
 \item{subject}{Subject \code{GRanges} pile}
 
-\item{ignore.strand}{Don't consider strand information during overlaps [TRUE]}
+\item{ignore.strand}{Don't consider strand information during overlaps. \code{[TRUE]}}
 
 \item{first}{Restrict to only the first match of the subject (default is to return all matches). \code{[FALSE]}}
 
@@ -24,19 +21,13 @@ gr.findoverlaps(query, subject, ignore.strand = TRUE, first = FALSE,
 
 \item{scol}{\code{character} vector of subject meta-data columns to add to results}
 
-\item{foverlaps}{Use \code{data.table::foverlaps} instead of \code{IRanges::findOverlaps}. Overrules \code{pintersect}}
-
-\item{pintersect}{Use \code{IRanges::pintersect} function. In general this is slower, but can be much faster and with lower memory for large ranges on many different seqnames (e.g. transcriptome). Default is \code{FALSE} unless \code{length(unique(seqnames)) > 50}}
-
-\item{verbose}{Increase the verbosity during runtime [FALSE]}
-
-\item{type}{\code{type} argument as defined by \code{IRanges::findOverlaps} (\code{"any"}, \code{"start"}, \code{"end"}, \code{"within"}, \code{"equal"}). If value other than \code{"any"} is supplied, will force call to \code{IRanges::findOverlaps}. Otherwise, may use \code{IRanges::pintersect} or \code{data.table::foverlaps}. \code{["any"]}}
+\item{type}{\code{type} argument as defined by \code{IRanges::findOverlaps} (\code{"any"}, \code{"start"}, \code{"end"}, \code{"within"}, \code{"equal"}). \code{["any"]}}
 
 \item{by}{Meta-data column to consider when performing overlaps [NULL]}
 
 \item{return.type}{Select data format to return (supplied as character): \code{"same"}, \code{"data.table"}, \code{"GRanges"}. \code{["same"]}}
 
-\item{...}{Additional arguments sent to \code{IRanges::pintersect} if \code{pintersect = TRUE}.}
+\item{...}{Additional arguments sent to \code{IRanges::findOverlaps}.}
 }
 \value{
 \code{GRanges} pile of the intersection regions, with \code{query.id} and \code{subject.id} marking sources
