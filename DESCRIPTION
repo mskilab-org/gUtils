@@ -1,7 +1,7 @@
 Package: gUtils
 Title: R Package Providing Additional Capabilities and Speed for GenomicRanges
     Operations
-Version: 0.1.0
+Version: 0.2.0
 Authors@R: c(person(given = "Jeremiah", family = "Wala", role = c("aut",
     'cre'), email = "jwala@broadinstitute.org"), person(given = "Marcin",
     family = "Imielinski", role = c("aut"), email =
