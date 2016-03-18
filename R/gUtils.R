@@ -854,15 +854,7 @@ gr.sub = function(gr, a = c('(^chr)(\\.1$)', 'MT'), b= c('', 'M'))
 #' @param gname Name of the genome (optional, just appends to \code{Seqinfo} of the output) [NULL]
 #' @param drop Remove ranges that are not present in the supplied genome [FALSE]
 #' @return \code{GRanges} pile with the fixed \code{Seqinfo}
-#' @importFrom GenomeInfoDb
-#'    Seqinfo
-#'    seqinfo
-#'    keepSeqlevels
-#'    seqlevels
-#'    seqlengths
-#'    seqlevels<-
-#'    seqlengths<-
-#'    genome<-
+#' @importFrom GenomeInfoDb Seqinfo seqinfo keepSeqlevels seqlevels seqlengths seqlevels<- seqlengths<- genome<- seqnames
 #' @export
 gr.fix = function(gr, genome = NULL, gname = NULL,  drop = FALSE)
   {
@@ -2074,5 +2066,3 @@ gr.nochr = function(gr) {
     seqlevels(gr) = gsub('^chr','', seqlevels(gr))
   return(gr)
 }
-
-

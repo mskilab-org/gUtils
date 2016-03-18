@@ -153,6 +153,22 @@ test_that("gr.sample", {
   expect_equal(sum(width(gg)), 32)
 })
 
+
+test_that("gr.sample without replace", {
+  set.seed(137)
+  gg <- gr.sample(reduce(gr.genes), 10, len=1, replace=FALSE)
+  expect_equal(start(gg)[1], 131788861)
+  expect_equal(unique(width(gg)), 1)
+
+  expect_error(gr.sample(reduce(gr.genes)[1:3], 10000, len=1, replace=FALSE))
+
+  expect_error(gr.sample(reduce(gr.genes), c(1:3), len=5, replace=TRUE))
+  set.seed(137)
+  gg <- gr.sample(gr.genes[1:5], c(2,2,3,4,5), len=2, replace=TRUE)
+  expect_equal(length(gg), 16)
+  expect_equal(sum(width(gg)), 32)
+})
+
 test_that("gr.chr", {
   expect_equal(as.character(seqnames(gr.chr(GRanges(c(1,"chrX"), IRanges(c(1,2), 1))))), c("chr1","chrX"))
 })
