@@ -15,6 +15,8 @@ test_that("gr.start ", {
   expect_identical(end(gr.start(gr, width=100, ignore.strand=FALSE)),   c(25L,9L,16L))
   expect_identical(suppressWarnings(start(gr.start(gr, width=100, ignore.strand=FALSE, force=TRUE))),   c(3L,-90L,-83L))
   expect_identical(suppressWarnings(end(gr.start(gr, width=100, force=TRUE))),   c(102L,106L,112L))
+
+  expect_identical(end(gr.start(gr, width=10000, clip=TRUE)), c(5L, 9L, 16L))
 })
 
 test_that("gr.end", {
@@ -44,7 +46,7 @@ test_that("gr.rand", {
 })
 
 test_that("si2gr", {
-  gg <- si2gr(si)
+  gg <- si2gr(si, strip.empty = TRUE)
   expect_equal(start(gg)[3], 1)
   expect_equal(end(gg)[1], 249250621)
   expect_equal(as.character(strand(gg)[1]), "+")
@@ -265,6 +267,12 @@ test_that("gr.fix with null genome", {
 
 })
 
+test_that("grfo", {
+  fo <- gr.genes %*% gr.DNAase
+  expect_equal(ncol(mcols(fo)), 17)
+  expect_equal(length(fo), 1856)
+})
+
 test_that("gr.tile.map", {
 
   gr1 <- gr.tile(GRanges(1, IRanges(1,100)), w=10)
@@ -273,4 +281,11 @@ test_that("gr.tile.map", {
   expect_equal(length(gg), 10)
   expect_equal(length(unlist(gg)), 20)
 
+})
+
+test_that('ra.overlaps', {
+  ro <- ra.overlaps(grl1, grl2)
+  expect_equal(class(ro), "matrix")
+  expect_equal(nrow(ro), 1)
+  expect_equal(ncol(ro), 2)
 })

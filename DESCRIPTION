@@ -2,8 +2,8 @@ Package: gUtils
 Title: R Package Providing Additional Capabilities and Speed for GenomicRanges
     Operations
 Version: 0.2.0
-Authors@R: c(person(given = "Jeremiah", family = "Wala", role = c("aut",
-    'cre'), email = "jwala@broadinstitute.org"), person(given = "Marcin",
+Authors@R: c(person(given = "Jeremiah", family = "Wala", role = c("aut", "cre"), email = "jwala@broadinstitute.org"),
+    person(given = "Marcin",
     family = "Imielinski", role = c("aut"), email =
     "marcin@broadinstitute.org"))
 Description: R package providing additional capabilities and speed for
@@ -17,7 +17,8 @@ Imports:
     S4Vectors (>= 0.4),
     GenomeInfoDb (>= 1.2),
     parallel,
-    BiocGenerics(>= 0.12)
+    BiocGenerics(>= 0.12),
+    methods
 Suggests:
     BSgenome.Hsapiens.UCSC.hg19,
     testthat,

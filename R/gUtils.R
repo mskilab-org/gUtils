@@ -16,6 +16,22 @@ NULL
 #' @format \code{GRanges}
 NULL
 
+#' Fake rearrangement data (set 1)
+#'
+#' @name grl1
+#' @docType data
+#' @keywords data
+#' @format \code{GRangesList}
+NULL
+
+#' Fake rearrangement data (set 2)
+#'
+#' @name grl2
+#' @docType data
+#' @keywords data
+#' @format \code{GRangesList}
+NULL
+
 #' \code{Seqinfo} object for hg19
 #'
 #' @name si
@@ -1306,11 +1322,11 @@ seg2gr = function(segs, key = NULL, seqlengths = NULL, seqinfo = Seqinfo())
 
   segs = standardize_segs(segs);
 
-  if (any(bix <- (is.na(segs$chr) | is.na(segs$pos1) | is.na(segs$pos2))))
-  {
-    warning('Segments with NA values for chromosome, start, and end position detected .. removing')
-    segs = segs[!bix, ]
-  }
+  # if (any(bix <- (is.na(segs$chr) | is.na(segs$pos1) | is.na(segs$pos2))))
+  # {
+  #   warning('Segments with NA values for chromosome, start, and end position detected .. removing')
+  #   segs = segs[!bix, ]
+  # }
 
   GR.NONO.FIELDS = c('seqnames', 'ranges', 'strand', 'seqlevels', 'seqlengths', 'isCircular', 'start', 'end', 'width', 'element');
 
@@ -1322,15 +1338,15 @@ seg2gr = function(segs, key = NULL, seqlengths = NULL, seqinfo = Seqinfo())
 
   if (length(seqlengths)>0)
   {
-    if (length(wtf  <- setdiff(segs$chr, names(seqlengths))))
-    {
-      warning('some seqnames in seg object were not included in provided seqlengths: ', paste(wtf, collapse = ','))
-      seqlengths[as.character(wtf)] = NA
-    }
-    segs$pos1 <- as.numeric(segs$pos1)
-    segs$pos2 <- as.numeric(segs$pos2)
-
-    out = GRanges(seqnames = segs$chr, ranges = IRanges(segs$pos1, segs$pos2), names = levels(levels), strand = segs$strand, seqlengths = seqlengths)
+    # if (length(wtf  <- setdiff(segs$chr, names(seqlengths))))
+    # {
+    #   warning('some seqnames in seg object were not included in provided seqlengths: ', paste(wtf, collapse = ','))
+    #   seqlengths[as.character(wtf)] = NA
+    # }
+    # segs$pos1 <- as.numeric(segs$pos1)
+    # segs$pos2 <- as.numeric(segs$pos2)
+    #
+    # out = GRanges(seqnames = segs$chr, ranges = IRanges(segs$pos1, segs$pos2), names = levels(levels), strand = segs$strand, seqlengths = seqlengths)
   }
   else
     out = GRanges(seqnames = as.character(segs$chr), ranges = IRanges(segs$pos1, segs$pos2), names = levels(levels), strand = segs$strand)
@@ -1364,14 +1380,14 @@ standardize_segs = function(seg, chr = FALSE)
   if (is(seg, 'matrix'))
     seg = as.data.frame(seg, stringsAsFactors = FALSE)
 
-  if (inherits(seg, 'RangedData') | inherits(seg, 'GRanges') | inherits(seg, 'IRanges'))
-  {
-    val = as.data.frame(values(seg));
-    values(seg) = NULL;
-    seg = as.data.frame(seg, row.names = NULL);  ## returns compressed iranges list
-    seg$seqnames = as.character(seg$seqnames)
-  }
-  else
+  # if (inherits(seg, 'RangedData') | inherits(seg, 'GRanges') | inherits(seg, 'IRanges'))
+  # {
+  #   val = as.data.frame(values(seg));
+  #   values(seg) = NULL;
+  #   seg = as.data.frame(seg, row.names = NULL);  ## returns compressed iranges list
+  #   seg$seqnames = as.character(seg$seqnames)
+  # }
+  # else
     val = NULL;
 
   field.aliases = list(
@@ -1596,4 +1612,121 @@ gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE,
 
     return(h.df)
   }
+}
+
+
+#' Alternative \code{GenomicRanges::match} that accepts \code{"by"} argument and \code{data.table} inputs
+#'
+#' Wrapper to \code{GenomicRanges::match} (uses \code{\link{gr.findoverlaps}})
+#' @return Vector of length = \code{length(query)} with subject indices of *first* subject in query, or NA if none found.
+#' This behavior is different from \code{\link{gr.findoverlaps}}, which will
+#' return *all* indicies of subject in query (in the case of one query overlaps with multiple subject)
+#' ... = additional args for findOverlaps (IRanges version)
+#' @name gr.match
+#' @param query Query \code{GRanges} pile
+#' @param subject Subject \code{GRanges} pile
+#' @param ... Additional arguments to be passed along to \code{\link{gr.findoverlaps}}.
+#' @export
+gr.match = function(query, subject, ...)
+{
+
+  ## if no need to call gr.findoverlaps, go to findOverlaps directly
+  # if (!is.data.table(query) && !is.data.table(subject) && length(list(...)) == 0) {
+  #   h = findOverlaps(query, subject)
+  #   tmp = data.table(subject.id = subjectHits(h), query.id = queryHits(h))
+  # } else {
+    tmp = gr.findoverlaps(query, subject, ...)
+  # }
+  tmp = tmp[!duplicated(tmp$query.id)]
+  out = rep(NA, length(query))
+  out[tmp$query.id] = tmp$subject.id
+  return(out)
+}
+
+#' @name %*%
+#' @title Metadata join with coordinates as keys (wrapper to \code{\link{gr.findoverlaps}})
+#' @description
+#' Shortcut for gr.findoverlaps with \code{qcol} and \code{scol} filled in with all the query and subject metadata names.
+#' This function is useful for piping \code{GRanges} operations together. Another way to think of %*% is as a
+#' join of the metadata, with genomic coordinates as the keys. \cr
+#' Example usage: \cr
+#' x %*% y
+#' @param x \code{GRanges}
+#' @param y \code{GRanges}
+#' @return \code{GRanges} containing every pairwise intersection of ranges in \code{x} and \code{y} with a join of the corresponding  metadata
+#' @rdname grfo
+#' @exportMethod %*%
+#' @export
+#' @importFrom methods setMethod
+#' @author Marcin Imielinski
+#' @docType methods
+#' @aliases %*%,GRanges-method
+#' @examples
+#' gr.genes %*% gr.DNAase
+#setGeneric('%*%', function(gr, ...) standardGeneric('%*%'))
+setMethod("%*%", signature(x = "GRanges"), function(x, y) {
+    gr = gr.findoverlaps(x, y, qcol = names(values(x)), scol = names(values(y)))
+   return(gr)
+})
+
+#' Find overlaps between rearrangements represented by \code{GRangesList} objects
+#'
+#' Determines overlaps between two piles of rearrangement junctions, each \code{GRangesLists} of signed locus pairs,
+#' against each other. returning a sparseMatrix that is T at entry ij if junction i overlaps junction j.
+#'
+#' @param ra1 \code{GRangesList} of pairs of signed ranges representing a rearrangement set
+#' @param ra2 \code{GRangesList} of pairs of signed ranges representing a rearrangement set
+#' @param pad Pad each breakpoint when considering overlaps. \code{[0]}
+#' @param ... Additional arguments to be sent to \code{\link{findOverlaps}} (e.g. \code{ignore.strand})
+#' @return \code{matrix} with the indices of \code{ra1} that overlap with \code{ra2} and vice-versa
+#' @name ra.overlaps
+#' @export
+ra.overlaps = function(ra1, ra2, pad = 0, ...)
+{
+  bp1 = grl.unlist(ra1) + pad
+  bp2 = grl.unlist(ra2) + pad
+  h = GenomicRanges::findOverlaps(bp1, bp2, ...) ## was gr.findoverlaps
+  ix = data.table(query.id = queryHits(h), subject.id = subjectHits(h))
+  #    ix.rev = gr.findoverlaps(bp1, gr.flip(bp2), ignore.strand = F) ## match even if flipped
+
+  .make_matches = function(ix, bp1, bp2)
+  {
+    if (length(ix) == 0)
+      return(NULL)
+    tmp.match = cbind(bp1$grl.ix[ix$query.id], bp1$grl.iix[ix$query.id], bp2$grl.ix[ix$subject.id], bp2$grl.iix[ix$subject.id])
+    tmp.match.l = lapply(split(1:nrow(tmp.match), paste(tmp.match[,1], tmp.match[,3])), function(x) tmp.match[x, , drop = F])
+
+    ## match only occurs if each range in a ra1 junction matches a different range in the ra2 junction
+    matched.l = sapply(tmp.match.l, function(x) all(c('11','22') %in% paste(x[,2], x[,4], sep = '')) | all(c('12','21') %in% paste(x[,2], x[,4], sep = '')))
+
+    return(do.call('rbind', lapply(tmp.match.l[matched.l], function(x) cbind(x[,1], x[,3])[!duplicated(paste(x[,1], x[,3])), , drop = F])))
+  }
+
+
+  #    tmp = rbind(.make_matches(ix, bp1, bp2), .make_matches(ix.rev, bp1, bp2))
+  #    rownames(tmp) = NULL
+
+  tmp = .make_matches(ix, bp1, bp2)
+
+  if (is.null(tmp))
+  {
+    # if (arr.ind)
+      return(matrix())
+    # else
+    #   return(sparseMatrix(length(ra1), length(ra2), x = 0))
+  }
+
+  rownames(tmp) = NULL
+
+  colnames(tmp) = c('ra1.ix', 'ra2.ix')
+
+  # if (arr.ind) {
+    ro <- tmp[order(tmp[,1], tmp[,2]), ]
+    if (class(ro)=='integer')
+      ro <- matrix(ro, ncol=2, nrow=1, dimnames=list(c(), c('ra1.ix', 'ra2.ix')))
+    return(ro)
+  # } else {
+  #   ro <- sparseMatrix(tmp[,1], tmp[,2], x = 1, dims = c(length(ra1), length(ra2)))
+  #   return(ro)
+  # }
 }
