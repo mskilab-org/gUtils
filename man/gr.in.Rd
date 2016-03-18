@@ -19,5 +19,33 @@ logical vector if query range i is found in any range in subject
 \description{
 Uses \code{\link{gr.findoverlaps}} for a faster \code{over}
 by = column name in query and subject that we additionally control for a match (passed on to gr.findoverlaps)
+<<<<<<< HEAD
+
+Shortcut for gr.in (standard arguments)
+
+gr1 %^% gr2
+
+shortcut for x[gr.in(x,y)]
+
+gr1 %&% gr2 returns the subsets of gr1 that overlaps gr2
+
+shortcut for x[gr.in(x,y, ignore.strand = FALSE)]
+
+gr1 %WW% gr2 returns the subsets of gr that overlaps gr2 not ignoring strand
+
+Shortcut for gr.in 
+
+gr1 %^^% gr2
+}
+\author{
+Marcin Imielinski
+
+Marcin Imielinski
+
+Marcin Imielinski
+
+Marcin Imielinski
+=======
+>>>>>>> 60083aa350ab9c4388ffd83f1d307cb2446af96b
 }
 

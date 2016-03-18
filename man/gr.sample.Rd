@@ -19,9 +19,15 @@ gr.sample(gr, k, len = 100, replace = TRUE)
 GRanges of max length sum(k) [if k is vector) or k*length(gr) (if k is scalar) with labels indicating the originating range.
 }
 \description{
+<<<<<<< HEAD
+Samples k intervals of length "len" from a pile of gr's.
+If k is a scalar then will (uniformly) select k intervals from the summed territory of gr's
+If k is a vector of length(gr) then will uniformly select k intervals from each. 
+=======
 Samples k intervals of length "len" from a pile of \code{GRanges}.
 If k is a scalar then will (uniformly) select k intervals from the summed territory of \code{GRanges}
 If k is a vector of length(gr) then will uniformly select k intervals from each.
+>>>>>>> 60083aa350ab9c4388ffd83f1d307cb2446af96b
 from a tiling of the set (and may do fewer than k samples if width(gr[i])<= k[i] *len)
 If k[i] = NA, will return tiling of that interval, if k = NA will return tiling of the entire
 gr's (with length len tiles).
