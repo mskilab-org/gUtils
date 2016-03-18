@@ -24,13 +24,7 @@ GRanges object of width 1 ranges representing end of each genomic range in the i
 Alternative to \code{flank} that will provide end positions *within* intervals
 }
 \examples{
-<<<<<<< HEAD
-  \dontrun{st <- c(1,2,3)
-  si <- Seqinfo("1",3)
-  gr.end(GRanges(1, IRanges(st, width=101), seqinfo=si), width=200, clip=TRUE)}
-=======
 library(gUtils)
 gr.end(gr.DNAase, width=200, clip=TRUE)
->>>>>>> 60083aa350ab9c4388ffd83f1d307cb2446af96b
 }
 

@@ -15,14 +15,8 @@ grl.string(grl, mb = FALSE, sep = ",", ...)
 
 \item{...}{Additional arguments to be passed to \code{gr.string}}
 }
-<<<<<<< HEAD
-\description{
-return ucsc style interval string corresponding to each gr in each grl, one line per grl item, with gr's in 
-grl separated by sep
-=======
 \value{
 Character vector where each element is a \code{GRanges} pile corresponding to a single \code{GRangesList} element
->>>>>>> 60083aa350ab9c4388ffd83f1d307cb2446af96b
 }
 \description{
 Return ucsc style interval string corresponding to each \code{GRanges} in the \code{GRangesList}.

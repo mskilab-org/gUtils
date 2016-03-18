@@ -25,14 +25,8 @@ gr.start(x, width = 1, force = FALSE, ignore.strand = TRUE,
 Get GRanges corresponding to beginning of range
 }
 \examples{
-<<<<<<< HEAD
-  \dontrun{st <- c(1,2,3)
-  si <- Seqinfo("1",3)
-  gr.start(GRanges(1, IRanges(st, width=101), seqinfo=si), width=20)}
-=======
 library(gUtils)
 gr.start(gr.DNAase, width=200)
 gr.start(gr.DNAase, width=200, clip=TRUE)
->>>>>>> 60083aa350ab9c4388ffd83f1d307cb2446af96b
 }
 

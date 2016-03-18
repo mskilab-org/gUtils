@@ -19,10 +19,6 @@ gr.fix(gr, genome = NULL, gname = NULL, drop = FALSE)
 \code{GRanges} pile with the fixed \code{Seqinfo}
 }
 \description{
-<<<<<<< HEAD
-"Fixes" seqlengths / seqlevels 
-=======
->>>>>>> 60083aa350ab9c4388ffd83f1d307cb2446af96b
 If "genome" not specified will replace NA seq lengths in GR to reflect largest coordinate per seqlevel
 and removes all NA seqlevels after this fix.
 }
