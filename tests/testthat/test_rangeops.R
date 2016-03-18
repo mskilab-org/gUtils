@@ -124,10 +124,6 @@ test_that("gr.findoverlap by", {
   gr.findoverlaps(gr.genes, gr.DNAase, by = "bin")
 })
 
-test_that("gr.in", {
-  expect_equal(sum(gr.in(gr.genes, gr.DNAase)),1309)
-})
-
 test_that("gr2dt works as expected", {
   expect_identical(colnames(gr2dt(gr)), c("seqnames","start",'end','width','strand','name'))
   expect_equal(nrow(gr2dt(gr)), length(gr))
@@ -267,13 +263,6 @@ test_that("gr.fix with null genome", {
   es <- structure(c("gen","gen"), names=c("X","1"))
   expect_identical(genome(seqinfo(gr.fix(gg, gname='gen'))), es)
 
-})
-
-test_that("gr.match", {
-  gg <- gr.match(gr.genes[1:100], gr.DNAase)
-  fo <- sort(gr.findoverlaps(gr.genes[1:100], gr.DNAase))
-  fo2 <- sort(fo[!duplicated(fo$query.id)]$subject.id)
-  identical(fo2, sort(gg[!is.na(gg)]))
 })
 
 test_that("gr.tile.map", {

@@ -951,43 +951,6 @@ gr.tile = function(gr, w = 1e3)
     return(out)
 }
 
-#' Faster \code{GenomicRanges::match}
-#'
-#' Faster implementation of \code{GenomicRanges::match} (uses \code{\link{gr.findoverlaps}})
-#' @return Vector of length = \code{length(query)} with subject indices of *first* subject in query, or NA if none found.
-#' This behavior is different from \code{\link{gr.findoverlaps}}, which will
-#' return *all* indicies of subject in query (in the case of one query overlaps with multiple subject)
-#' ... = additional args for findOverlaps (IRanges version)
-#' @name gr.match
-#' @param query Query \code{GRanges} pile
-#' @param subject Subject \code{GRanges} pile
-#' @param max.slice Maximum number of ranges to consider at once \code{[Inf]}
-#' @param verbose Increase the verbosity during runtime
-#' @param mc.cores Number of cores to use, if ranges exceed \code{max.slice}
-#' @param ... Additional arguments to be passed along to \code{\link{gr.findoverlaps}}.
-#' @importFrom parallel mclapply
-#' @export
-gr.match = function(query, subject, max.slice = Inf, verbose = FALSE, mc.cores = 1, ...)
-  {
-      if (length(query)>max.slice)
-          {
-              verbose = TRUE
-              ix.l = split(1:length(query), ceiling(as.numeric((1:length(query)/max.slice))))
-              return(do.call('c', mclapply(ix.l, function(ix) {
-                  if (verbose)
-                      cat(sprintf('Processing %s to %s\n', min(ix), max(ix)))
-                  gr.match(query[ix, ], subject, verbose = TRUE, ...)
-              }, mc.cores = mc.cores)))
-          }
-
-    tmp = gr.findoverlaps(query, subject, ...)
-    tmp = tmp[!duplicated(tmp$query.id)]
-    out = rep(NA, length(query))
-    out[tmp$query.id] = tmp$subject.id
-    return(out)
-   }
-
-
 #' gr.tile.map
 #'
 #' Given two tilings of the genome (e.g. at different resolution)
@@ -1069,26 +1032,6 @@ gr.tile.map = function(query, subject, verbose = FALSE)
     names(out) = as.character(1:length(query))
     return(out)
   }
-
-#' Faster version of \code{GRanges} \code{over}
-#'
-#' Uses \code{\link{gr.findoverlaps}} for a faster \code{over}.
-#'
-#' Can specify a \code{by} = column name in query and subject that we additionally control for a match (passed on to \code{\link{gr.findoverlaps}}).
-#' @name gr.in
-#' @param query Query \code{GRanges} pile
-#' @param subject Subject \code{GRanges} pile
-#' @param ... Additional arguments to pass to \code{\link{gr.findoverlaps}}
-#' @return logical vector if query range i is found in any range in subject
-#' @export
-gr.in = function(query, subject, ...)
-  {
-    tmp = gr.findoverlaps(query, subject, ...)
-    out = rep(FALSE, length(query))
-    out[tmp$query.id] = TRUE
-
-    return(out)
-   }
 
 #' Dice up \code{GRanges} into \code{width = 1} \code{GRanges} spanning the input (warning can produce a very large object)
 #'
@@ -1178,7 +1121,7 @@ gr.dist = function(gr1, gr2 = NULL, ignore.strand = FALSE, ...)
 #' @param windows \code{GRanges} pile of windows
 #' @param some Will return \code{TRUE} for \code{GRangesList} elements that intersect at least on window range [FALSE]
 #' @param only Will return \code{TRUE} for \code{GRangesList} elements only if there are no elements of query that fail to interesect with windows [FALSE]
-#' @param ... Additional parameters to be passed on to \code{\link{gr.findoverlaps}}
+#' @param ... Additional parameters to be passed on to \code{GenomicRanges::findOverlaps}
 #' @name grl.in
 #' @export
 grl.in <- function(grl, windows, some = FALSE, only = FALSE, ...)
@@ -1189,11 +1132,13 @@ grl.in <- function(grl, windows, some = FALSE, only = FALSE, ...)
       return(logical())
 
     if (length(windows)==0)
-      return(rep(T, length(grl)))
+      return(rep(TRUE, length(grl)))
 
     numwin = length(windows);
     gr = grl.unlist(grl)
-    m = gr2dt(gr.findoverlaps(gr, windows, ...))
+    h = GenomicRanges::findOverlaps(gr, windows, ...)
+    m = data.table(query.id = queryHits(h), subject.id = subjectHits(h))
+    #m = gr2dt(gr.findoverlaps(gr, windows, ...))
 
     out = rep(FALSE, length(grl))
     if (nrow(m)==0)
@@ -1217,52 +1162,6 @@ grl.in <- function(grl, windows, some = FALSE, only = FALSE, ...)
         out = out!=0
     return(out)
   }
-
-# grl.split
-#
-# splits GRL's with respect to their seqnames and strand (default), returning
-# new grl whose items only contain ranges with a single seqname / strand
-#
-# can also split by arbitrary (specified) genomic ranges value fields
-# @name grl.split
-# @keywords internal
-# grl.split = function(grl, seqname = TRUE, strand = TRUE,
-#   values = c() # columns of values field in grl
-#   )
-#   {
-#     ele = tryCatch(as.data.frame(grl)$element, error = function(e) e)
-#     if (inherits(ele, 'error'))
-#       {
-#         if (is.null(names(grl)))
-#           nm = 1:length(names(grl))
-#         else
-#           nm = names(grl)
-#
-#         ele = unlist(lapply(1:length(grl), function(x) rep(nm[x], length(grl[[x]]))))
-#       }
-#
-#     gr = unlist(grl)
-#     names(gr) = NULL;
-#
-#     by = ele;
-#     if (seqname)
-#       by = paste(by, seqnames(gr))
-#
-#     if (strand)
-#       by = paste(by, strand(gr))
-#
-#     values = intersect(names(values(gr)), values);
-#     if (length(values)>0)
-#       for (val in values)
-#         by = paste(by, values(gr)[, val])
-#
-#     out = split(gr, by);
-#     names(out) = ele[!duplicated(by)]
-#
-#     values(out) = values(grl[ele[!duplicated(by)]])
-#
-#     return(out)
-#   }
 
 #' Robust unlisting of \code{GRangesList} that keeps track of origin
 #'
@@ -1297,76 +1196,6 @@ grl.unlist = function(grl)
     values(out) = cbind(values(grl)[out$grl.ix, , drop = FALSE], values(out))
     return(out)
   }
-
-# grl.span
-#
-# Returns GRanges object representing the left / right extent of each GRL item.  In case of "chimeric" GRL items (ie that map
-# to two chromosomes) there are two options:
-# (1) specify "chr" chromosome as argument to subset GRL's that are on that chromosome, and compute GRL extents from this, any GRL
-#     full outside of that chromosome will get a 0 width GRL
-# (2) (default) allow chimeric GRL items to get an extent that is with respect to the first chromosome in that GRL
-#
-# If a grl item contains ranges that lie on different chromosomes, then corresponding grange will have chromosome "NA" and IRange(0, 0)
-# @name grl.span
-# @keywords internal
-# grl.span = function(grl, chr = NULL, ir = FALSE, keep.strand = TRUE)
-#   {
-#     if (is.null(names(grl)))
-#       names(grl) = 1:length(grl);
-#
-#     tmp = tryCatch(as.data.frame(grl), error = function(e) e)
-#
-#     if (inherits(tmp, 'error')) ## gr names are screwy so do some gymnastics
-#       {
-#         if (is.null(names(grl)))
-#           names.grl = 1:length(grl)
-#         else
-#           names.grl = names(grl);
-#
-#         element = as.character(Rle(names.grl, sapply(grl, length)))
-#         tmp.gr = unlist(grl)
-#         names(tmp.gr) = NULL;
-#         tmp = as.data.frame(tmp.gr);
-#         tmp$element = element;
-#       }
-#
-#     if (is.null(chr))
-#       {
-#         chrmap = stats::aggregate(formula = seqnames ~ element, data = tmp, FUN = function(x) x[1]);
-#         chrmap = structure(as.character(chrmap[,2]), names = chrmap[,1])
-#
-#         if (keep.strand)
-#           {
-#             strmap = stats::aggregate(formula = as.character(strand) ~ element, data = tmp, FUN =
-#               function(x) {y = unique(x); if (length(y)>1) return('*') else y[1]})
-#             strmap = structure(as.character(strmap[,2]), names = strmap[,1])
-#             str = strmap[names(grl)];
-#           }
-#         else
-#           str = '*'
-#
-#         tmp = tmp[tmp$seqnames == chrmap[tmp$element], ]; ## remove all gr from each GRL item that don't map to the chr of the first gr
-#         chr = chrmap[names(grl)];
-#         out.gr = GRanges(chr, IRanges(1,0), seqlengths = seqlengths(grl), strand = str)
-#       }
-#     else
-#       {
-#         if (length(chr)>1)
-#           warning('chr has length greater than 1, only the first element will be used')
-#         tmp = tmp[tmp$seqnames == chr[1], ]
-#         out.gr = rep(GRanges(chr, IRanges(1, 0)), length(grl)) # missing values
-#       }
-#
-#     if (nrow(tmp)>0)
-#       {
-#         tmp = split(GRanges(tmp$seqnames, IRanges(tmp$start, tmp$end)), tmp$element)
-#         out.gr[match(names(tmp), names(grl))] = GRanges(chr[names(tmp)],
-#                 IRanges(sapply(start(tmp), min), sapply(end(tmp), max)), strand = strand(out.gr)[match(names(tmp), names(grl))]);
-#         names(out.gr) = names(grl)
-#       }
-#     return(out.gr)
-#   }
-
 
 #' Pivot a \code{GRangesList}, inverting "x" and "y"
 #'
