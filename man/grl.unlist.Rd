@@ -9,11 +9,17 @@ grl.unlist(grl)
 \arguments{
 \item{grl}{\code{GRangeList} object to unlist}
 }
+\value{
+\code{GRanges} with added metadata fields \code{grl.ix} and \code{grl.iix}.
+}
 \description{
-Does a "nice" unlist of a \code{GRangesList} object adding a field "grl.ix" denoting which element of the \code{GRangesList}
-each \code{GRanges} corresponds to and a field grl.iix which saves the (local) index that that gr was in its corresponding grl item
+Does a "nice" unlist of a \code{GRangesList} object adding a field \code{grl.ix} denoting which element of the \code{GRangesList}
+each \code{GRanges} corresponds to and a field \code{grl.iix} which saves the (local) index that that gr was in its corresponding \code{GRangesList} item
 }
 \details{
-In this way, \code{grl.unlist} is reversible, while \code{unlist} is not.
+In this way, \code{grl.unlist} is reversible, while \code{BiocGenerics::unlist} is not.
+}
+\examples{
+grl.unlist(grl.hiC)
 }
 

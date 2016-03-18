@@ -22,4 +22,7 @@ Character vector where each element is a \code{GRanges} pile corresponding to a 
 Return ucsc style interval string corresponding to each \code{GRanges} in the \code{GRangesList}.
 One line per per \code{GRangesList} item. \code{GRanges} elements themselves are separated by \code{sep}
 }
+\examples{
+grl.string(grl.hiC, mb=TRUE)
+}
 

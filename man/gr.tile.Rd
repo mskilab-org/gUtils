@@ -2,21 +2,22 @@
 % Please edit documentation in R/gUtils.R
 \name{gr.tile}
 \alias{gr.tile}
-\title{Tile ranges across a genomic range}
+\title{Tile ranges across \code{GRanges}}
 \usage{
 gr.tile(gr, w = 1000)
 }
 \arguments{
-\item{gr}{\code{GRanges}, \code{seqlengths} or \code{seqinfo} range to tile. If has \code{GRanges} has overlaps, will reduce first.}
+\item{gr}{\code{GRanges}, \code{seqlengths} or \code{Seqinfo} range to tile. If has \code{GRanges} has overlaps, will reduce first.}
 
 \item{w}{Width of each tile}
 }
 \description{
-tiles interval (or whole genome) with segments of <= specified width.  Returns strandless gr
-"tiles".
+Tiles interval (or whole genome) with segments of \code{<=} specified width.
 }
-\details{
-input can be seqinfo object (in which case whole genome will be tiled);
-if inputted grs overlap, will first reduce then tile.
+\examples{
+## 10 tiles of width 10
+gr1 <- gr.tile(GRanges(1, IRanges(1,100)), w=10)
+## make them overlap each other by 5
+gr1 + 5
 }
 

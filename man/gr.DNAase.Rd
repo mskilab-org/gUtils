@@ -3,8 +3,7 @@
 \docType{data}
 \name{gr.DNAase}
 \alias{gr.DNAase}
-\title{DNAaseI hypersensitivity sites from UCSC Table Browser hg19,
-subsampled to 10,000 sites}
+\title{DNAaseI hypersensitivity sites for hg19}
 \format{\code{GRanges}}
 \description{
 DNAaseI hypersensitivity sites from UCSC Table Browser hg19,

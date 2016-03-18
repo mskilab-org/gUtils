@@ -9,15 +9,18 @@ gr.string(gr, add.chr = FALSE, mb = FALSE, round = 3, other.cols = c())
 \arguments{
 \item{gr}{\code{GRanges} pile to get intervals from}
 
-\item{add.chr}{Prepend seqnames with "chr" [FALSE]}
+\item{add.chr}{Prepend seqnames with "chr" \code{[FALSE]}}
 
-\item{mb}{Round to the nearest megabase [FALSE]}
+\item{mb}{Round to the nearest megabase \code{[FALSE]}}
 
-\item{round}{If \code{mb} supplied, how many digits to round to}
+\item{round}{If \code{mb} supplied, how many digits to round to. \code{[3]}}
 
-\item{other.cols}{TODO}
+\item{other.cols}{Names of additional \code{mcols} fields to add to the string (seperated by ";")}
 }
 \description{
-If mb will return as MB and round to "round"
+Return UCSC style interval string corresponding to \code{GRanges} pile (ie chr:start-end)
+}
+\examples{
+gr.string(gr.genes, other.cols = c("name", "name2"))
 }
 

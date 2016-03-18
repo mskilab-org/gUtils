@@ -2,12 +2,12 @@
 % Please edit documentation in R/gUtils.R
 \name{gr.rand}
 \alias{gr.rand}
-\title{Generate random GRanges on genome}
+\title{Generate random \code{GRanges} on genome}
 \usage{
 gr.rand(w, genome)
 }
 \arguments{
-\item{w}{Vector of widths (length of w determines length of output)}
+\item{w}{Vector of widths (length of \code{w} determines length of output)}
 
 \item{genome}{Genome which can be a \code{GRanges}, \code{GRangesList}, or \code{Seqinfo} object. Default is "hg19" from the \code{BSGenome} package.}
 }
@@ -15,7 +15,7 @@ gr.rand(w, genome)
 \code{GRanges} with random intervals on the specifed "chromosomes"
 }
 \description{
-Randomly generates non-overlapping GRanges with supplied widths on supplied genome.
+Randomly generates non-overlapping \code{GRanges} with supplied widths on supplied genome.
 Seed can be supplied with \code{set.seed}
 }
 \note{

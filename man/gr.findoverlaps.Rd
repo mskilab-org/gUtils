@@ -2,7 +2,7 @@
 % Please edit documentation in R/gUtils.R
 \name{gr.findoverlaps}
 \alias{gr.findoverlaps}
-\title{Faster replacement for \code{GRanges} version of \code{findOverlaps}}
+\title{Faster replacement for \code{GRanges} version of \code{GenomicRanges::findOverlaps}}
 \usage{
 gr.findoverlaps(query, subject, ignore.strand = TRUE, first = FALSE,
   qcol = NULL, scol = NULL,
@@ -18,7 +18,7 @@ gr.findoverlaps(query, subject, ignore.strand = TRUE, first = FALSE,
 
 \item{ignore.strand}{Don't consider strand information during overlaps [TRUE]}
 
-\item{first}{TODO}
+\item{first}{Restrict to only the first match of the subject (default is to return all matches). \code{[FALSE]}}
 
 \item{qcol}{\code{character} vector of query meta-data columns to add to results}
 
@@ -26,35 +26,29 @@ gr.findoverlaps(query, subject, ignore.strand = TRUE, first = FALSE,
 
 \item{foverlaps}{Use \code{data.table::foverlaps} instead of \code{IRanges::findOverlaps}. Overrules \code{pintersect}}
 
-\item{pintersect}{Use \code{IRanges::pintersect} function. Useful for overlaps with many, many chromosomes. Default is TRUE if \code{length(unique(seqnames)) > 50}}
+\item{pintersect}{Use \code{IRanges::pintersect} function. In general this is slower, but can be much faster and with lower memory for large ranges on many different seqnames (e.g. transcriptome). Default is \code{FALSE} unless \code{length(unique(seqnames)) > 50}}
 
 \item{verbose}{Increase the verbosity during runtime [FALSE]}
 
-\item{type}{TODO}
+\item{type}{\code{type} argument as defined by \code{IRanges::findOverlaps} (\code{"any"}, \code{"start"}, \code{"end"}, \code{"within"}, \code{"equal"}). If value other than \code{"any"} is supplied, will force call to \code{IRanges::findOverlaps}. Otherwise, may use \code{IRanges::pintersect} or \code{data.table::foverlaps}. \code{["any"]}}
 
 \item{by}{Meta-data column to consider when performing overlaps [NULL]}
 
-\item{return.type}{Select data format to return: \code{same}, \code{data.table}, \code{GRanges}}
+\item{return.type}{Select data format to return (supplied as character): \code{"same"}, \code{"data.table"}, \code{"GRanges"}. \code{["same"]}}
 
-\item{...}{TODO}
+\item{...}{Additional arguments sent to \code{IRanges::pintersect} if \code{pintersect = TRUE}.}
 }
 \value{
 \code{GRanges} pile of the intersection regions, with \code{query.id} and \code{subject.id} marking sources
 }
 \description{
-returns granges of matches with two additional fields
-$query.id - index of matching query
-$subject.id - index of matching subject
+Returns \code{GRanges} of matches with two additional fields:
+\itemize{
+\code{$query.id} - index of matching query
+\code{$subject.id} - index of matching subject
 }
-\details{
-pintersect employs pintersect to find overlaps, in general this is slower, but can be much faster with much lower
-memory footprint for large ranges sets with many different seqnames (eg transcriptome)
-max.chunk controls the maximum number of range pairs that compared at once
-
-Optional "by" field is a character scalar that specifies a metadata column present in both query and subject
+Optional \code{"by"} field is a character scalar that specifies a metadata column present in both query and subject
 that will be used to additionally restrict matches, i.e. to pairs of ranges that overlap and also
-have the same values of their "by" fields
-
-... = additional args for \code{findOverlaps} (IRanges version)
+have the same values of their \code{"by"} fields
 }
 

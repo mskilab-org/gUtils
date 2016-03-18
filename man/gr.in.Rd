@@ -17,7 +17,9 @@ gr.in(query, subject, ...)
 logical vector if query range i is found in any range in subject
 }
 \description{
-Uses \code{\link{gr.findoverlaps}} for a faster \code{over}
-by = column name in query and subject that we additionally control for a match (passed on to gr.findoverlaps)
+Uses \code{\link{gr.findoverlaps}} for a faster \code{over}.
+}
+\details{
+Can specify a \code{by} = column name in query and subject that we additionally control for a match (passed on to \code{\link{gr.findoverlaps}}).
 }
 

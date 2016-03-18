@@ -25,7 +25,6 @@ gr.start(x, width = 1, force = FALSE, ignore.strand = TRUE,
 Get GRanges corresponding to beginning of range
 }
 \examples{
-library(gUtils)
 gr.start(gr.DNAase, width=200)
 gr.start(gr.DNAase, width=200, clip=TRUE)
 }

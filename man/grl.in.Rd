@@ -15,7 +15,7 @@ grl.in(grl, windows, some = FALSE, only = FALSE, ...)
 
 \item{only}{Will return \code{TRUE} for \code{GRangesList} elements only if there are no elements of query that fail to interesect with windows [FALSE]}
 
-\item{...}{Additional parameters to be passed on to \code{gr.findoverlaps}}
+\item{...}{Additional parameters to be passed on to \code{\link{gr.findoverlaps}}}
 }
 \description{
 Like %in% for grl but now will return a logical vector that is true at position if i

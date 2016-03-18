@@ -1,6 +1,7 @@
+#' DNAaseI hypersensitivity sites for hg19
+#'
 #' DNAaseI hypersensitivity sites from UCSC Table Browser hg19,
 #' subsampled to 10,000 sites
-#'
 #' @name gr.DNAase
 #' @docType data
 #' @keywords data
@@ -41,7 +42,6 @@ NULL
 #' @param gr \code{GRanges} pile to convert to \code{data.table}
 #' @return \code{data.table} with seqnames, start, end, width, strand and all of the meta data. Width is end-inclusive (e.g. [6,7] width = 2)
 #' @examples
-#' library(gUtils)
 #' gr2dt(gr.genes)
 #' @export
 gr2dt <- function(gr)
@@ -63,7 +63,6 @@ gr2dt <- function(gr)
 #' @return \code{GRanges} object of width 1 ranges representing start of each genomic range in the input.
 #' @importFrom GenomicRanges GRanges
 #' @examples
-#' library(gUtils)
 #' gr.start(gr.DNAase, width=200)
 #' gr.start(gr.DNAase, width=200, clip=TRUE)
 #' @export
@@ -129,21 +128,16 @@ gr.start <- function(x, width = 1, force = FALSE, ignore.strand = TRUE, clip = F
 
 #' Convert data.table to GRanges
 #'
-#' Takes as input a data.table which must have the fields: start, end, strand, seqnames.
-#' All of the remaining fields are added as meta data to the \code{\link[GenomicRanges]{GRanges}}.
-#' Will throw an error if \code{data.table} does not contain seqnames, start and end
-#' @param dt data.table to convert to GRanges
-#' @return \code{\link[GenomicRanges]{GRanges}} object of length = nrow(dt)
-#' @importFrom data.table
-#'   data.table
-#' @importFrom GenomicRanges
-#'   GRanges
-#'   mcols<-
-#' @importFrom IRanges
-#'    IRanges
+#' Takes as input a data.table which must have the following fields: \code{start}, \code{end}, \code{strand}, \code{seqnames}. Will throw
+#' an error if any one of these is not present.
+#' All of the remaining fields are added as metadata to the \code{GRanges}.
+#' @param dt \code{data.table} to convert to \code{GRanges}
+#' @return \code{GRanges} object of \code{length = nrow(dt)}
+#' @importFrom data.table data.table
+#' @importFrom GenomicRanges GRanges mcols<-
+#' @importFrom IRanges IRanges
 #' @name dt2gr
 #' @examples
-#' library(gUtils)
 #' gr <- dt2gr(data.table(start=c(1,2), seqnames=c("X", "1"), end=c(10,20), strand = c('+', '-')))
 #' @export
 dt2gr <- function(dt) {
@@ -168,21 +162,19 @@ dt2gr <- function(dt) {
   return(out)
 }
 
-#' Get GRanges corresponding to beginning of end
+#' Get the right ends of a \code{GRanges}
 #'
-#' Alternative to \code{flank} that will provide end positions *within* intervals
+#' Alternative to \code{GenomicRanges::flank} that will provide end positions *within* intervals
 #'
 #' @param x \code{GRanges} object to operate on
-#' @param width [default = 1] Specify subranges of greater width including the start of the range.
-#' @param force [default = F] Allows returned \code{GRanges} to have ranges outside of its \code{Seqinfo} bounds.
-#' @param clip [default = F] Trims returned \code{GRanges} so that it does not extend beyond bounds of the input \code{GRanges}
-#' @param ignore.strand [default = TRUE] If set to \code{FALSE}, will extend '-' strands from the other direction.
-#' @return GRanges object of width 1 ranges representing end of each genomic range in the input.
+#' @param width Specify subranges of greater width including the start of the range. \code{[1]}
+#' @param force Allows returned \code{GRanges} to have ranges outside of its \code{Seqinfo} bounds. \code{[FALSE]}
+#' @param clip Trims returned \code{GRanges} so that it does not extend beyond bounds of the input \code{GRanges}. \code{[TRUE]}
+#' @param ignore.strand If set to \code{FALSE}, will extend '-' strands from the other direction. \code{[TRUE]}
+#' @return \code{GRanges} object of width = \code{width} ranges representing end of each genomic range in the input.
 #' @examples
-#' library(gUtils)
 #' gr.end(gr.DNAase, width=200, clip=TRUE)
-#' @importFrom GenomeInfoDb
-#'   seqlengths
+#' @importFrom GenomeInfoDb seqlengths
 #' @importFrom GenomicRanges strand seqnames values<- values
 #' @export
 gr.end = function(x, width = 1, force = FALSE, ignore.strand = TRUE, clip = TRUE)
@@ -246,7 +238,7 @@ gr.end = function(x, width = 1, force = FALSE, ignore.strand = TRUE, clip = TRUE
     return(out)
   }
 
-#' Get the midpoint of range
+#' Get the midpoints of \code{GRanges} ranges
 #'
 #' @param x \code{GRanges} object to operate on
 #' @return \code{GRanges} of the midpoint, calculated from \code{floor(width(x)/2)}
@@ -260,7 +252,7 @@ gr.mid = function(x)
       return(x)
   }
 
-# Round a set of GRanges to another set
+# Round a set of \code{GRanges} to another set
 #
 # "rounds" a set of query ranges Q to a given interval set S using the following rule:
 # 1) If q in Q is partially / fully within S then return intersection of q with S.
@@ -318,12 +310,12 @@ gr.mid = function(x)
 #   }
 #
 
-#' Generate random GRanges on genome
+#' Generate random \code{GRanges} on genome
 #'
-#' Randomly generates non-overlapping GRanges with supplied widths on supplied genome.
+#' Randomly generates non-overlapping \code{GRanges} with supplied widths on supplied genome.
 #' Seed can be supplied with \code{set.seed}
 #'
-#' @param w Vector of widths (length of w determines length of output)
+#' @param w Vector of widths (length of \code{w} determines length of output)
 #' @param genome Genome which can be a \code{GRanges}, \code{GRangesList}, or \code{Seqinfo} object. Default is "hg19" from the \code{BSGenome} package.
 #' @return \code{GRanges} with random intervals on the specifed "chromosomes"
 #' @note This function is currently quite slow, needs optimization
@@ -381,19 +373,19 @@ gr.rand = function(w, genome)
 
 #' Trims pile of \code{GRanges} relative to the specified <local> coordinates of each range
 #'
-#' e.g. A \code{GRanges} with genomic coordinates 1:1,000,000-1,001,000 can get the first 20 and last 50 bases trimmed off with
+#' Example: \code{GRanges} with genomic coordinates 1:1,000,000-1,001,000 can get the first 20 and last 50 bases trimmed off with
 #' \code{start = 20, end = 950}.
-#' if end is larger than the width of the corresponding gr, then the corresponding output will only have end(gr) as its coordinate.
+#' if end is larger than the width of the corresponding gr, then the corresponding output will only have \code{end(gr)} as its coordinate.
 #'
-#' This is a role not currently provided by the standard \code{GRanges} functions
-#' (eg shift, reduce, restrict, shift, resize, flank etc)
+#' This is a role not currently provided by the standard \code{GenomicRanges} functions
+#' (e.g. \code{shift}, \code{reduce}, \code{restrict}, \code{shift}, \code{resize}, \code{flank})
 #' @param gr \code{GRanges} to trim
-#' @param starts number [1]
-#' @param ends number [1]
+#' @param starts Number of bases to trim off of the front\code{[1]}
+#' @param ends Number of bases to trim off of the back\code{[1]}
 #' @examples
 #' ## trim the first 20 and last 50 bases
 #' gr.trim(GRanges(1, IRanges(1e6, width=1000)), starts=20, ends=950)
-#' ## return GRanges on 1:1,000,019-1,000,949
+#' ## return value: GRanges on 1:1,000,019-1,000,949
 #' @export
 gr.trim = function(gr, starts=1, ends=1)
 
@@ -440,13 +432,11 @@ gr.trim = function(gr, starts=1, ends=1)
 
 #' Randomly sample \code{GRanges} intervals within territory
 #'
-#' Samples k intervals of length "len" from a pile of \code{GRanges}.
-#' If k is a scalar then will (uniformly) select k intervals from the summed territory of \code{GRanges}
-#' If k is a vector of length(gr) then will uniformly select k intervals from each.
-#' from a tiling of the set (and may do fewer than k samples if width(gr[i])<= k[i] *len)
-#' If k[i] = NA, will return tiling of that interval, if k = NA will return tiling of the entire
-#' gr's (with length len tiles).
-#'
+#' Samples \code{k} intervals of length "len" from a pile of \code{GRanges}.
+#' \itemize{
+#' \item If k is a scalar then will (uniformly) select k intervals from the summed territory of \code{GRanges}
+#' \item If k is a vector of length(gr) then will uniformly select k intervals from each.
+#' }
 #' @param gr \code{GRanges} object defining the territory to sample from
 #' @param k Number of ranges to sample
 #' @param len Length of the \code{GRanges} element to produce [100]
@@ -456,7 +446,7 @@ gr.trim = function(gr, starts=1, ends=1)
 #' @examples
 #' ## sample 5 \code{GRanges} of length 10 each from territory of RefSeq genes
 #' gr.sample(reduce(gr.genes), k=5, len=10)
-#' @note This is different from overloaded sample() function implemented in GenomicRanges class, which just samples from a pile of GRanges
+#' @note This is different from \code{GenomicRanges::sample} function, which just samples from a pile of \code{GRanges}
 #' @export
 gr.sample = function(gr, k, len = 100, replace = TRUE)
 {
@@ -525,7 +515,7 @@ gr.sample = function(gr, k, len = 100, replace = TRUE)
 #' Creates a genomic ranges from seqinfo object
 #' ie a pile of ranges spanning the genome
 #' @param si \code{Seqinfo} object or a \code{BSgenome} genome
-#' @param strip.empty Don't know. Default FALSE
+#' @param strip.empty Don't know. \code{[FALSE]}
 #' @return \code{GRanges} representing the range of the input genome
 #' @examples
 #' \dontrun{libary(BSgenome.Hsapiens.UCSC.hg19); si2gr(Hsapiens)}
@@ -555,7 +545,7 @@ si2gr <- function(si, strip.empty = FALSE)
     return(sigr)
 }
 
-#' Concatenate GRanges, robust to different \code{mcols}
+#' Concatenate \code{GRanges}, robust to different \code{mcols}
 #'
 #' Concatenates \code{GRanges} objects, taking the union of their features if they have non-overlapping features
 #' @param x First \code{GRanges}
@@ -652,12 +642,12 @@ grbind = function(x, ...)
 #'
 #' Concatenates \code{GRangesList} objects taking the union of their \code{mcols} features if they have non-overlapping features
 #' @param ... Any number of \code{GRangesList} to concatenate together
-#' @return Concatenated GRangesList
+#' @return Concatenated \code{GRangesList} with NA filled in for \code{mcols} fields that are non-overlapping
 #' @examples
 #' ## Concatenate
-#' #grl.hiC2 <- grl.hiC[1:20]
-#' #mcols(grl.hiC2)$test = 1
-#' #grlbind(grl.hiC2, grl.hiC[1:30])
+#' grl.hiC2 <- grl.hiC[1:20]
+#' mcols(grl.hiC2)$test = 1
+#' grlbind(grl.hiC2, grl.hiC[1:30])
 #' @export
 #' @importFrom GenomicRanges mcols<- mcols split
 grlbind = function(...)
@@ -715,16 +705,14 @@ grlbind = function(...)
     return(out)
   }
 
-#' Prepend "chr" to GRanges seqlevels
+#' Prepend "chr" to \code{GRanges seqlevels}
 #'
-#' @param gr GRanges object to append 'chr' to
+#' @param gr \code{GRanges} object to append 'chr' to
 #' @return Identical \code{GRanges}, but with 'chr' prepended to each seqlevel
 #' @examples
-#' library(gUtils)
-#' gr.chr(GRanges(c(1,"chrX"), IRanges(c(1,2), 1)))
-#' @importFrom GenomeInfoDb
-#'    seqlevels
-#'    seqlevels<-
+#' gr <-  gr.chr(GRanges(c(1,"chrX"), IRanges(c(1,2), 1)))
+#' seqnames(gr)
+#' @importFrom GenomeInfoDb seqlevels seqlevels<-
 #' @export
 gr.chr = function(gr)
   {
@@ -733,11 +721,13 @@ gr.chr = function(gr)
     return(gr)
   }
 
-#' Shortcut for \code{reduce(sort(gr.stripstrand(unlist(x))))}
+#' Reduce \code{GRanges} and \code{GRangesList} to miminal footprint
 #'
-#' @param gr takes in gr or grl
-#' @param pad asdf. Default 0
-#' @param sort Flag to sort the output. Default TR#' @return GRanges
+#' Shortcut for \code{reduce(sort(gr.stripstrand(unlist(x))))}
+#' @param gr \code{GRanges} or \code{GRangesList}
+#' @param pad Expand the input data before reducing. \code{[0]}
+#' @param sort Flag to sort the output. \code{[TRUE]}
+#' @return \code{GRanges} object with no strand information, representing a minimal footprint
 #' @importFrom GenomicRanges reduce
 #' @examples
 #' streduce(grl.hiC, pad=10)
@@ -764,13 +754,14 @@ streduce = function(gr, pad = 0, sort = TRUE)
 
 #' Return UCSC style interval string corresponding to \code{GRanges} pile (ie chr:start-end)
 #'
-#' If mb will return as MB and round to "round"
 #' @param gr \code{GRanges} pile to get intervals from
-#' @param add.chr Prepend seqnames with "chr" [FALSE]
-#' @param mb Round to the nearest megabase [FALSE]
-#' @param round If \code{mb} supplied, how many digits to round to
-#' @param other.cols TODO
+#' @param add.chr Prepend seqnames with "chr" \code{[FALSE]}
+#' @param mb Round to the nearest megabase \code{[FALSE]}
+#' @param round If \code{mb} supplied, how many digits to round to. \code{[3]}
+#' @param other.cols Names of additional \code{mcols} fields to add to the string (seperated by ";")
 #' @name gr.string
+#' @examples
+#' gr.string(gr.genes, other.cols = c("name", "name2"))
 #' @export
 gr.string = function(gr, add.chr = FALSE, mb = FALSE, round = 3, other.cols = c())
   {
@@ -782,7 +773,7 @@ gr.string = function(gr, add.chr = FALSE, mb = FALSE, round = 3, other.cols = c(
 
     other.cols = intersect(names(values(gr)), other.cols)
     if (length(other.cols)>0)
-      other.str = paste(' ', do.call('paste', c(lapply(other.cols, function(x) values(gr)[, x]), list(sep = ' '))))
+      other.str = paste(';', do.call('paste', c(lapply(other.cols, function(x) values(gr)[, x]), list(sep = ';'))))
     else
       other.str = ''
 
@@ -806,6 +797,8 @@ gr.string = function(gr, add.chr = FALSE, mb = FALSE, round = 3, other.cols = c(
 #' @param ... Additional arguments to be passed to \code{gr.string}
 #' @return Character vector where each element is a \code{GRanges} pile corresponding to a single \code{GRangesList} element
 #' @name grl.string
+#' @examples
+#' grl.string(grl.hiC, mb=TRUE)
 #' @export
 grl.string = function(grl, mb= FALSE, sep = ',', ...)
   {
@@ -828,14 +821,13 @@ grl.string = function(grl, mb= FALSE, sep = ',', ...)
     return(out)
   }
 
-#' "Fixes" seqlengths / seqlevels
+#' "Fixes" \code{seqlengths} / \code{seqlevels}
 #'
-#' If "genome" not specified will replace NA seq lengths in GR to reflect largest coordinate per seqlevel
-#' and removes all NA seqlevels after this fix.
+#' If "genome" not specified will replace \code{NA} \code{seqlengths} in \code{GRanges} to reflect largest coordinate per \code{seqlevel}
+#' and removes all \code{NA seqlevels} after this fix.
 #'
-#' if "genome" defined (ie as Seqinfo object, or a BSgenome, GRanges, GRnagesList object with populated seqlengths) then will replace
-#' seqlengths in gr with those for that genome (and if drop = T, drop all ranges without
-#' seqlevels in that genome)
+#' if "genome" defined (i.e. as \code{Seqinfo} object, or a \code{BSgenome}, \code{GRanges}, \code{GRangesList} object with populated \code{seqlengths}),
+#' then will replace \code{seqlengths} in \code{gr} with those for that genome
 #' @name gr.fix
 #' @param gr \code{GRanges} object to fix
 #' @param genome Genome to fix to: \code{Seqinfo}, \code{BSgenome}, \code{GRanges} (w/seqlengths), \code{GRangesList} (w/seqlengths)
@@ -920,11 +912,11 @@ gr.fix = function(gr, genome = NULL, gname = NULL,  drop = FALSE)
 
 #' Lay ranges end-to-end onto a derivate "chromosome"
 #'
-#' Takes pile of GRanges and returns into a data.frame with nrow = length(gr) with each
+#' Takes pile of \code{GRanges} and returns into a \code{data.frame} with \code{nrow = length(gr)} with each
 #' representing the corresponding input range superimposed onto a single "flattened"
 #' chromosome, with ranges laid end-to-end
 #' @param gr \code{GRanges} to flatten
-#' @param gap Number of bases between ranges on the new chromosome [0]
+#' @param gap Number of bases between ranges on the new chromosome \code{[0]}
 #' @return \code{data.frame} with start and end coordinates, and all of the original metadata
 #' @name gr.flatten
 #' @importFrom GenomicRanges mcols
@@ -960,7 +952,6 @@ gr.stripstrand = function(gr)
 #' @param gr \code{GRanges} pile with strands to be flipped
 #' @return \code{GRanges} with flipped strands (+ to -, * to *, - to *)
 #' @examples
-#' library(gUtils)
 #' gr.flipstrand(GRanges(1, IRanges(c(10,10,10),20), strand=c("+","*","-")))
 #' @export
 gr.flipstrand <- function(gr)
@@ -979,16 +970,17 @@ gr.flipstrand <- function(gr)
     return(gr)
   }
 
-#' Tile ranges across a genomic range
+#' Tile ranges across \code{GRanges}
 #'
-#' tiles interval (or whole genome) with segments of <= specified width.  Returns strandless gr
-#' "tiles".
-#'
-#' input can be seqinfo object (in which case whole genome will be tiled);
-#' if inputted grs overlap, will first reduce then tile.
-#' @param gr \code{GRanges}, \code{seqlengths} or \code{seqinfo} range to tile. If has \code{GRanges} has overlaps, will reduce first.
+#' Tiles interval (or whole genome) with segments of \code{<=} specified width.
+#' @param gr \code{GRanges}, \code{seqlengths} or \code{Seqinfo} range to tile. If has \code{GRanges} has overlaps, will reduce first.
 #' @param w Width of each tile
 #' @name gr.tile
+#' @examples
+#' ## 10 tiles of width 10
+#' gr1 <- gr.tile(GRanges(1, IRanges(1,100)), w=10)
+#' ## make them overlap each other by 5
+#' gr1 + 5
 #' @export
 gr.tile = function(gr, w = 1e3)
   {
@@ -1017,25 +1009,19 @@ gr.tile = function(gr, w = 1e3)
     return(out)
 }
 
-#' Faster replacement for \code{GRanges} version of \code{findOverlaps}
+#' Faster replacement for \code{GRanges} version of \code{GenomicRanges::findOverlaps}
 #'
-#' returns granges of matches with two additional fields
-#' $query.id - index of matching query
-#' $subject.id - index of matching subject
-#'
-#' pintersect employs pintersect to find overlaps, in general this is slower, but can be much faster with much lower
-#' memory footprint for large ranges sets with many different seqnames (eg transcriptome)
-#' max.chunk controls the maximum number of range pairs that compared at once
-#'
-#' Optional "by" field is a character scalar that specifies a metadata column present in both query and subject
+#' Returns \code{GRanges} of matches with two additional fields:
+#' \itemize{
+#' \code{$query.id} - index of matching query
+#' \code{$subject.id} - index of matching subject
+#' }
+#' Optional \code{"by"} field is a character scalar that specifies a metadata column present in both query and subject
 #' that will be used to additionally restrict matches, i.e. to pairs of ranges that overlap and also
-#' have the same values of their "by" fields
+#' have the same values of their \code{"by"} fields
 #'
-#' ... = additional args for \code{findOverlaps} (IRanges version)
 #' @name gr.findoverlaps
-#' @importFrom GenomeInfoDb
-#'   seqlengths
-#'   seqlengths<-
+#' @importFrom GenomeInfoDb seqlengths seqlengths<-
 #' @importFrom GenomicRanges values ranges width strand values<- strand<- seqnames
 #' @importFrom data.table is.data.table := setkeyv
 #' @importFrom IRanges findOverlaps
@@ -1043,16 +1029,16 @@ gr.tile = function(gr, w = 1e3)
 #' @param query Query \code{GRanges} pile
 #' @param subject Subject \code{GRanges} pile
 #' @param ignore.strand Don't consider strand information during overlaps [TRUE]
-#' @param first TODO
+#' @param first Restrict to only the first match of the subject (default is to return all matches). \code{[FALSE]}
 #' @param qcol \code{character} vector of query meta-data columns to add to results
 #' @param scol \code{character} vector of subject meta-data columns to add to results
 #' @param foverlaps Use \code{data.table::foverlaps} instead of \code{IRanges::findOverlaps}. Overrules \code{pintersect}
-#' @param pintersect Use \code{IRanges::pintersect} function. Useful for overlaps with many, many chromosomes. Default is TRUE if \code{length(unique(seqnames)) > 50}
+#' @param pintersect Use \code{IRanges::pintersect} function. In general this is slower, but can be much faster and with lower memory for large ranges on many different seqnames (e.g. transcriptome). Default is \code{FALSE} unless \code{length(unique(seqnames)) > 50}
 #' @param verbose Increase the verbosity during runtime [FALSE]
-#' @param type TODO
+#' @param type \code{type} argument as defined by \code{IRanges::findOverlaps} (\code{"any"}, \code{"start"}, \code{"end"}, \code{"within"}, \code{"equal"}). If value other than \code{"any"} is supplied, will force call to \code{IRanges::findOverlaps}. Otherwise, may use \code{IRanges::pintersect} or \code{data.table::foverlaps}. \code{["any"]}
 #' @param by Meta-data column to consider when performing overlaps [NULL]
-#' @param return.type Select data format to return: \code{same}, \code{data.table}, \code{GRanges}
-#' @param ... TODO
+#' @param return.type Select data format to return (supplied as character): \code{"same"}, \code{"data.table"}, \code{"GRanges"}. \code{["same"]}
+#' @param ... Additional arguments sent to \code{IRanges::pintersect} if \code{pintersect = TRUE}.
 #' @return \code{GRanges} pile of the intersection regions, with \code{query.id} and \code{subject.id} marking sources
 #' @export
 gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE,
@@ -1275,7 +1261,7 @@ gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE,
                               rqr <- ranges(qr)
                               rsb <- ranges(sb)
                           }
-                          tmp <- pintersect(rqr, rsb, resolve.empty = 'start.x', ...)
+                          tmp <- IRanges::pintersect(rqr, rsb, resolve.empty = 'start.x', ...)
                           names(tmp) = NULL
                           non.empty = which(width(tmp)!=0)
                           h.df = as.data.frame(tmp[non.empty])
@@ -1383,18 +1369,18 @@ gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE,
 
 #' Faster \code{GenomicRanges::match}
 #'
-#' Faster implementation of \code{GenomicRanges::match} (uses \code{gr.findoverlaps})
+#' Faster implementation of \code{GenomicRanges::match} (uses \code{\link{gr.findoverlaps}})
 #' @return Vector of length = \code{length(query)} with subject indices of *first* subject in query, or NA if none found.
-#' gThis behavior is different from \code{gr.findoverlaps}, which will
+#' This behavior is different from \code{\link{gr.findoverlaps}}, which will
 #' return *all* indicies of subject in query (in the case of one query overlaps with multiple subject)
 #' ... = additional args for findOverlaps (IRanges version)
 #' @name gr.match
 #' @param query Query \code{GRanges} pile
 #' @param subject Subject \code{GRanges} pile
-#' @param max.slice Maximum number of ranges to consider at once [Inf]
+#' @param max.slice Maximum number of ranges to consider at once \code{[Inf]}
 #' @param verbose Increase the verbosity during runtime
 #' @param mc.cores Number of cores to use, if ranges exceed \code{max.slice}
-#' @param ... Additional arguments to be passed along to \code{gr.findoverlaps}
+#' @param ... Additional arguments to be passed along to \code{\link{gr.findoverlaps}}.
 #' @importFrom parallel mclapply
 #' @export
 gr.match = function(query, subject, max.slice = Inf, verbose = FALSE, mc.cores = 1, ...)
@@ -1434,6 +1420,7 @@ gr.match = function(query, subject, max.slice = Inf, verbose = FALSE, mc.cores =
 gr.tile.map = function(query, subject, verbose = FALSE)
   {
 
+    mc.cores =1 ## multicore not supported now
   if (length(GenomicRanges::gaps(query)) > 0)
     warning("Query GRanges has gaps. Unexpected behavior may follow")
   if (length(GenomicRanges::gaps(subject)) > 0)
@@ -1501,8 +1488,9 @@ gr.tile.map = function(query, subject, verbose = FALSE)
 
 #' Faster version of \code{GRanges} \code{over}
 #'
-#' Uses \code{\link{gr.findoverlaps}} for a faster \code{over}
-#' by = column name in query and subject that we additionally control for a match (passed on to gr.findoverlaps)
+#' Uses \code{\link{gr.findoverlaps}} for a faster \code{over}.
+#'
+#' Can specify a \code{by} = column name in query and subject that we additionally control for a match (passed on to \code{\link{gr.findoverlaps}}).
 #' @name gr.in
 #' @param query Query \code{GRanges} pile
 #' @param subject Subject \code{GRanges} pile
@@ -1518,7 +1506,7 @@ gr.in = function(query, subject, ...)
     return(out)
    }
 
-#' Dice up \code{GRanges} into width 1 \code{GRanges} spanning the input (warning can produce a very large object)
+#' Dice up \code{GRanges} into \code{width = 1} \code{GRanges} spanning the input (warning can produce a very large object)
 #'
 #' @param gr \code{GRanges} object to dice
 #' @name gr.dice
@@ -1527,8 +1515,6 @@ gr.in = function(query, subject, ...)
 #' @importFrom GenomicRanges seqnames width strand values<- values strand<- distance
 #' @return \code{GRangesList} where kth element is a diced pile of \code{GRanges} from kth input \code{GRanges}
 #' @examples
-#' library(gUtils)
-#' library(S4Vectors)
 #' gr.dice(GRanges(c(1,4), IRanges(c(10,10),20)))
 #' @export
 gr.dice = function(gr)
@@ -1562,22 +1548,21 @@ gr.dice = function(gr)
 
 #' Pairwise distance between two \code{GRanges}
 #'
-#' computes pairwise distance between elements of two gr objects of length n and m
-#' returning n by m matrix of distances between item i of gr1 and item j of gr2
+#' Computes matrix of pairwise distance between elements of two \code{GRanges} objects of length \code{n} and \code{m}.
 #'
-#' distances are computed as follows:
-#' NA for ranges on different seqnames
-#' 0 for overlapping ranges)
-#' min(abs(end1-end2), abs(end1-start2), abs(start1-end2), abs(start1-end1),) for all others
-#'
-#' if only gr1 is provided, then will return n x n matrix of gr's vs themselves
-#'
-#' if max.dist = TRUE then will replace min with max above
+#' Distances are computed as follows:
+#' \itemize{
+#' \item NA for ranges on different seqnames
+#' \item 0 for overlapping ranges
+#' \item min(abs(end1-end2), abs(end1-start2), abs(start1-end2), abs(start1-end1),) for all others
+#' }
+#' If only \code{gr1} is provided, then will return n x n matrix of \code{gr1} vs itself \cr
+#' If \code{max.dist = TRUE}, then will replace \code{min} with \code{max} above
 #' @param gr1 First \code{GRanges}
 #' @param gr2 Second \code{GRanges}
-#' @param ignore.strand Don't required elements be on same strand to avoid NA [FALSE]
+#' @param ignore.strand Don't required elements be on same strand to avoid \code{NA [FALSE]}
 #' @param ... Additional arguments to be supplied to \code{GenomicRanges::distance}
-#' @return Matrix with the pairwise distances, with \code{gr1} on rows and \code{gr2} on cols
+#' @return \code{N} by \code{M} matrix with the pairwise distances, with \code{gr1} on rows and \code{gr2} on cols
 #' @name gr.dist
 #' @export
 gr.dist = function(gr1, gr2 = NULL, ignore.strand = FALSE, ...)
@@ -1609,7 +1594,7 @@ gr.dist = function(gr1, gr2 = NULL, ignore.strand = FALSE, ...)
 #' @param windows \code{GRanges} pile of windows
 #' @param some Will return \code{TRUE} for \code{GRangesList} elements that intersect at least on window range [FALSE]
 #' @param only Will return \code{TRUE} for \code{GRangesList} elements only if there are no elements of query that fail to interesect with windows [FALSE]
-#' @param ... Additional parameters to be passed on to \code{gr.findoverlaps}
+#' @param ... Additional parameters to be passed on to \code{\link{gr.findoverlaps}}
 #' @name grl.in
 #' @export
 grl.in <- function(grl, windows, some = FALSE, only = FALSE, ...)
@@ -1697,13 +1682,16 @@ grl.in <- function(grl, windows, some = FALSE, only = FALSE, ...)
 
 #' Robust unlisting of \code{GRangesList} that keeps track of origin
 #'
-#' Does a "nice" unlist of a \code{GRangesList} object adding a field "grl.ix" denoting which element of the \code{GRangesList}
-#' each \code{GRanges} corresponds to and a field grl.iix which saves the (local) index that that gr was in its corresponding grl item
+#' Does a "nice" unlist of a \code{GRangesList} object adding a field \code{grl.ix} denoting which element of the \code{GRangesList}
+#' each \code{GRanges} corresponds to and a field \code{grl.iix} which saves the (local) index that that gr was in its corresponding \code{GRangesList} item
 #'
-#' In this way, \code{grl.unlist} is reversible, while \code{unlist} is not.
+#' In this way, \code{grl.unlist} is reversible, while \code{BiocGenerics::unlist} is not.
 #' @name grl.unlist
 #' @importFrom BiocGenerics unlist
 #' @param grl \code{GRangeList} object to unlist
+#' @return \code{GRanges} with added metadata fields \code{grl.ix} and \code{grl.iix}.
+#' @examples
+#' grl.unlist(grl.hiC)
 #' @export
 grl.unlist = function(grl)
 {
@@ -1819,14 +1807,13 @@ grl.pivot = function(x)
 }
 
 
-#' Improved \code{rbind} for intersecting/union columns of data.frames or data.tables
+#' Improved \code{rbind} for intersecting/union columns of \code{data.frames} or \code{data.tables}
 #'
-#' Like \code{rbind}, but takes the intersecting columns of the data
-#' rrbind = function(df1, df2, [df3 ... etc], )
+#' Like \code{rbind}, but takes the intersecting columns of the data.
 #' @param ... Any number of \code{data.frame} or \code{data.table} objects
-#' @param union Take union of columns (and put NA's for columns of df1 not in df2 and vice versa). [TRUE]
-#' @param as.data.table Return the binded data as a \code{data.table}
-#' @return A\code{data.frame} or \code{data.table} of the rbind operation
+#' @param union Take union of columns (and put NA's for columns of df1 not in df2 and vice versa). \code{[TRUE]}
+#' @param as.data.table Return the binded data as a \code{data.table}. \code{[FALSE]}
+#' @return \code{data.frame} or \code{data.table} of the \code{rbind} operation
 #' @export
 #' @importFrom data.table data.table rbindlist
 rrbind = function(..., union = TRUE, as.data.table = FALSE)
@@ -1869,46 +1856,6 @@ rrbind = function(..., union = TRUE, as.data.table = FALSE)
   }
 
   return(rout)
-}
-
-
-#' munlist
-#'
-#' unlists a list of vectors, matrices, data frames into a n x k matrix
-#' whose first column specifies the list item index of the entry
-#' and second column specifies the sublist item index of the entry
-#' and the remaining columns specifies the value(s) of the vector
-#' or matrices.
-#'
-#' force.cbind = TRUE will force concatenation via 'cbind'
-#' force.rbind = TRUE will force concatenation via 'rxsbind'
-#' @keywords internal
-munlist = function(x, force.rbind = FALSE, force.cbind = FALSE, force.list = FALSE)
-{
-  if (!any(c(force.list, force.cbind, force.rbind)))
-  {
-    if (any(sapply(x, function(y) is.null(dim(y)))))
-      force.list = TRUE
-    if (length(unique(sapply(x, function(y) dim(y)[2]))) == 1)
-      force.rbind = TRUE
-    if ((length(unique(sapply(x, function(y) dim(y)[1]))) == 1))
-      force.cbind = TRUE
-  }
-  else
-    force.list = TRUE
-
-  if (force.list)
-    return(cbind(ix = unlist(lapply(1:length(x), function(y) rep(y, length(x[[y]])))),
-                 iix = unlist(lapply(1:length(x), function(y) if (length(x[[y]])>0) 1:length(x[[y]]) else NULL)),
-                 unlist(x)))
-  else if (force.rbind)
-    return(cbind(ix = unlist(lapply(1:length(x), function(y) rep(y, nrow(x[[y]])))),
-                 iix = unlist(lapply(1:length(x), function(y) if (nrow(x[[y]])>0) 1:nrow(x[[y]]) else NULL)),
-                 do.call('rbind', x)))
-  else if (force.cbind)
-    return(t(rbind(ix = unlist(lapply(1:length(x), function(y) rep(y, ncol(x[[y]])))),
-                   iix = unlist(lapply(1:length(x), function(y) if (ncol(x[[y]])>0) 1:ncol(x[[y]]) else NULL)),
-                   do.call('cbind', x))))
 }
 
 #' @name seg2gr
@@ -2062,7 +2009,6 @@ gr.nochr = function(gr) {
   return(gr)
 }
 
-#############################################################
 # munlist
 #
 # unlists a list of vectors, matrices, data frames into a n x k matrix
@@ -2073,7 +2019,6 @@ gr.nochr = function(gr) {
 #
 # force.cbind = T will force concatenation via 'cbind'
 # force.rbind = T will force concatenation via 'rxsbind'
-#############################################################
 munlist = function(x, force.rbind = FALSE, force.cbind = FALSE, force.list = FALSE)
 {
   if (!any(c(force.list, force.cbind, force.rbind)))
