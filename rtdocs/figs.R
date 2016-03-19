@@ -123,6 +123,18 @@ png("rtdocs/figures/gr.sample.png", height=HI, width=WI)
 print(.plot_gr(gr, gr.sample(gr, 3, len=2, replace=TRUE)) + ggtitle("streduce(gr+2)"));
 dev.off()
 
+## gr.simplify
+png("rtdocs/figures/gr.simplify4.png", height=HI, width=WI)
+grn <- gr.simplify(gr, pad=4)
+grn$name <- c("A","BC")
+print(.plot_gr(gr, grn) + ggtitle("gr.simplify(gr, pad=4)"));
+dev.off()
+
+## gr.simplify
+png("rtdocs/figures/gr.simplify3.png", height=HI, width=WI)
+print(.plot_gr(gr, gr.simplify(gr, pad=3)) + ggtitle("gr.simplify(gr, pad=3)"));
+dev.off()
+
 g <- ggplot() +
   geom_rect(data=as.data.frame(gr), aes(xmin=start, xmax=end, ymin=1, ymax=2), fill='blue') +
   geom_rect(data=as.data.frame(gr.sample(gr, 3, len=2, replace=TRUE)), aes(xmin=start, xmax=end, ymin=0, ymax=0.95), fill='red') +

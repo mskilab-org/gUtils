@@ -59,39 +59,6 @@ This section will describe additional GRanges operations provided by gUtils.
    :alt:
    :scale: 125 %
 
-
-``gr.sample(gr2, 2, len=2, replace=TRUE)``
-
-.. code-block:: bash
-
-   ## output GRanges
-   GRanges object with 3 ranges and 1 metadata column:
-      seqnames    ranges strand |  query.id
-         <Rle> <IRanges>  <Rle> | <integer>
-   [1]        1  [ 8,  9]      * |         2
-   [2]        1  [ 5,  6]      * |         2
-   [3]        1  [11, 12]      * |         3
-
-.. figure:: figures/gr.sample.png
-   :alt:
-   :scale: 125 %
-
-``gr.rand(w=c(2,5,3), seqinfo(gr))``
-
-.. figure:: figures/gr.rand.png
-   :alt:
-   :scale: 125 %
-
-``gr.simplify``
-
 .. figure:: figures/gr.simplify.png
    :alt:
    :scale: 125 %
-
-``gr.tile(GRanges(1, IRanges(1,9)), w=3) + 1``
-
-.. figure:: figures/gr.tile.png
-   :alt:
-   :scale: 125 %
-
-``gr.tile.map``

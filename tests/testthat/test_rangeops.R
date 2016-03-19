@@ -273,6 +273,19 @@ test_that("grfo", {
   expect_equal(length(fo), 1856)
 })
 
+test_that("gr.simplify", {
+  gg <- gr.simplify(gr, pad=4)
+  expect_identical(end(gg), c(5L, 16L))
+  expect_equal(length(gg), 2)
+
+  gr$field <- c("A","B","B")
+  expect_equal(length(gr.simplify(gr, pad=4, field="name")), 3)
+  expect_equal(length(gr.simplify(gr, pad=4, field="field")), 2)
+
+  expect_equal(class(gr.simplify(gr, pad=4, field="name", split = TRUE))[1], "GRangesList")
+  expect_equal(ncol(mcols((gr.simplify(gr, pad=4, field="name", include.val = FALSE)))), 0)
+})
+
 test_that("gr.tile.map", {
 
   gr1 <- gr.tile(GRanges(1, IRanges(1,100)), w=10)
