@@ -2,7 +2,7 @@
 % Please edit documentation in R/gUtils.R
 \name{gr.match}
 \alias{gr.match}
-\title{Alternative \code{GenomicRanges::match} that accepts \code{"by"} argument and \code{data.table} inputs}
+\title{Alternative \code{GenomicRanges::match} that accepts additional \code{\link{gr.findoverlaps}} options}
 \usage{
 gr.match(query, subject, ...)
 }
@@ -20,6 +20,7 @@ return *all* indicies of subject in query (in the case of one query overlaps wit
 ... = additional args for findOverlaps (IRanges version)
 }
 \description{
-Wrapper to \code{GenomicRanges::match} (uses \code{\link{gr.findoverlaps}})
+Wrapper to \code{GenomicRanges::match} (uses \code{\link{gr.findoverlaps}}). This allows users to
+match on additional \code{by} fields, or chunk into smaller pieces for lower memory.
 }
 

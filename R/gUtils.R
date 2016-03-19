@@ -165,7 +165,7 @@ dt2gr <- function(dt) {
   if (!'strand' %in% colnames(dt))
     dt$strand <- '*'
   sf <- factor(dt$strand, levels=c('+', '-', '*'))
-  ff <- factor(dt$seqnames, levels=unique(dt$seqnames))
+  ff <- factor(dt$seqnames, levels=unique(sort(dt$seqnames)))
   out <- GRanges(seqnames=ff, ranges=rr, strand=sf)
   if (inherits(dt, 'data.table'))
     mc <- as.data.frame(dt[, setdiff(colnames(dt), c('start', 'end', 'seqnames', 'strand')), with=FALSE])
@@ -596,11 +596,12 @@ grbind = function(x, ...)
     return(out)
   }
 
-#' Concatenate \code{GRangesList} objects
+#' Concatenate \code{GRangesList} objects.
 #'
 #' Concatenates \code{GRangesList} objects taking the union of their \code{mcols} features if they have non-overlapping features
 #' @param ... Any number of \code{GRangesList} to concatenate together
-#' @return Concatenated \code{GRangesList} with NA filled in for \code{mcols} fields that are non-overlapping
+#' @return Concatenated \code{GRangesList} with NA filled in for \code{mcols} fields that are non-overlapping. Note that the
+#' elements are re-named with sequential numbers
 #' @examples
 #' ## Concatenate
 #' grl.hiC2 <- grl.hiC[1:20]
@@ -613,6 +614,10 @@ grlbind = function(...)
     ## TODO: make this work for when underlying grs do not have matching features
     ## currently will loose gr level features
     grls = list(...)
+
+    ## check the input
+    if(any(sapply(grls, function(x) class(x) != "GRangesList")))
+      stop("All inputs must be a GRangesList")
 
     ## annoying acrobatics to reconcile gr and grl level features for heterogenous input gr / grls
     grls.ul = lapply(grls, grl.unlist)
@@ -1626,6 +1631,9 @@ gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE,
     # out.gr@elementMetadata = S4Vectors::DataFrame(query.id = h.df$query.id, subject.id = h.df$subject.id)
     # out.gr@strand = S4Vectors::Rle(h.df$strand)
     # out.gr@seqinfo = seqinfo(query)
+
+    #out.gr = GRanges(h.df$seqnames, IRanges(h.df$start, h.df$end), query.id = h.df$query.id, subject.id = h.df$subject.id, seqlengths = seqlengths(query),
+    #                 strand = h.df$strand)
     out.gr <- dt2gr(h.df)
 
     if (!is.null(qcol))
@@ -1655,9 +1663,10 @@ gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE,
 }
 
 
-#' Alternative \code{GenomicRanges::match} that accepts \code{"by"} argument and \code{data.table} inputs
+#' Alternative \code{GenomicRanges::match} that accepts additional \code{\link{gr.findoverlaps}} options
 #'
-#' Wrapper to \code{GenomicRanges::match} (uses \code{\link{gr.findoverlaps}})
+#' Wrapper to \code{GenomicRanges::match} (uses \code{\link{gr.findoverlaps}}). This allows users to
+#' match on additional \code{by} fields, or chunk into smaller pieces for lower memory.
 #' @return Vector of length = \code{length(query)} with subject indices of *first* subject in query, or NA if none found.
 #' This behavior is different from \code{\link{gr.findoverlaps}}, which will
 #' return *all* indicies of subject in query (in the case of one query overlaps with multiple subject)
@@ -1745,6 +1754,9 @@ ra.overlaps = function(ra1, ra2, pad = 0, ...)
 
   #    tmp = rbind(.make_matches(ix, bp1, bp2), .make_matches(ix.rev, bp1, bp2))
   #    rownames(tmp) = NULL
+
+  if (nrow(ix) == 0)
+    return(matrix())
 
   tmp = .make_matches(ix, bp1, bp2)
 
