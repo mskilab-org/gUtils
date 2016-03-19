@@ -1503,6 +1503,8 @@ munlist = function(x, force.rbind = FALSE, force.cbind = FALSE, force.list = FAL
 #' @param by Meta-data column to consider when performing overlaps [NULL]
 #' @param return.type Select data format to return (supplied as character): \code{"same"}, \code{"data.table"}, \code{"GRanges"}. \code{["same"]}
 #' @param ... Additional arguments sent to \code{IRanges::findOverlaps}.
+#' @param max.chunk Maximum number of \code{query*subject} ranges to consider at once. Lower number increases runtime but decreased memory. If \code{length(query)*length(subject)} is less than \code{max.chunk}, overlaps will run in one batch.\code{[1e13]}
+#' @param verbose Increase the verbosity. \code{[FALSE]}
 #' @return \code{GRanges} pile of the intersection regions, with \code{query.id} and \code{subject.id} marking sources
 #' @export
 gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE,
@@ -1511,6 +1513,8 @@ gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE,
                            type = 'any',
                            by = NULL,
                            return.type = 'same',
+                           max.chunk = 1e13,
+                           verbose = FALSE,
                            ...)
 {
 
@@ -1542,6 +1546,42 @@ gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE,
     query   <- dt2gr(query)
   if (is.data.table(subject))
     subject <- dt2gr(subject)
+
+  ## chunked operation
+  if ((as.numeric(length(query)) * as.numeric(length(subject))) > max.chunk)
+  {
+    if (verbose)
+      cat('Overflow .. computing overlaps in chunks.  Adjust max.chunk parameter to gr.findoverlaps to avoid chunked computation\n')
+
+    chunk.size = floor(sqrt(max.chunk));
+    ix1 = c(seq(1, length(query), chunk.size), length(query)+1)
+    ix2 = c(seq(1, length(subject), chunk.size), length(subject)+1)
+    ij = cbind(rep(1:(length(ix1)-1), length(ix2)-1), rep(1:(length(ix2)-1), each = length(ix1)-1))
+    if (verbose)
+      print(paste('Number of chunks:', nrow(ij)))
+
+    out = do.call('c', lapply(1:nrow(ij),
+                                function(x)
+                                {
+                                  if (verbose)
+                                    cat(sprintf('chunk i = %s-%s (%s), j = %s-%s (%s)\n', ix1[ij[x,1]], ix1[ij[x,1]+1]-1, length(query),
+                                                ix2[ij[x,2]], (ix2[ij[x,2]+1]-1), length(subject)))
+                                  i.chunk = ix1[ij[x,1]]:(ix1[ij[x,1]+1]-1)
+                                  j.chunk = ix2[ij[x,2]]:(ix2[ij[x,2]+1]-1)
+                                  out = gr.findoverlaps(query[i.chunk], subject[j.chunk],  ignore.strand = ignore.strand, first = first, by = by, qcol = qcol, verbose = verbose, scol = scol, type = type, max.chunk = Inf, ...)
+                                  out$query.id = i.chunk[out$query.id]
+                                  out$subject.id = j.chunk[out$subject.id]
+                                  return(out)
+                                }))
+
+    ## sort by position, then sort by query, then subject id
+    out <- sort(out[order(out$query.id, out$subject.id)])
+
+    convert = FALSE
+    if ((return.type == 'same' & is(query, 'data.table')) | return.type == 'data.table')
+      out = gr2dt(out)
+    return(out)
+  }
 
   ## perform the actual overlaps
   h <- GenomicRanges::findOverlaps(query, subject, type = type, ignore.strand = ignore.strand, ...)
@@ -1586,8 +1626,7 @@ gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE,
     # out.gr@elementMetadata = S4Vectors::DataFrame(query.id = h.df$query.id, subject.id = h.df$subject.id)
     # out.gr@strand = S4Vectors::Rle(h.df$strand)
     # out.gr@seqinfo = seqinfo(query)
-    out.gr = GRanges(h.df$seqnames, IRanges(h.df$start, h.df$end), query.id = h.df$query.id, subject.id = h.df$subject.id, seqlengths = seqlengths(query),
-                     strand = h.df$strand)
+    out.gr <- dt2gr(h.df)
 
     if (!is.null(qcol))
       values(out.gr) = cbind(values(out.gr), values(query)[out.gr$query.id, qcol, drop = FALSE])
@@ -1595,7 +1634,8 @@ gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE,
     if (!is.null(scol))
       values(out.gr) = cbind(values(out.gr), values(subject)[out.gr$subject.id, scol, drop = FALSE])
 
-    return(sort(out.gr))
+    ## sort by position, then sort by query, then subject id
+    return(sort(out.gr[order(out.gr$query.id, out.gr$subject.id)]))
   } else { ## return data.table
 
     if (!is.null(qcol))

@@ -79,6 +79,12 @@ test_that("gr.findoverlaps, return as data.table", {
   expect_identical(colnames(fo), c("start", "end", "query.id", "subject.id", "seqnames", "strand"))
 })
 
+test_that("gr.findoverlaps chunk", {
+  fo  <- gr.findoverlaps(gr.genes, gr.DNAase)
+  fo2 <- gr.findoverlaps(gr.genes, gr.DNAase, max.chunk = 1e7, verbose=TRUE)
+  expect_identical(fo, fo2)
+})
+
 test_that("gr.findoverlaps ignore.strand", {
 
   ## make a stranded DNAase track (for testing only)

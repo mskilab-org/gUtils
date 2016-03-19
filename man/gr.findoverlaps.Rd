@@ -6,7 +6,7 @@
 \usage{
 gr.findoverlaps(query, subject, ignore.strand = TRUE, first = FALSE,
   qcol = NULL, scol = NULL, type = "any", by = NULL,
-  return.type = "same", ...)
+  return.type = "same", max.chunk = 1e+13, verbose = FALSE, ...)
 }
 \arguments{
 \item{query}{Query \code{GRanges} pile}
@@ -26,6 +26,10 @@ gr.findoverlaps(query, subject, ignore.strand = TRUE, first = FALSE,
 \item{by}{Meta-data column to consider when performing overlaps [NULL]}
 
 \item{return.type}{Select data format to return (supplied as character): \code{"same"}, \code{"data.table"}, \code{"GRanges"}. \code{["same"]}}
+
+\item{max.chunk}{Maximum number of \code{query*subject} ranges to consider at once. Lower number increases runtime but decreased memory. If \code{length(query)*length(subject)} is less than \code{max.chunk}, overlaps will run in one batch.\code{[1e13]}}
+
+\item{verbose}{Increase the verbosity. \code{[FALSE]}}
 
 \item{...}{Additional arguments sent to \code{IRanges::findOverlaps}.}
 }
