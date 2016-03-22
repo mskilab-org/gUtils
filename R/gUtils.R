@@ -16,6 +16,22 @@ NULL
 #' @format \code{GRanges}
 NULL
 
+#' Fake rearrangement data (set 1)
+#'
+#' @name grl1
+#' @docType data
+#' @keywords data
+#' @format \code{GRangesList}
+NULL
+
+#' Fake rearrangement data (set 2)
+#'
+#' @name grl2
+#' @docType data
+#' @keywords data
+#' @format \code{GRangesList}
+NULL
+
 #' \code{Seqinfo} object for hg19
 #'
 #' @name si
@@ -149,7 +165,7 @@ dt2gr <- function(dt) {
   if (!'strand' %in% colnames(dt))
     dt$strand <- '*'
   sf <- factor(dt$strand, levels=c('+', '-', '*'))
-  ff <- factor(dt$seqnames, levels=unique(dt$seqnames))
+  ff <- factor(dt$seqnames, levels=unique(sort(dt$seqnames)))
   out <- GRanges(seqnames=ff, ranges=rr, strand=sf)
   if (inherits(dt, 'data.table'))
     mc <- as.data.frame(dt[, setdiff(colnames(dt), c('start', 'end', 'seqnames', 'strand')), with=FALSE])
@@ -580,11 +596,12 @@ grbind = function(x, ...)
     return(out)
   }
 
-#' Concatenate \code{GRangesList} objects
+#' Concatenate \code{GRangesList} objects.
 #'
 #' Concatenates \code{GRangesList} objects taking the union of their \code{mcols} features if they have non-overlapping features
 #' @param ... Any number of \code{GRangesList} to concatenate together
-#' @return Concatenated \code{GRangesList} with NA filled in for \code{mcols} fields that are non-overlapping
+#' @return Concatenated \code{GRangesList} with NA filled in for \code{mcols} fields that are non-overlapping. Note that the
+#' elements are re-named with sequential numbers
 #' @examples
 #' ## Concatenate
 #' grl.hiC2 <- grl.hiC[1:20]
@@ -597,6 +614,10 @@ grlbind = function(...)
     ## TODO: make this work for when underlying grs do not have matching features
     ## currently will loose gr level features
     grls = list(...)
+
+    ## check the input
+    if(any(sapply(grls, function(x) class(x) != "GRangesList")))
+      stop("All inputs must be a GRangesList")
 
     ## annoying acrobatics to reconcile gr and grl level features for heterogenous input gr / grls
     grls.ul = lapply(grls, grl.unlist)
@@ -951,43 +972,6 @@ gr.tile = function(gr, w = 1e3)
     return(out)
 }
 
-#' Faster \code{GenomicRanges::match}
-#'
-#' Faster implementation of \code{GenomicRanges::match} (uses \code{\link{gr.findoverlaps}})
-#' @return Vector of length = \code{length(query)} with subject indices of *first* subject in query, or NA if none found.
-#' This behavior is different from \code{\link{gr.findoverlaps}}, which will
-#' return *all* indicies of subject in query (in the case of one query overlaps with multiple subject)
-#' ... = additional args for findOverlaps (IRanges version)
-#' @name gr.match
-#' @param query Query \code{GRanges} pile
-#' @param subject Subject \code{GRanges} pile
-#' @param max.slice Maximum number of ranges to consider at once \code{[Inf]}
-#' @param verbose Increase the verbosity during runtime
-#' @param mc.cores Number of cores to use, if ranges exceed \code{max.slice}
-#' @param ... Additional arguments to be passed along to \code{\link{gr.findoverlaps}}.
-#' @importFrom parallel mclapply
-#' @export
-gr.match = function(query, subject, max.slice = Inf, verbose = FALSE, mc.cores = 1, ...)
-  {
-      if (length(query)>max.slice)
-          {
-              verbose = TRUE
-              ix.l = split(1:length(query), ceiling(as.numeric((1:length(query)/max.slice))))
-              return(do.call('c', mclapply(ix.l, function(ix) {
-                  if (verbose)
-                      cat(sprintf('Processing %s to %s\n', min(ix), max(ix)))
-                  gr.match(query[ix, ], subject, verbose = TRUE, ...)
-              }, mc.cores = mc.cores)))
-          }
-
-    tmp = gr.findoverlaps(query, subject, ...)
-    tmp = tmp[!duplicated(tmp$query.id)]
-    out = rep(NA, length(query))
-    out[tmp$query.id] = tmp$subject.id
-    return(out)
-   }
-
-
 #' gr.tile.map
 #'
 #' Given two tilings of the genome (e.g. at different resolution)
@@ -1069,26 +1053,6 @@ gr.tile.map = function(query, subject, verbose = FALSE)
     names(out) = as.character(1:length(query))
     return(out)
   }
-
-#' Faster version of \code{GRanges} \code{over}
-#'
-#' Uses \code{\link{gr.findoverlaps}} for a faster \code{over}.
-#'
-#' Can specify a \code{by} = column name in query and subject that we additionally control for a match (passed on to \code{\link{gr.findoverlaps}}).
-#' @name gr.in
-#' @param query Query \code{GRanges} pile
-#' @param subject Subject \code{GRanges} pile
-#' @param ... Additional arguments to pass to \code{\link{gr.findoverlaps}}
-#' @return logical vector if query range i is found in any range in subject
-#' @export
-gr.in = function(query, subject, ...)
-  {
-    tmp = gr.findoverlaps(query, subject, ...)
-    out = rep(FALSE, length(query))
-    out[tmp$query.id] = TRUE
-
-    return(out)
-   }
 
 #' Dice up \code{GRanges} into \code{width = 1} \code{GRanges} spanning the input (warning can produce a very large object)
 #'
@@ -1178,7 +1142,7 @@ gr.dist = function(gr1, gr2 = NULL, ignore.strand = FALSE, ...)
 #' @param windows \code{GRanges} pile of windows
 #' @param some Will return \code{TRUE} for \code{GRangesList} elements that intersect at least on window range [FALSE]
 #' @param only Will return \code{TRUE} for \code{GRangesList} elements only if there are no elements of query that fail to interesect with windows [FALSE]
-#' @param ... Additional parameters to be passed on to \code{\link{gr.findoverlaps}}
+#' @param ... Additional parameters to be passed on to \code{GenomicRanges::findOverlaps}
 #' @name grl.in
 #' @export
 grl.in <- function(grl, windows, some = FALSE, only = FALSE, ...)
@@ -1189,11 +1153,13 @@ grl.in <- function(grl, windows, some = FALSE, only = FALSE, ...)
       return(logical())
 
     if (length(windows)==0)
-      return(rep(T, length(grl)))
+      return(rep(TRUE, length(grl)))
 
     numwin = length(windows);
     gr = grl.unlist(grl)
-    m = gr2dt(gr.findoverlaps(gr, windows, ...))
+    h = GenomicRanges::findOverlaps(gr, windows, ...)
+    m = data.table(query.id = queryHits(h), subject.id = subjectHits(h))
+    #m = gr2dt(gr.findoverlaps(gr, windows, ...))
 
     out = rep(FALSE, length(grl))
     if (nrow(m)==0)
@@ -1217,52 +1183,6 @@ grl.in <- function(grl, windows, some = FALSE, only = FALSE, ...)
         out = out!=0
     return(out)
   }
-
-# grl.split
-#
-# splits GRL's with respect to their seqnames and strand (default), returning
-# new grl whose items only contain ranges with a single seqname / strand
-#
-# can also split by arbitrary (specified) genomic ranges value fields
-# @name grl.split
-# @keywords internal
-# grl.split = function(grl, seqname = TRUE, strand = TRUE,
-#   values = c() # columns of values field in grl
-#   )
-#   {
-#     ele = tryCatch(as.data.frame(grl)$element, error = function(e) e)
-#     if (inherits(ele, 'error'))
-#       {
-#         if (is.null(names(grl)))
-#           nm = 1:length(names(grl))
-#         else
-#           nm = names(grl)
-#
-#         ele = unlist(lapply(1:length(grl), function(x) rep(nm[x], length(grl[[x]]))))
-#       }
-#
-#     gr = unlist(grl)
-#     names(gr) = NULL;
-#
-#     by = ele;
-#     if (seqname)
-#       by = paste(by, seqnames(gr))
-#
-#     if (strand)
-#       by = paste(by, strand(gr))
-#
-#     values = intersect(names(values(gr)), values);
-#     if (length(values)>0)
-#       for (val in values)
-#         by = paste(by, values(gr)[, val])
-#
-#     out = split(gr, by);
-#     names(out) = ele[!duplicated(by)]
-#
-#     values(out) = values(grl[ele[!duplicated(by)]])
-#
-#     return(out)
-#   }
 
 #' Robust unlisting of \code{GRangesList} that keeps track of origin
 #'
@@ -1297,76 +1217,6 @@ grl.unlist = function(grl)
     values(out) = cbind(values(grl)[out$grl.ix, , drop = FALSE], values(out))
     return(out)
   }
-
-# grl.span
-#
-# Returns GRanges object representing the left / right extent of each GRL item.  In case of "chimeric" GRL items (ie that map
-# to two chromosomes) there are two options:
-# (1) specify "chr" chromosome as argument to subset GRL's that are on that chromosome, and compute GRL extents from this, any GRL
-#     full outside of that chromosome will get a 0 width GRL
-# (2) (default) allow chimeric GRL items to get an extent that is with respect to the first chromosome in that GRL
-#
-# If a grl item contains ranges that lie on different chromosomes, then corresponding grange will have chromosome "NA" and IRange(0, 0)
-# @name grl.span
-# @keywords internal
-# grl.span = function(grl, chr = NULL, ir = FALSE, keep.strand = TRUE)
-#   {
-#     if (is.null(names(grl)))
-#       names(grl) = 1:length(grl);
-#
-#     tmp = tryCatch(as.data.frame(grl), error = function(e) e)
-#
-#     if (inherits(tmp, 'error')) ## gr names are screwy so do some gymnastics
-#       {
-#         if (is.null(names(grl)))
-#           names.grl = 1:length(grl)
-#         else
-#           names.grl = names(grl);
-#
-#         element = as.character(Rle(names.grl, sapply(grl, length)))
-#         tmp.gr = unlist(grl)
-#         names(tmp.gr) = NULL;
-#         tmp = as.data.frame(tmp.gr);
-#         tmp$element = element;
-#       }
-#
-#     if (is.null(chr))
-#       {
-#         chrmap = stats::aggregate(formula = seqnames ~ element, data = tmp, FUN = function(x) x[1]);
-#         chrmap = structure(as.character(chrmap[,2]), names = chrmap[,1])
-#
-#         if (keep.strand)
-#           {
-#             strmap = stats::aggregate(formula = as.character(strand) ~ element, data = tmp, FUN =
-#               function(x) {y = unique(x); if (length(y)>1) return('*') else y[1]})
-#             strmap = structure(as.character(strmap[,2]), names = strmap[,1])
-#             str = strmap[names(grl)];
-#           }
-#         else
-#           str = '*'
-#
-#         tmp = tmp[tmp$seqnames == chrmap[tmp$element], ]; ## remove all gr from each GRL item that don't map to the chr of the first gr
-#         chr = chrmap[names(grl)];
-#         out.gr = GRanges(chr, IRanges(1,0), seqlengths = seqlengths(grl), strand = str)
-#       }
-#     else
-#       {
-#         if (length(chr)>1)
-#           warning('chr has length greater than 1, only the first element will be used')
-#         tmp = tmp[tmp$seqnames == chr[1], ]
-#         out.gr = rep(GRanges(chr, IRanges(1, 0)), length(grl)) # missing values
-#       }
-#
-#     if (nrow(tmp)>0)
-#       {
-#         tmp = split(GRanges(tmp$seqnames, IRanges(tmp$start, tmp$end)), tmp$element)
-#         out.gr[match(names(tmp), names(grl))] = GRanges(chr[names(tmp)],
-#                 IRanges(sapply(start(tmp), min), sapply(end(tmp), max)), strand = strand(out.gr)[match(names(tmp), names(grl))]);
-#         names(out.gr) = names(grl)
-#       }
-#     return(out.gr)
-#   }
-
 
 #' Pivot a \code{GRangesList}, inverting "x" and "y"
 #'
@@ -1477,11 +1327,11 @@ seg2gr = function(segs, key = NULL, seqlengths = NULL, seqinfo = Seqinfo())
 
   segs = standardize_segs(segs);
 
-  if (any(bix <- (is.na(segs$chr) | is.na(segs$pos1) | is.na(segs$pos2))))
-  {
-    warning('Segments with NA values for chromosome, start, and end position detected .. removing')
-    segs = segs[!bix, ]
-  }
+  # if (any(bix <- (is.na(segs$chr) | is.na(segs$pos1) | is.na(segs$pos2))))
+  # {
+  #   warning('Segments with NA values for chromosome, start, and end position detected .. removing')
+  #   segs = segs[!bix, ]
+  # }
 
   GR.NONO.FIELDS = c('seqnames', 'ranges', 'strand', 'seqlevels', 'seqlengths', 'isCircular', 'start', 'end', 'width', 'element');
 
@@ -1493,15 +1343,15 @@ seg2gr = function(segs, key = NULL, seqlengths = NULL, seqinfo = Seqinfo())
 
   if (length(seqlengths)>0)
   {
-    if (length(wtf  <- setdiff(segs$chr, names(seqlengths))))
-    {
-      warning('some seqnames in seg object were not included in provided seqlengths: ', paste(wtf, collapse = ','))
-      seqlengths[as.character(wtf)] = NA
-    }
-    segs$pos1 <- as.numeric(segs$pos1)
-    segs$pos2 <- as.numeric(segs$pos2)
-
-    out = GRanges(seqnames = segs$chr, ranges = IRanges(segs$pos1, segs$pos2), names = levels(levels), strand = segs$strand, seqlengths = seqlengths)
+    # if (length(wtf  <- setdiff(segs$chr, names(seqlengths))))
+    # {
+    #   warning('some seqnames in seg object were not included in provided seqlengths: ', paste(wtf, collapse = ','))
+    #   seqlengths[as.character(wtf)] = NA
+    # }
+    # segs$pos1 <- as.numeric(segs$pos1)
+    # segs$pos2 <- as.numeric(segs$pos2)
+    #
+    # out = GRanges(seqnames = segs$chr, ranges = IRanges(segs$pos1, segs$pos2), names = levels(levels), strand = segs$strand, seqlengths = seqlengths)
   }
   else
     out = GRanges(seqnames = as.character(segs$chr), ranges = IRanges(segs$pos1, segs$pos2), names = levels(levels), strand = segs$strand)
@@ -1535,14 +1385,14 @@ standardize_segs = function(seg, chr = FALSE)
   if (is(seg, 'matrix'))
     seg = as.data.frame(seg, stringsAsFactors = FALSE)
 
-  if (inherits(seg, 'RangedData') | inherits(seg, 'GRanges') | inherits(seg, 'IRanges'))
-  {
-    val = as.data.frame(values(seg));
-    values(seg) = NULL;
-    seg = as.data.frame(seg, row.names = NULL);  ## returns compressed iranges list
-    seg$seqnames = as.character(seg$seqnames)
-  }
-  else
+  # if (inherits(seg, 'RangedData') | inherits(seg, 'GRanges') | inherits(seg, 'IRanges'))
+  # {
+  #   val = as.data.frame(values(seg));
+  #   values(seg) = NULL;
+  #   seg = as.data.frame(seg, row.names = NULL);  ## returns compressed iranges list
+  #   seg$seqnames = as.character(seg$seqnames)
+  # }
+  # else
     val = NULL;
 
   field.aliases = list(
@@ -1658,6 +1508,8 @@ munlist = function(x, force.rbind = FALSE, force.cbind = FALSE, force.list = FAL
 #' @param by Meta-data column to consider when performing overlaps [NULL]
 #' @param return.type Select data format to return (supplied as character): \code{"same"}, \code{"data.table"}, \code{"GRanges"}. \code{["same"]}
 #' @param ... Additional arguments sent to \code{IRanges::findOverlaps}.
+#' @param max.chunk Maximum number of \code{query*subject} ranges to consider at once. Lower number increases runtime but decreased memory. If \code{length(query)*length(subject)} is less than \code{max.chunk}, overlaps will run in one batch.\code{[1e13]}
+#' @param verbose Increase the verbosity. \code{[FALSE]}
 #' @return \code{GRanges} pile of the intersection regions, with \code{query.id} and \code{subject.id} marking sources
 #' @export
 gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE,
@@ -1666,6 +1518,8 @@ gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE,
                            type = 'any',
                            by = NULL,
                            return.type = 'same',
+                           max.chunk = 1e13,
+                           verbose = FALSE,
                            ...)
 {
 
@@ -1697,6 +1551,42 @@ gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE,
     query   <- dt2gr(query)
   if (is.data.table(subject))
     subject <- dt2gr(subject)
+
+  ## chunked operation
+  if ((as.numeric(length(query)) * as.numeric(length(subject))) > max.chunk)
+  {
+    if (verbose)
+      cat('Overflow .. computing overlaps in chunks.  Adjust max.chunk parameter to gr.findoverlaps to avoid chunked computation\n')
+
+    chunk.size = floor(sqrt(max.chunk));
+    ix1 = c(seq(1, length(query), chunk.size), length(query)+1)
+    ix2 = c(seq(1, length(subject), chunk.size), length(subject)+1)
+    ij = cbind(rep(1:(length(ix1)-1), length(ix2)-1), rep(1:(length(ix2)-1), each = length(ix1)-1))
+    if (verbose)
+      print(paste('Number of chunks:', nrow(ij)))
+
+    out = do.call('c', lapply(1:nrow(ij),
+                                function(x)
+                                {
+                                  if (verbose)
+                                    cat(sprintf('chunk i = %s-%s (%s), j = %s-%s (%s)\n', ix1[ij[x,1]], ix1[ij[x,1]+1]-1, length(query),
+                                                ix2[ij[x,2]], (ix2[ij[x,2]+1]-1), length(subject)))
+                                  i.chunk = ix1[ij[x,1]]:(ix1[ij[x,1]+1]-1)
+                                  j.chunk = ix2[ij[x,2]]:(ix2[ij[x,2]+1]-1)
+                                  out = gr.findoverlaps(query[i.chunk], subject[j.chunk],  ignore.strand = ignore.strand, first = first, by = by, qcol = qcol, verbose = verbose, scol = scol, type = type, max.chunk = Inf, ...)
+                                  out$query.id = i.chunk[out$query.id]
+                                  out$subject.id = j.chunk[out$subject.id]
+                                  return(out)
+                                }))
+
+    ## sort by position, then sort by query, then subject id
+    out <- sort(out[order(out$query.id, out$subject.id)])
+
+    convert = FALSE
+    if ((return.type == 'same' & is(query, 'data.table')) | return.type == 'data.table')
+      out = gr2dt(out)
+    return(out)
+  }
 
   ## perform the actual overlaps
   h <- GenomicRanges::findOverlaps(query, subject, type = type, ignore.strand = ignore.strand, ...)
@@ -1741,8 +1631,10 @@ gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE,
     # out.gr@elementMetadata = S4Vectors::DataFrame(query.id = h.df$query.id, subject.id = h.df$subject.id)
     # out.gr@strand = S4Vectors::Rle(h.df$strand)
     # out.gr@seqinfo = seqinfo(query)
-    out.gr = GRanges(h.df$seqnames, IRanges(h.df$start, h.df$end), query.id = h.df$query.id, subject.id = h.df$subject.id, seqlengths = seqlengths(query),
-                     strand = h.df$strand)
+
+    #out.gr = GRanges(h.df$seqnames, IRanges(h.df$start, h.df$end), query.id = h.df$query.id, subject.id = h.df$subject.id, seqlengths = seqlengths(query),
+    #                 strand = h.df$strand)
+    out.gr <- dt2gr(h.df)
 
     if (!is.null(qcol))
       values(out.gr) = cbind(values(out.gr), values(query)[out.gr$query.id, qcol, drop = FALSE])
@@ -1750,7 +1642,8 @@ gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE,
     if (!is.null(scol))
       values(out.gr) = cbind(values(out.gr), values(subject)[out.gr$subject.id, scol, drop = FALSE])
 
-    return(sort(out.gr))
+    ## sort by position, then sort by query, then subject id
+    return(sort(out.gr[order(out.gr$query.id, out.gr$subject.id)]))
   } else { ## return data.table
 
     if (!is.null(qcol))
@@ -1767,4 +1660,177 @@ gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE,
 
     return(h.df)
   }
+}
+
+
+#' Alternative \code{GenomicRanges::match} that accepts additional \code{\link{gr.findoverlaps}} options
+#'
+#' Wrapper to \code{GenomicRanges::match} (uses \code{\link{gr.findoverlaps}}). This allows users to
+#' match on additional \code{by} fields, or chunk into smaller pieces for lower memory.
+#' @return Vector of length = \code{length(query)} with subject indices of *first* subject in query, or NA if none found.
+#' This behavior is different from \code{\link{gr.findoverlaps}}, which will
+#' return *all* indicies of subject in query (in the case of one query overlaps with multiple subject)
+#' ... = additional args for findOverlaps (IRanges version)
+#' @name gr.match
+#' @param query Query \code{GRanges} pile
+#' @param subject Subject \code{GRanges} pile
+#' @param ... Additional arguments to be passed along to \code{\link{gr.findoverlaps}}.
+#' @export
+gr.match = function(query, subject, ...)
+{
+
+  ## if no need to call gr.findoverlaps, go to findOverlaps directly
+  # if (!is.data.table(query) && !is.data.table(subject) && length(list(...)) == 0) {
+  #   h = findOverlaps(query, subject)
+  #   tmp = data.table(subject.id = subjectHits(h), query.id = queryHits(h))
+  # } else {
+    tmp = gr.findoverlaps(query, subject, ...)
+  # }
+  tmp = tmp[!duplicated(tmp$query.id)]
+  out = rep(NA, length(query))
+  out[tmp$query.id] = tmp$subject.id
+  return(out)
+}
+
+#' @name %*%
+#' @title Metadata join with coordinates as keys (wrapper to \code{\link{gr.findoverlaps}})
+#' @description
+#' Shortcut for gr.findoverlaps with \code{qcol} and \code{scol} filled in with all the query and subject metadata names.
+#' This function is useful for piping \code{GRanges} operations together. Another way to think of %*% is as a
+#' join of the metadata, with genomic coordinates as the keys. \cr
+#' Example usage: \cr
+#' x %*% y
+#' @param x \code{GRanges}
+#' @param y \code{GRanges}
+#' @return \code{GRanges} containing every pairwise intersection of ranges in \code{x} and \code{y} with a join of the corresponding  metadata
+#' @rdname grfo
+#' @exportMethod %*%
+#' @export
+#' @importFrom methods setMethod
+#' @author Marcin Imielinski
+#' @docType methods
+#' @aliases %*%,GRanges-method
+#' @examples
+#' gr.genes %*% gr.DNAase
+#setGeneric('%*%', function(gr, ...) standardGeneric('%*%'))
+setMethod("%*%", signature(x = "GRanges"), function(x, y) {
+    gr = gr.findoverlaps(x, y, qcol = names(values(x)), scol = names(values(y)))
+   return(gr)
+})
+
+#' Find overlaps between rearrangements represented by \code{GRangesList} objects
+#'
+#' Determines overlaps between two piles of rearrangement junctions, each \code{GRangesLists} of signed locus pairs,
+#' against each other. returning a sparseMatrix that is T at entry ij if junction i overlaps junction j.
+#'
+#' @param ra1 \code{GRangesList} of pairs of signed ranges representing a rearrangement set
+#' @param ra2 \code{GRangesList} of pairs of signed ranges representing a rearrangement set
+#' @param pad Pad each breakpoint when considering overlaps. \code{[0]}
+#' @param ... Additional arguments to be sent to \code{\link{findOverlaps}} (e.g. \code{ignore.strand})
+#' @return \code{matrix} with the indices of \code{ra1} that overlap with \code{ra2} and vice-versa
+#' @name ra.overlaps
+#' @export
+ra.overlaps = function(ra1, ra2, pad = 0, ...)
+{
+  bp1 = grl.unlist(ra1) + pad
+  bp2 = grl.unlist(ra2) + pad
+  h = GenomicRanges::findOverlaps(bp1, bp2, ...) ## was gr.findoverlaps
+  ix = data.table(query.id = queryHits(h), subject.id = subjectHits(h))
+  #    ix.rev = gr.findoverlaps(bp1, gr.flip(bp2), ignore.strand = F) ## match even if flipped
+
+  .make_matches = function(ix, bp1, bp2)
+  {
+    if (length(ix) == 0)
+      return(NULL)
+    tmp.match = cbind(bp1$grl.ix[ix$query.id], bp1$grl.iix[ix$query.id], bp2$grl.ix[ix$subject.id], bp2$grl.iix[ix$subject.id])
+    tmp.match.l = lapply(split(1:nrow(tmp.match), paste(tmp.match[,1], tmp.match[,3])), function(x) tmp.match[x, , drop = F])
+
+    ## match only occurs if each range in a ra1 junction matches a different range in the ra2 junction
+    matched.l = sapply(tmp.match.l, function(x) all(c('11','22') %in% paste(x[,2], x[,4], sep = '')) | all(c('12','21') %in% paste(x[,2], x[,4], sep = '')))
+
+    return(do.call('rbind', lapply(tmp.match.l[matched.l], function(x) cbind(x[,1], x[,3])[!duplicated(paste(x[,1], x[,3])), , drop = F])))
+  }
+
+
+  #    tmp = rbind(.make_matches(ix, bp1, bp2), .make_matches(ix.rev, bp1, bp2))
+  #    rownames(tmp) = NULL
+
+  if (nrow(ix) == 0)
+    return(matrix())
+
+  tmp = .make_matches(ix, bp1, bp2)
+
+  if (is.null(tmp))
+  {
+    # if (arr.ind)
+      return(matrix())
+    # else
+    #   return(sparseMatrix(length(ra1), length(ra2), x = 0))
+  }
+
+  rownames(tmp) = NULL
+
+  colnames(tmp) = c('ra1.ix', 'ra2.ix')
+
+  # if (arr.ind) {
+    ro <- tmp[order(tmp[,1], tmp[,2]), ]
+    if (class(ro)=='integer')
+      ro <- matrix(ro, ncol=2, nrow=1, dimnames=list(c(), c('ra1.ix', 'ra2.ix')))
+    return(ro)
+  # } else {
+  #   ro <- sparseMatrix(tmp[,1], tmp[,2], x = 1, dims = c(length(ra1), length(ra2)))
+  #   return(ro)
+  # }
+}
+
+#' Simplify granges by collapsing all non-overlapping adjacent ranges that share a given "field" value
+#' (adjacent == adjacent in the input GRanges object)
+#'
+#' @param gr takes in gr or grl
+#' @param field character scalar, corresponding to value field of gr. \code{[NULL]}
+#' @param val \code{[NULL]}
+#' @param include.val scalar logical, will include in out gr values field of first matching record in input gr. \code{[TRUE]}
+#' @param split Split the output into \code{GRangesList} split by \code{"field"}. \code{[FALSE]}
+#' @param pad Pad ranges by this amount before doing merge. [1], which merges contiguous but non-overlapping ranges.
+#' @return Simplified GRanges with "field" populated with uniquely contiguous values
+#' @export
+gr.simplify = function(gr, field = NULL, include.val = TRUE, split = FALSE, pad = 1)
+{
+  tmp = as.logical(suppressWarnings(width(IRanges::pintersect(ranges(gr[-length(gr)]), ranges(gr[-1]+pad), resolve.empty = 'max.start'))>0) &
+                     seqnames(gr[-length(gr)]) == seqnames(gr[-1]) & strand(gr[-length(gr)]) == strand(gr[-1]))
+
+  tmp = as.vector(c(0, cumsum(!tmp)))
+
+  if (!is.null(field))
+    tmp = paste(tmp, values(gr)[, field])
+
+  # if (!is.null(val))
+  #   tmp = paste(tmp, val)
+
+  r = base::rle(tmp)
+
+  lix = unlist(lapply(1:length(r$lengths), function(x) rep(x, r$lengths[x])))
+  sn.gr = split(as.character(seqnames(gr)), lix)
+  st.gr = split(start(gr), lix)
+  en.gr = split(end(gr), lix)
+  str.gr = split(as.character(strand(gr)), lix)
+
+  st.gr.min = sapply(st.gr, min)
+  en.gr.max = sapply(en.gr, max)
+
+  out = GRanges(sapply(sn.gr, function(x) x[1]), IRanges(st.gr.min, en.gr.max),
+                strand = sapply(str.gr, function(x) x[1]), seqinfo = seqinfo(gr))
+
+  ix = match(1:length(out), lix)
+
+  if (include.val)
+    values(out) = values(gr)[ix, ]
+
+  if (split)
+    if (!is.null(field))
+      out = split(out, values(gr)[ix, field])
+  else
+    out = GRangesList(out)
+
+  return(out)
 }

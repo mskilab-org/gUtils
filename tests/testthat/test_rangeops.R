@@ -15,6 +15,8 @@ test_that("gr.start ", {
   expect_identical(end(gr.start(gr, width=100, ignore.strand=FALSE)),   c(25L,9L,16L))
   expect_identical(suppressWarnings(start(gr.start(gr, width=100, ignore.strand=FALSE, force=TRUE))),   c(3L,-90L,-83L))
   expect_identical(suppressWarnings(end(gr.start(gr, width=100, force=TRUE))),   c(102L,106L,112L))
+
+  expect_identical(end(gr.start(gr, width=10000, clip=TRUE)), c(5L, 9L, 16L))
 })
 
 test_that("gr.end", {
@@ -44,7 +46,7 @@ test_that("gr.rand", {
 })
 
 test_that("si2gr", {
-  gg <- si2gr(si)
+  gg <- si2gr(si, strip.empty = TRUE)
   expect_equal(start(gg)[3], 1)
   expect_equal(end(gg)[1], 249250621)
   expect_equal(as.character(strand(gg)[1]), "+")
@@ -75,6 +77,37 @@ test_that("gr.findoverlaps, return as data.table", {
 
   fo <- gr.findoverlaps(gr.genes, gr.DNAase, return.type = 'data.table')
   expect_identical(colnames(fo), c("start", "end", "query.id", "subject.id", "seqnames", "strand"))
+})
+
+test_that("rrbind", {
+  expect_equal(ncol(rrbind(mcols(gr.genes), mcols(gr.DNAase))), 13)
+  expect_equal(ncol(rrbind(mcols(gr.genes), mcols(gr.DNAase), union=FALSE)), 2)
+})
+
+test_that("gr.match", {
+  ## accepts data.table
+  expect_equal(sum(!is.na(gr.match(gr2dt(gr.genes), gr.genes))), 10000)
+
+  ## gives back overlapping matches
+  gr11 <- GRanges(1, IRanges(c(10,20), width=5), strand=c("+", "-"))
+  gr12 <- GRanges(1, IRanges(c(8,18, 100), width=5), strand=c("-", "+", "+"))
+
+  expect_identical(gr.match(gr11, gr12), c(1L,2L))
+
+  ## ignore strand is successfully passed
+  expect_identical(gr.match(gr11, gr12, ignore.strand = FALSE), c(NA,NA))
+})
+
+test_that("gr.findoverlaps chunk", {
+  fo  <- gr.findoverlaps(gr.genes, gr.DNAase)
+  fo2 <- gr.findoverlaps(gr.genes, gr.DNAase, max.chunk = 1e7, verbose=TRUE)
+  expect_identical(fo, fo2)
+})
+
+test_that("gr.findoverlaps, input data.table", {
+  expect_equal(class(gr.findoverlaps(gr2dt(gr.genes), gr.genes, return.type='GRanges'))[1], "GRanges")
+  expect_equal(class(gr.findoverlaps(gr2dt(gr.genes), gr.genes))[1], "data.table")
+  expect_equal(class(gr.findoverlaps(gr2dt(gr.genes), gr.genes, max.chunk = 1e7))[1], "data.table")
 })
 
 test_that("gr.findoverlaps ignore.strand", {
@@ -122,10 +155,6 @@ test_that("gr.findoverlaps ignore.strand", {
 test_that("gr.findoverlap by", {
   expect_error(gr.findoverlaps(gr.genes, gr.DNAase, by = "dummy"))
   gr.findoverlaps(gr.genes, gr.DNAase, by = "bin")
-})
-
-test_that("gr.in", {
-  expect_equal(sum(gr.in(gr.genes, gr.DNAase)),1309)
 })
 
 test_that("gr2dt works as expected", {
@@ -219,6 +248,14 @@ test_that("grlbind", {
   suppressWarnings(gg <- grlbind(grl.hiC2, grl.hiC[1:30]))
   expect_equal(length(gg), 50)
   expect_equal(colnames(mcols(gg)), "test")
+
+  names(grl.hiC) <- NULL
+  out <- grlbind(grl.hiC)
+  names(out) <- NULL
+  expect_identical(out, grl.hiC)
+
+  ## expect error
+  expect_error(grlbind('d'))
 })
 
 test_that("streduce", {
@@ -269,11 +306,23 @@ test_that("gr.fix with null genome", {
 
 })
 
-test_that("gr.match", {
-  gg <- gr.match(gr.genes[1:100], gr.DNAase)
-  fo <- sort(gr.findoverlaps(gr.genes[1:100], gr.DNAase))
-  fo2 <- sort(fo[!duplicated(fo$query.id)]$subject.id)
-  identical(fo2, sort(gg[!is.na(gg)]))
+test_that("grfo", {
+  fo <- gr.genes %*% gr.DNAase
+  expect_equal(ncol(mcols(fo)), 17)
+  expect_equal(length(fo), 1856)
+})
+
+test_that("gr.simplify", {
+  gg <- gr.simplify(gr, pad=4)
+  expect_identical(end(gg), c(5L, 16L))
+  expect_equal(length(gg), 2)
+
+  gr$field <- c("A","B","B")
+  expect_equal(length(gr.simplify(gr, pad=4, field="name")), 3)
+  expect_equal(length(gr.simplify(gr, pad=4, field="field")), 2)
+
+  expect_equal(class(gr.simplify(gr, pad=4, field="name", split = TRUE))[1], "GRangesList")
+  expect_equal(ncol(mcols((gr.simplify(gr, pad=4, field="name", include.val = FALSE)))), 0)
 })
 
 test_that("gr.tile.map", {
@@ -284,4 +333,15 @@ test_that("gr.tile.map", {
   expect_equal(length(gg), 10)
   expect_equal(length(unlist(gg)), 20)
 
+})
+
+test_that('ra.overlaps', {
+  ro <- ra.overlaps(grl1, grl2)
+  expect_equal(class(ro), "matrix")
+  expect_equal(nrow(ro), 1)
+  expect_equal(ncol(ro), 2)
+  expect_equal(nrow(ra.overlaps(grl1, grl1)), 115)
+
+  expect_equal(ra.overlaps(GRangesList(), grl1)[1], NA)
+  expect_equal(ra.overlaps(grl2[2:3], grl1)[1], NA)
 })

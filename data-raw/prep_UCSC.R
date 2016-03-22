@@ -61,9 +61,20 @@ tab <- table(gr1.hg19$id)
 gr1.hg19 <- gr1.hg19[as.character(gr1.hg19$id) %in% names(tab[tab==2])]
 grl.hiC <- GenomicRanges::split(gr1.hg19, gr1.hg19$id)
 
+## make some fake rearrangement data
+library(gUtils)
+set.seed(137)
+grg <- gr.genes
+mcols(grg) <- NULL
+strand(grg) <- ifelse(runif(length(grg)) > 0.5, "+", "-")
+grl <- S4Vectors::split(gr.start(grg), gr.genes$bin)[sapply(split(grg, gr.genes$bin), length)==2]
+sam <- sample(length(grl), length(grl), replace=FALSE)
+grl1 <- grl[1:(length(grl)/2)]
+grl2 <- grl[(length(grl)/2):length(grl)]
+
 ## save it
 set.seed(137)
 gr.genes <- gr.genes[sample(length(gr.genes), 10000)]
 gr.DNAase <- gr.DNAase[sample(length(gr.DNAase), 10000)]
 grl.hiC <- grl.hiC[sample(length(grl.hiC), 10000)]
-save(gr.genes, gr.DNAase, si, grl.hiC, file="data/grdata.rda", compress='xz')
+save(gr.genes, gr.DNAase, si, grl1, grl2, grl.hiC, file="data/grdata.rda", compress='xz')

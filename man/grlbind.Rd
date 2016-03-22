@@ -2,7 +2,7 @@
 % Please edit documentation in R/gUtils.R
 \name{grlbind}
 \alias{grlbind}
-\title{Concatenate \code{GRangesList} objects}
+\title{Concatenate \code{GRangesList} objects.}
 \usage{
 grlbind(...)
 }
@@ -10,7 +10,8 @@ grlbind(...)
 \item{...}{Any number of \code{GRangesList} to concatenate together}
 }
 \value{
-Concatenated \code{GRangesList} with NA filled in for \code{mcols} fields that are non-overlapping
+Concatenated \code{GRangesList} with NA filled in for \code{mcols} fields that are non-overlapping. Note that the
+elements are re-named with sequential numbers
 }
 \description{
 Concatenates \code{GRangesList} objects taking the union of their \code{mcols} features if they have non-overlapping features

@@ -2,21 +2,14 @@
 % Please edit documentation in R/gUtils.R
 \name{gr.match}
 \alias{gr.match}
-\title{Faster \code{GenomicRanges::match}}
+\title{Alternative \code{GenomicRanges::match} that accepts additional \code{\link{gr.findoverlaps}} options}
 \usage{
-gr.match(query, subject, max.slice = Inf, verbose = FALSE, mc.cores = 1,
-  ...)
+gr.match(query, subject, ...)
 }
 \arguments{
 \item{query}{Query \code{GRanges} pile}
 
 \item{subject}{Subject \code{GRanges} pile}
-
-\item{max.slice}{Maximum number of ranges to consider at once \code{[Inf]}}
-
-\item{verbose}{Increase the verbosity during runtime}
-
-\item{mc.cores}{Number of cores to use, if ranges exceed \code{max.slice}}
 
 \item{...}{Additional arguments to be passed along to \code{\link{gr.findoverlaps}}.}
 }
@@ -27,6 +20,7 @@ return *all* indicies of subject in query (in the case of one query overlaps wit
 ... = additional args for findOverlaps (IRanges version)
 }
 \description{
-Faster implementation of \code{GenomicRanges::match} (uses \code{\link{gr.findoverlaps}})
+Wrapper to \code{GenomicRanges::match} (uses \code{\link{gr.findoverlaps}}). This allows users to
+match on additional \code{by} fields, or chunk into smaller pieces for lower memory.
 }
 
