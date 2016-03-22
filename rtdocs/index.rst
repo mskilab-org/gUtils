@@ -15,7 +15,7 @@ Contents:
    rangeops.rst
    data.rst
    utils.rst
-   tutorials.rst
+   tutorial.rst
    
 Indices and tables
 ==================
