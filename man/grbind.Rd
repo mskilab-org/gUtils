@@ -2,7 +2,7 @@
 % Please edit documentation in R/gUtils.R
 \name{grbind}
 \alias{grbind}
-\title{Concatenate GRanges, robust to different \code{mcols}}
+\title{Concatenate \code{GRanges}, robust to different \code{mcols}}
 \usage{
 grbind(x, ...)
 }

@@ -29,7 +29,17 @@ section will describe and demonstrate the functionality ``gUtils`` provides for 
    gr <- GRanges(1, IRanges(c(2,5,10), c(4,9,16)), seqinfo=Seqinfo("1", 20)) 
    dt <- data.table(seqnames=1, start=c(2,5,10), end=c(3,8,15))
 
-grbind
+``grbind``
+
+.. code-block:: bash
+
+   ## add metadata to one field
+   mcols(gr)$score = 3
+   ## try to concatenate
+   c(gr,gr2)  ## ERROR
+   ## with grbind
+   grbind(gr, gr2) ## SUCCESS. Adds NA for missing fields
+   ## GenomicRanges::c does this already for GRangesList
 
 grlbind
 
@@ -39,19 +49,9 @@ grdt
 
 si2gr
 
-gr2gatk
-
 gr.flatten
 
-gr.flatmap
-
-grl.split
-
-grl.stripnames
-
 grl.unlist
-
-grl.span
 
 grl.pivot
 

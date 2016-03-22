@@ -11,25 +11,24 @@ gr.dist(gr1, gr2 = NULL, ignore.strand = FALSE, ...)
 
 \item{gr2}{Second \code{GRanges}}
 
-\item{ignore.strand}{Don't required elements be on same strand to avoid NA [FALSE]}
+\item{ignore.strand}{Don't required elements be on same strand to avoid \code{NA [FALSE]}}
 
 \item{...}{Additional arguments to be supplied to \code{GenomicRanges::distance}}
 }
 \value{
-Matrix with the pairwise distances, with \code{gr1} on rows and \code{gr2} on cols
+\code{N} by \code{M} matrix with the pairwise distances, with \code{gr1} on rows and \code{gr2} on cols
 }
 \description{
-computes pairwise distance between elements of two gr objects of length n and m
-returning n by m matrix of distances between item i of gr1 and item j of gr2
+Computes matrix of pairwise distance between elements of two \code{GRanges} objects of length \code{n} and \code{m}.
 }
 \details{
-distances are computed as follows:
-NA for ranges on different seqnames
-0 for overlapping ranges)
-min(abs(end1-end2), abs(end1-start2), abs(start1-end2), abs(start1-end1),) for all others
-
-if only gr1 is provided, then will return n x n matrix of gr's vs themselves
-
-if max.dist = TRUE then will replace min with max above
+Distances are computed as follows:
+\itemize{
+\item NA for ranges on different seqnames
+\item 0 for overlapping ranges
+\item min(abs(end1-end2), abs(end1-start2), abs(start1-end2), abs(start1-end1),) for all others
+}
+If only \code{gr1} is provided, then will return n x n matrix of \code{gr1} vs itself \cr
+If \code{max.dist = TRUE}, then will replace \code{min} with \code{max} above
 }
 

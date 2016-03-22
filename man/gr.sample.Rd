@@ -19,15 +19,14 @@ gr.sample(gr, k, len = 100, replace = TRUE)
 GRanges of max length sum(k) [if k is vector) or k*length(gr) (if k is scalar) with labels indicating the originating range.
 }
 \description{
-Samples k intervals of length "len" from a pile of \code{GRanges}.
-If k is a scalar then will (uniformly) select k intervals from the summed territory of \code{GRanges}
-If k is a vector of length(gr) then will uniformly select k intervals from each.
-from a tiling of the set (and may do fewer than k samples if width(gr[i])<= k[i] *len)
-If k[i] = NA, will return tiling of that interval, if k = NA will return tiling of the entire
-gr's (with length len tiles).
+Samples \code{k} intervals of length "len" from a pile of \code{GRanges}.
+\itemize{
+\item If k is a scalar then will (uniformly) select k intervals from the summed territory of \code{GRanges}
+\item If k is a vector of length(gr) then will uniformly select k intervals from each.
+}
 }
 \note{
-This is different from overloaded sample() function implemented in GenomicRanges class, which just samples from a pile of GRanges
+This is different from \code{GenomicRanges::sample} function, which just samples from a pile of \code{GRanges}
 }
 \examples{
 ## sample 5 \\code{GRanges} of length 10 each from territory of RefSeq genes

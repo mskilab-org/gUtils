@@ -12,17 +12,21 @@ gr.match(query, subject, max.slice = Inf, verbose = FALSE, mc.cores = 1,
 
 \item{subject}{Subject \code{GRanges} pile}
 
-\item{max.slice}{Maximum number of ranges to consider at once [Inf]}
+\item{max.slice}{Maximum number of ranges to consider at once \code{[Inf]}}
 
 \item{verbose}{Increase the verbosity during runtime}
 
 \item{mc.cores}{Number of cores to use, if ranges exceed \code{max.slice}}
 
-\item{...}{Additional arguments to be passed along to \code{gr.findoverlaps}}
+\item{...}{Additional arguments to be passed along to \code{\link{gr.findoverlaps}}.}
+}
+\value{
+Vector of length = \code{length(query)} with subject indices of *first* subject in query, or NA if none found.
+This behavior is different from \code{\link{gr.findoverlaps}}, which will
+return *all* indicies of subject in query (in the case of one query overlaps with multiple subject)
+... = additional args for findOverlaps (IRanges version)
 }
 \description{
-Faster implementation of GRanges match (uses gr.findoverlaps)
-returns indices of query in subject or NA if none found
-... = additional args for findOverlaps (IRanges version)
+Faster implementation of \code{GenomicRanges::match} (uses \code{\link{gr.findoverlaps}})
 }
 

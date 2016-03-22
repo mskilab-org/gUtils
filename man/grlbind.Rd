@@ -10,15 +10,15 @@ grlbind(...)
 \item{...}{Any number of \code{GRangesList} to concatenate together}
 }
 \value{
-Concatenated GRangesList
+Concatenated \code{GRangesList} with NA filled in for \code{mcols} fields that are non-overlapping
 }
 \description{
 Concatenates \code{GRangesList} objects taking the union of their \code{mcols} features if they have non-overlapping features
 }
 \examples{
 ## Concatenate
-#grl.hiC2 <- grl.hiC[1:20]
-#mcols(grl.hiC2)$test = 1
-#grlbind(grl.hiC2, grl.hiC[1:30])
+grl.hiC2 <- grl.hiC[1:20]
+mcols(grl.hiC2)$test = 1
+grlbind(grl.hiC2, grl.hiC[1:30])
 }
 

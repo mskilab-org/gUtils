@@ -2,21 +2,21 @@
 % Please edit documentation in R/gUtils.R
 \name{gr.chr}
 \alias{gr.chr}
-\title{Prepend "chr" to GRanges seqlevels}
+\title{Prepend "chr" to \code{GRanges seqlevels}}
 \usage{
 gr.chr(gr)
 }
 \arguments{
-\item{gr}{GRanges object to append 'chr' to}
+\item{gr}{\code{GRanges} object to append 'chr' to}
 }
 \value{
 Identical \code{GRanges}, but with 'chr' prepended to each seqlevel
 }
 \description{
-Prepend "chr" to GRanges seqlevels
+Prepend "chr" to \code{GRanges seqlevels}
 }
 \examples{
-library(gUtils)
-gr.chr(GRanges(c(1,"chrX"), IRanges(c(1,2), 1)))
+gr <-  gr.chr(GRanges(c(1,"chrX"), IRanges(c(1,2), 1)))
+seqnames(gr)
 }
 

@@ -2,29 +2,28 @@
 % Please edit documentation in R/gUtils.R
 \name{gr.end}
 \alias{gr.end}
-\title{Get GRanges corresponding to beginning of end}
+\title{Get the right ends of a \code{GRanges}}
 \usage{
 gr.end(x, width = 1, force = FALSE, ignore.strand = TRUE, clip = TRUE)
 }
 \arguments{
 \item{x}{\code{GRanges} object to operate on}
 
-\item{width}{[default = 1] Specify subranges of greater width including the start of the range.}
+\item{width}{Specify subranges of greater width including the start of the range. \code{[1]}}
 
-\item{force}{[default = F] Allows returned \code{GRanges} to have ranges outside of its \code{Seqinfo} bounds.}
+\item{force}{Allows returned \code{GRanges} to have ranges outside of its \code{Seqinfo} bounds. \code{[FALSE]}}
 
-\item{ignore.strand}{[default = TRUE] If set to \code{FALSE}, will extend '-' strands from the other direction.}
+\item{ignore.strand}{If set to \code{FALSE}, will extend '-' strands from the other direction. \code{[TRUE]}}
 
-\item{clip}{[default = F] Trims returned \code{GRanges} so that it does not extend beyond bounds of the input \code{GRanges}}
+\item{clip}{Trims returned \code{GRanges} so that it does not extend beyond bounds of the input \code{GRanges}. \code{[TRUE]}}
 }
 \value{
-GRanges object of width 1 ranges representing end of each genomic range in the input.
+\code{GRanges} object of width = \code{width} ranges representing end of each genomic range in the input.
 }
 \description{
-Alternative to \code{flank} that will provide end positions *within* intervals
+Alternative to \code{GenomicRanges::flank} that will provide end positions *within* intervals
 }
 \examples{
-library(gUtils)
 gr.end(gr.DNAase, width=200, clip=TRUE)
 }
 

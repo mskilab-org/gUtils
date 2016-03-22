@@ -51,7 +51,7 @@ test_that("si2gr", {
 })
 
 test_that("grbind", {
-  expect_equal(length(grbind(gr.genes, gr.DNAase)), 310779)
+  expect_equal(length(grbind(gr.genes, gr.DNAase)), 20000)
   expect_equal(colnames(mcols(grbind(gr.genes, gr.DNAase)))[10], "cdsStartStat")
 })
 
@@ -60,9 +60,21 @@ test_that("gr.dice", {
 })
 
 test_that("gr.findoverlaps", {
-  fo <- gr.findoverlaps(gr.genes, gr.DNAase, verbose=TRUE)
-  expect_equal(start(fo)[3], 762902)
-  expect_equal(length(fo), 256058)
+  fo <- gr.findoverlaps(gr.genes, gr.DNAase)
+  expect_equal(start(fo)[3], 5946813)
+  expect_equal(length(fo), 1856)
+
+  ## null input
+  expect_equal(length(gr.findoverlaps(gr.genes, GRanges())), 0)
+  expect_equal(length(gr.findoverlaps(GRanges(), GRanges())), 0)
+  expect_equal(length(gr.findoverlaps(GRanges(), gr.DNAase)), 0)
+})
+
+test_that("gr.findoverlaps, return as data.table", {
+  expect_error(gr.findoverlaps(gr.genes, gr.DNAase, return.type = "data.frame"))
+
+  fo <- gr.findoverlaps(gr.genes, gr.DNAase, return.type = 'data.table')
+  expect_identical(colnames(fo), c("start", "end", "query.id", "subject.id", "seqnames", "strand"))
 })
 
 test_that("gr.findoverlaps ignore.strand", {
@@ -82,39 +94,38 @@ test_that("gr.findoverlaps ignore.strand", {
   expect_that(!any(strand(gr.DNAase2)[fo1$query.id] != strand(gr.genes)[fo1$subject.id]), is_true())
 })
 
-test_that("gr.findoverlaps foverlaps", {
-  ## make stranded DNAase track (for testing only)
-  gr.DNAase2 = gr.DNAase
-  set.seed(137)
-  strand(gr.DNAase2) <- ifelse(runif(length(gr.DNAase)) > 0.5, '+', '-')
+# test_that("gr.findoverlaps foverlaps", {
+#   ## make stranded DNAase track (for testing only)
+#   gr.DNAase2 = gr.DNAase
+#   set.seed(137)
+#   strand(gr.DNAase2) <- ifelse(runif(length(gr.DNAase)) > 0.5, '+', '-')
+#
+#   ## assure that things are same with/without foverlaps
+#   fo1 <- gr.findoverlaps(gr.DNAase, gr.genes, foverlaps=TRUE)
+#   fo1b <- gr.findoverlaps(gr.genes, gr.DNAase, foverlaps=TRUE)
+#   expect_identical(fo1$query.id, fo1b$subject.id)
+#   expect_identical(fo1$subject.id, fo1b$query.id)
+#   expect_identical(start(fo1), start(fo1b))
+#
+#   fo2 <- gr.findoverlaps(gr.DNAase, gr.genes, foverlaps=FALSE)
+#   fo2b <- gr.findoverlaps(gr.genes, gr.DNAase, foverlaps=FALSE)
+#   expect_identical(fo1$query.id, fo1b$subject.id)
+#   expect_identical(fo1$subject.id, fo1b$query.id)
+#   expect_identical(start(fo1), start(fo1b))
+#
+#   expect_identical(start(fo1), start(fo2))
+#   expect_identical(end(fo1), end(fo2))
+#   ## sort subject id because order for multi-overlaps is different, but it's OK
+#   expect_identical(sort(fo1$subject.id), sort(fo2$subject.id))
+# })
 
-  ## assure that things are same with/without foverlaps
-  fo1 <- gr.findoverlaps(gr.DNAase, gr.genes, foverlaps=TRUE)
-  fo1b <- gr.findoverlaps(gr.genes, gr.DNAase, foverlaps=TRUE)
-  expect_identical(fo1$query.id, fo1b$subject.id)
-  expect_identical(fo1$subject.id, fo1b$query.id)
-  expect_identical(start(fo1), start(fo1b))
-
-  fo2 <- gr.findoverlaps(gr.DNAase, gr.genes, foverlaps=FALSE)
-  fo2b <- gr.findoverlaps(gr.genes, gr.DNAase, foverlaps=FALSE)
-  expect_identical(fo1$query.id, fo1b$subject.id)
-  expect_identical(fo1$subject.id, fo1b$query.id)
-  expect_identical(start(fo1), start(fo1b))
-
-  expect_identical(start(fo1), start(fo2))
-  expect_identical(end(fo1), end(fo2))
-  ## sort subject id because order for multi-overlaps is different, but it's OK
-  expect_identical(sort(fo1$subject.id), sort(fo2$subject.id))
-})
-
-test_that("gr.findoverlaps pintersect",{
-  fo1 <- gr.findoverlaps(gr.DNAase[1:100], gr.genes[1:500], pintersect = TRUE)
-  fo2 <- gr.findoverlaps(gr.DNAase[1:100], gr.genes[1:500], pintersect = FALSE)
-  expect_identical(fo1, fo2)
+test_that("gr.findoverlap by", {
+  expect_error(gr.findoverlaps(gr.genes, gr.DNAase, by = "dummy"))
+  gr.findoverlaps(gr.genes, gr.DNAase, by = "bin")
 })
 
 test_that("gr.in", {
-  expect_equal(sum(gr.in(gr.genes, gr.DNAase)),35570)
+  expect_equal(sum(gr.in(gr.genes, gr.DNAase)),1309)
 })
 
 test_that("gr2dt works as expected", {
@@ -143,12 +154,28 @@ test_that("dt2gr", {
 test_that("gr.sample", {
   set.seed(137)
   gg <- gr.sample(reduce(gr.genes), 10, len=1)
-  expect_equal(start(gg)[1], 77055451)
+  expect_equal(start(gg)[1], 131788860)
   expect_equal(unique(width(gg)), 1)
 
   expect_error(gr.sample(reduce(gr.genes), c(1:3), len=5))
   set.seed(137)
   gg <- gr.sample(gr.genes[1:5], c(2,2,3,4,5), len=2)
+  expect_equal(length(gg), 16)
+  expect_equal(sum(width(gg)), 32)
+
+})
+
+
+test_that("gr.sample without replace", {
+  set.seed(137)
+  gg <- gr.sample(reduce(gr.genes), 10, len=1, replace=FALSE)
+  expect_equal(start(gg)[1], 131788861)
+  expect_equal(unique(width(gg)), 1)
+
+  expect_error(gr.sample(reduce(gr.genes)[1:3], 10000, len=1, replace=FALSE))
+
+  set.seed(137)
+  gg <- gr.sample(gr.genes[1:5], c(2,2,3,4,5), len=2, replace=FALSE)
   expect_equal(length(gg), 16)
   expect_equal(sum(width(gg)), 32)
 })
@@ -162,7 +189,7 @@ test_that("gr.nochr",{
 })
 
 test_that("gr.string", {
-  expect_equal(gr.string(gr.genes)[1], "1:67000041-67208778+")
+  expect_equal(gr.string(gr.genes)[1], "12:10772742-10787217-")
 })
 
 test_that("gr.fix", {
@@ -206,7 +233,7 @@ test_that("grl.pivot", {
   gg <- grl.pivot(grl.hiC)
   expect_equal(as.character(class(gg)), "GRangesList")
   expect_equal(length(gg),2)
-  expect_equal(length(gg[[1]]), 537341)
+  expect_equal(length(gg[[1]]), 10000)
 })
 
 test_that("gr.tile", {
@@ -214,9 +241,10 @@ test_that("gr.tile", {
   expect_equal(length(gr.tile(GRanges())), 0)
 })
 
-#test_that("grl.string", {
-#  expect_equal(grl.string(grl.hiC[1:5])[1]=="14:29864023-29864023+,14:19001056-19001056+", TRUE)
-#})
+test_that("grl.string", {
+  exp_result = structure(names="450448", "14:66569495-66569495-,14:66716403-66716403+")
+  expect_identical(grl.string(grl.hiC[1:5])[1], exp_result)
+})
 
 test_that("grl.unlist", {
   gg <- grl.unlist(grl.hiC)
@@ -229,4 +257,31 @@ test_that("grl.unlist", {
 test_that("grl.in", {
   gg <- grl.in(grl.hiC[1:100], gr.genes)
   expect_equal(length(gg), 100)
+})
+
+test_that("gr.fix with null genome", {
+  gg <- GRanges(c("X",1), IRanges(c(1,2), width=1))
+  es <- structure(c(1L,2L), names=c("X","1"))
+  expect_identical(seqlengths(seqinfo(gr.fix(gg))), es)
+
+  es <- structure(c("gen","gen"), names=c("X","1"))
+  expect_identical(genome(seqinfo(gr.fix(gg, gname='gen'))), es)
+
+})
+
+test_that("gr.match", {
+  gg <- gr.match(gr.genes[1:100], gr.DNAase)
+  fo <- sort(gr.findoverlaps(gr.genes[1:100], gr.DNAase))
+  fo2 <- sort(fo[!duplicated(fo$query.id)]$subject.id)
+  identical(fo2, sort(gg[!is.na(gg)]))
+})
+
+test_that("gr.tile.map", {
+
+  gr1 <- gr.tile(GRanges(1, IRanges(1,100)), w=10)
+  gr2 <- gr.tile(GRanges(1, IRanges(1,100)), w=5)
+  gg <- gr.tile.map(gr1, gr2, verbose=TRUE)
+  expect_equal(length(gg), 10)
+  expect_equal(length(unlist(gg)), 20)
+
 })

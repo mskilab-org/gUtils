@@ -2,7 +2,7 @@
 % Please edit documentation in R/gUtils.R
 \name{gr.fix}
 \alias{gr.fix}
-\title{"Fixes" seqlengths / seqlevels}
+\title{"Fixes" \code{seqlengths} / \code{seqlevels}}
 \usage{
 gr.fix(gr, genome = NULL, gname = NULL, drop = FALSE)
 }
@@ -19,12 +19,11 @@ gr.fix(gr, genome = NULL, gname = NULL, drop = FALSE)
 \code{GRanges} pile with the fixed \code{Seqinfo}
 }
 \description{
-If "genome" not specified will replace NA seq lengths in GR to reflect largest coordinate per seqlevel
-and removes all NA seqlevels after this fix.
+If "genome" not specified will replace \code{NA} \code{seqlengths} in \code{GRanges} to reflect largest coordinate per \code{seqlevel}
+and removes all \code{NA seqlevels} after this fix.
 }
 \details{
-if "genome" defined (ie as Seqinfo object, or a BSgenome, GRanges, GRnagesList object with populated seqlengths) then will replace
-seqlengths in gr with those for that genome (and if drop = T, drop all ranges without
-seqlevels in that genome)
+if "genome" defined (i.e. as \code{Seqinfo} object, or a \code{BSgenome}, \code{GRanges}, \code{GRangesList} object with populated \code{seqlengths}),
+then will replace \code{seqlengths} in \code{gr} with those for that genome
 }
 

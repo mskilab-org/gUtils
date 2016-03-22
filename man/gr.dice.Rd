@@ -2,7 +2,7 @@
 % Please edit documentation in R/gUtils.R
 \name{gr.dice}
 \alias{gr.dice}
-\title{Dice up \code{GRanges} into width 1 \code{GRanges} spanning the input (warning can produce a very large object)}
+\title{Dice up \code{GRanges} into \code{width = 1} \code{GRanges} spanning the input (warning can produce a very large object)}
 \usage{
 gr.dice(gr)
 }
@@ -13,11 +13,9 @@ gr.dice(gr)
 \code{GRangesList} where kth element is a diced pile of \code{GRanges} from kth input \code{GRanges}
 }
 \description{
-Dice up \code{GRanges} into width 1 \code{GRanges} spanning the input (warning can produce a very large object)
+Dice up \code{GRanges} into \code{width = 1} \code{GRanges} spanning the input (warning can produce a very large object)
 }
 \examples{
-library(gUtils)
-library(S4Vectors)
 gr.dice(GRanges(c(1,4), IRanges(c(10,10),20)))
 }
 

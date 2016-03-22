@@ -2,16 +2,19 @@
 % Please edit documentation in R/gUtils.R
 \name{streduce}
 \alias{streduce}
-\title{Shortcut for \code{reduce(sort(gr.stripstrand(unlist(x))))}}
+\title{Reduce \code{GRanges} and \code{GRangesList} to miminal footprint}
 \usage{
 streduce(gr, pad = 0, sort = TRUE)
 }
 \arguments{
-\item{gr}{takes in gr or grl}
+\item{gr}{\code{GRanges} or \code{GRangesList}}
 
-\item{pad}{asdf. Default 0}
+\item{pad}{Expand the input data before reducing. \code{[0]}}
 
-\item{sort}{Flag to sort the output. Default TR#' @return GRanges}
+\item{sort}{Flag to sort the output. \code{[TRUE]}}
+}
+\value{
+\code{GRanges} object with no strand information, representing a minimal footprint
 }
 \description{
 Shortcut for \code{reduce(sort(gr.stripstrand(unlist(x))))}

@@ -15,11 +15,9 @@ Contents:
    rangeops.rst
    data.rst
    utils.rst
-   rsam.rst
    tutorial.rst
-=======
->>>>>>> 1d87dd56980d0ef3a2db59deb7e534e7de07c229
-
+   hello.rst 
+   
 Indices and tables
 ==================
 

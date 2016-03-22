@@ -2,7 +2,7 @@
 % Please edit documentation in R/gUtils.R
 \name{gr.mid}
 \alias{gr.mid}
-\title{Get the midpoint of range}
+\title{Get the midpoints of \code{GRanges} ranges}
 \usage{
 gr.mid(x)
 }
@@ -13,7 +13,7 @@ gr.mid(x)
 \code{GRanges} of the midpoint, calculated from \code{floor(width(x)/2)}
 }
 \description{
-Get the midpoint of range
+Get the midpoints of \code{GRanges} ranges
 }
 \examples{
 gr.mid(GRanges(1, IRanges(1000,2000), seqinfo=Seqinfo("1", 2000)))

@@ -3,10 +3,12 @@
 \docType{data}
 \name{grl.hiC}
 \alias{grl.hiC}
-\title{HiC data for chr14 from Lieberman-Aiden 2009 (in hg19)}
+\title{HiC data for chr14 from Lieberman-Aiden 2009 (in hg19), subsampled
+to 10,000 interactions}
 \format{\code{GRangesList}}
 \description{
-HiC data for chr14 from Lieberman-Aiden 2009 (in hg19)
+HiC data for chr14 from Lieberman-Aiden 2009 (in hg19), subsampled
+to 10,000 interactions
 }
 \keyword{data}
 

@@ -9,22 +9,22 @@ gr.trim(gr, starts = 1, ends = 1)
 \arguments{
 \item{gr}{\code{GRanges} to trim}
 
-\item{starts}{number [1]}
+\item{starts}{Number of bases to trim off of the front\code{[1]}}
 
-\item{ends}{number [1]}
+\item{ends}{Number of bases to trim off of the back\code{[1]}}
 }
 \description{
-e.g. A \code{GRanges} with genomic coordinates 1:1,000,000-1,001,000 can get the first 20 and last 50 bases trimmed off with
+Example: \code{GRanges} with genomic coordinates 1:1,000,000-1,001,000 can get the first 20 and last 50 bases trimmed off with
 \code{start = 20, end = 950}.
-if end is larger than the width of the corresponding gr, then the corresponding output will only have end(gr) as its coordinate.
+if end is larger than the width of the corresponding gr, then the corresponding output will only have \code{end(gr)} as its coordinate.
 }
 \details{
-This is a role not currently provided by the standard \code{GRanges} functions
-(eg shift, reduce, restrict, shift, resize, flank etc)
+This is a role not currently provided by the standard \code{GenomicRanges} functions
+(e.g. \code{shift}, \code{reduce}, \code{restrict}, \code{shift}, \code{resize}, \code{flank})
 }
 \examples{
 ## trim the first 20 and last 50 bases
 gr.trim(GRanges(1, IRanges(1e6, width=1000)), starts=20, ends=950)
-## return GRanges on 1:1,000,019-1,000,949
+## return value: GRanges on 1:1,000,019-1,000,949
 }
 

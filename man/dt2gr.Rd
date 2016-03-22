@@ -7,18 +7,17 @@
 dt2gr(dt)
 }
 \arguments{
-\item{dt}{data.table to convert to GRanges}
+\item{dt}{\code{data.table} to convert to \code{GRanges}}
 }
 \value{
-\code{\link[GenomicRanges]{GRanges}} object of length = nrow(dt)
+\code{GRanges} object of \code{length = nrow(dt)}
 }
 \description{
-Takes as input a data.table which must have the fields: start, end, strand, seqnames.
-All of the remaining fields are added as meta data to the \code{\link[GenomicRanges]{GRanges}}.
-Will throw an error if \code{data.table} does not contain seqnames, start and end
+Takes as input a data.table which must have the following fields: \code{start}, \code{end}, \code{strand}, \code{seqnames}. Will throw
+an error if any one of these is not present.
+All of the remaining fields are added as metadata to the \code{GRanges}.
 }
 \examples{
-library(gUtils)
 gr <- dt2gr(data.table(start=c(1,2), seqnames=c("X", "1"), end=c(10,20), strand = c('+', '-')))
 }
 

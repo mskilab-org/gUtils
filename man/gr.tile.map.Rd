@@ -7,14 +7,14 @@
 gr.tile.map(query, subject, verbose = FALSE)
 }
 \arguments{
-\item{query}{Query \code{GRanges} pile}
+\item{query}{Query \code{GRanges} pile, perhaps created from some tile (e.g. \code{gr.tile}), and assumed to have no gaps}
 
-\item{subject}{Subject \code{GRanges} pile}
+\item{subject}{Subject \code{GRanges} pile, perhaps created from some tile (e.g. \code{gr.tile}), and assumed to have no gaps}
 
 \item{verbose}{Increase the verbosity of the output}
 }
 \value{
-TODO
+\code{list} of length = \code{length(query)}, where each element \code{i} is a vector of indicies in \code{subject} that overlaps element \code{i} of \code{query}
 }
 \description{
 Given two tilings of the genome (e.g. at different resolution)
