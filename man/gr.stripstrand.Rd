@@ -6,8 +6,13 @@
 \usage{
 gr.stripstrand(gr)
 }
-\description{
-sets strand to "*"
+\arguments{
+\item{gr}{\code{GRanges} to remove strand information from}
 }
-\keyword{internal}
+\value{
+\code{GRanges} with strand set to \code{*}
+}
+\description{
+Sets strand to "*"
+}
 

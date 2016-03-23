@@ -61,13 +61,13 @@ NULL
 #' gr2dt(gr.genes)
 #' @export
 gr2dt <- function(gr)
-  {
-    ## as.data.frame gives error if duplicated rownames
-    if (any(duplicated(names(gr))))
-        names(gr) <- NULL
-    out <- as.data.table(GenomicRanges::as.data.frame(gr))
-    return(out)
-  }
+{
+  ## as.data.frame gives error if duplicated rownames
+  if (any(duplicated(names(gr))))
+    names(gr) <- NULL
+  out <- as.data.table(GenomicRanges::as.data.frame(gr))
+  return(out)
+}
 
 #' Get GRanges corresponding to beginning of range
 #'
@@ -83,64 +83,64 @@ gr2dt <- function(gr)
 #' gr.start(gr.DNAase, width=200, clip=TRUE)
 #' @export
 gr.start <- function(x, width = 1, force = FALSE, ignore.strand = TRUE, clip = FALSE)
+{
+  if (length(x)==0)
+    return(x)
+
+  width = pmax(width, 1)
+
+  if (any(seqlengths(x)==0) | any(is.na(seqlengths(x))))
+    warning('Check or fix seqlengths, some are equal 0 or NA, may lead to negative widths')
+
+  if (force)
   {
-    if (length(x)==0)
-      return(x)
-
-    width = pmax(width, 1)
-
-    if (any(seqlengths(x)==0) | any(is.na(seqlengths(x))))
-        warning('Check or fix seqlengths, some are equal 0 or NA, may lead to negative widths')
-
-    if (force)
-      {
-        if (ignore.strand)
-          {
-            st = as.vector(start(x))
-            en = as.vector(start(x))+width-1
-          }
-        else
-          {
-            st = ifelse(as.logical(strand(x)=='+'),
-              as.vector(start(x)),
-              as.vector(end(x))-width+1)
-
-            en = ifelse(as.logical(strand(x)=='+'),
-              as.vector(start(x))+width-1,
-              as.vector(end(x))
-              )
-          }
-      }
+    if (ignore.strand)
+    {
+      st = as.vector(start(x))
+      en = as.vector(start(x))+width-1
+    }
     else
-      {
-        if (ignore.strand)
-          {
-            st = start(x)
-            en = pmin(as.vector(start(x))+width-1, seqlengths(x)[as.character(seqnames(x))], na.rm = TRUE)
-          }
-        else
-          {
-            st = ifelse(as.logical(strand(x)=='+'),
-              as.vector(start(x)),
-              pmax(as.vector(end(x))-width+1, 1)
-              )
+    {
+      st = ifelse(as.logical(strand(x)=='+'),
+                  as.vector(start(x)),
+                  as.vector(end(x))-width+1)
 
-            en = ifelse(as.logical(strand(x)=='+'),
-              pmin(as.vector(start(x))+width-1, seqlengths(x)[as.character(seqnames(x))], na.rm = TRUE),
-              as.vector(end(x)))
-          }
-      }
-
-    if (clip)
-      {
-        en = pmin(en, end(x))
-        st = pmax(st, start(x))
-      }
-
-    out = GRanges(seqnames(x), IRanges(st, en), seqlengths = seqlengths(x), strand = strand(x))
-    values(out) = values(x)
-    return(out)
+      en = ifelse(as.logical(strand(x)=='+'),
+                  as.vector(start(x))+width-1,
+                  as.vector(end(x))
+      )
+    }
   }
+  else
+  {
+    if (ignore.strand)
+    {
+      st = start(x)
+      en = pmin(as.vector(start(x))+width-1, seqlengths(x)[as.character(seqnames(x))], na.rm = TRUE)
+    }
+    else
+    {
+      st = ifelse(as.logical(strand(x)=='+'),
+                  as.vector(start(x)),
+                  pmax(as.vector(end(x))-width+1, 1)
+      )
+
+      en = ifelse(as.logical(strand(x)=='+'),
+                  pmin(as.vector(start(x))+width-1, seqlengths(x)[as.character(seqnames(x))], na.rm = TRUE),
+                  as.vector(end(x)))
+    }
+  }
+
+  if (clip)
+  {
+    en = pmin(en, end(x))
+    st = pmax(st, start(x))
+  }
+
+  out = GRanges(seqnames(x), IRanges(st, en), seqlengths = seqlengths(x), strand = strand(x))
+  values(out) = values(x)
+  return(out)
+}
 
 #' Convert data.table to GRanges
 #'
@@ -194,65 +194,65 @@ dt2gr <- function(dt) {
 #' @importFrom GenomicRanges strand seqnames values<- values
 #' @export
 gr.end = function(x, width = 1, force = FALSE, ignore.strand = TRUE, clip = TRUE)
+{
+  if (length(x)==0)
+    return(x)
+
+  if (any(seqlengths(x)==0) | any(is.na(seqlengths(x))))
+    warning('Check or fix seqlengths, some are equal 0 or NA, may lead to negative widths')
+
+  width = pmax(width, 1)
+
+  if (force)
   {
-    if (length(x)==0)
-      return(x)
-
-    if (any(seqlengths(x)==0) | any(is.na(seqlengths(x))))
-      warning('Check or fix seqlengths, some are equal 0 or NA, may lead to negative widths')
-
-    width = pmax(width, 1)
-
-    if (force)
-      {
-        if (ignore.strand)
-          {
-            st = as.vector(end(x))-width+1
-            en = as.vector(end(x))
-          }
-        else
-          {
-            st = ifelse(as.logical(strand(x)=='+'),
-              as.vector(end(x))-width+1,
-              as.vector(start(x)))
-
-            en = ifelse(as.logical(strand(x)=='+'),
-              as.vector(end(x)),
-              as.vector(start(x))+width-1)
-          }
-        out = GRanges(seqnames(x), IRanges(st, en), seqlengths = seqlengths(x), strand = strand(x))
-      }
+    if (ignore.strand)
+    {
+      st = as.vector(end(x))-width+1
+      en = as.vector(end(x))
+    }
     else
-      {
-        if (ignore.strand)
-          {
-            st = pmax(as.vector(end(x))-width+1, 1)
-            en = as.vector(end(x))
-          }
-        else
-          {
-            st = ifelse(as.logical(strand(x)=='+'),
-              pmax(as.vector(end(x))-width+1, 1),
-              as.vector(start(x)))
+    {
+      st = ifelse(as.logical(strand(x)=='+'),
+                  as.vector(end(x))-width+1,
+                  as.vector(start(x)))
 
-            en = ifelse(as.logical(strand(x)=='+'),
-              as.vector(end(x)),
-              pmin(as.vector(start(x))+width-1, seqlengths(x)[as.character(seqnames(x))], na.rm = TRUE)
-              )
-          }
-
-        out = GRanges(seqnames(x), IRanges(st, en), seqlengths = seqlengths(x), strand = strand(x))
-      }
-
-    if (clip)
-      {
-        en = pmin(en, end(x))
-        st = pmax(st, start(x))
-      }
-
-    values(out) = values(x)
-    return(out)
+      en = ifelse(as.logical(strand(x)=='+'),
+                  as.vector(end(x)),
+                  as.vector(start(x))+width-1)
+    }
+    out = GRanges(seqnames(x), IRanges(st, en), seqlengths = seqlengths(x), strand = strand(x))
   }
+  else
+  {
+    if (ignore.strand)
+    {
+      st = pmax(as.vector(end(x))-width+1, 1)
+      en = as.vector(end(x))
+    }
+    else
+    {
+      st = ifelse(as.logical(strand(x)=='+'),
+                  pmax(as.vector(end(x))-width+1, 1),
+                  as.vector(start(x)))
+
+      en = ifelse(as.logical(strand(x)=='+'),
+                  as.vector(end(x)),
+                  pmin(as.vector(start(x))+width-1, seqlengths(x)[as.character(seqnames(x))], na.rm = TRUE)
+      )
+    }
+
+    out = GRanges(seqnames(x), IRanges(st, en), seqlengths = seqlengths(x), strand = strand(x))
+  }
+
+  if (clip)
+  {
+    en = pmin(en, end(x))
+    st = pmax(st, start(x))
+  }
+
+  values(out) = values(x)
+  return(out)
+}
 
 #' Get the midpoints of \code{GRanges} ranges
 #'
@@ -263,10 +263,10 @@ gr.end = function(x, width = 1, force = FALSE, ignore.strand = TRUE, clip = TRUE
 #' @examples
 #' gr.mid(GRanges(1, IRanges(1000,2000), seqinfo=Seqinfo("1", 2000)))
 gr.mid = function(x)
-  {
-      start(x) = end(x) = rowMeans(cbind(start(x), end(x)))
-      return(x)
-  }
+{
+  start(x) = end(x) = rowMeans(cbind(start(x), end(x)))
+  return(x)
+}
 
 #' Generate random \code{GRanges} on genome
 #'
@@ -287,46 +287,46 @@ gr.mid = function(x)
 #' gr.rand(rep(10,5), Hsapiens)
 #' @export
 gr.rand = function(w, genome)
+{
+
+  if (!is(genome, 'Seqinfo'))
+    genome = seqinfo(genome)
+
+  sl = seqlengths(genome);
+  available = si2gr(genome);
+
+  out = GRanges(rep(names(sl)[1], length(w)), IRanges(rep(1, length(w)), width = 1), seqlengths = seqlengths(genome));
+  for (i in 1:length(w))
   {
+    if (i == 1)
+      available = si2gr(genome)
+    else
+    {
+      available = gaps(out[1:(i-1)])
+      available = available[strand(available)=='*']
+    }
 
-    if (!is(genome, 'Seqinfo'))
-      genome = seqinfo(genome)
+    available = available[width(available)>w[i]]
 
-    sl = seqlengths(genome);
-    available = si2gr(genome);
+    if (length(available)>0)
+    {
+      end(available) = end(available)-w[i]
+      starts = c(1, cumsum(as.numeric(width(available))+1))
+      rstart = ceiling(stats::runif(1)*starts[length(starts)])-starts
+      rind = max(which(rstart>0))
+      new.chr = seqnames(available[rind])
+      new.ir = IRanges(rstart[rind]+start(available[rind])-1, width = w[i])
 
-    out = GRanges(rep(names(sl)[1], length(w)), IRanges(rep(1, length(w)), width = 1), seqlengths = seqlengths(genome));
-    for (i in 1:length(w))
-      {
-        if (i == 1)
-          available = si2gr(genome)
-        else
-          {
-            available = gaps(out[1:(i-1)])
-            available = available[strand(available)=='*']
-          }
-
-        available = available[width(available)>w[i]]
-
-        if (length(available)>0)
-          {
-            end(available) = end(available)-w[i]
-            starts = c(1, cumsum(as.numeric(width(available))+1))
-            rstart = ceiling(stats::runif(1)*starts[length(starts)])-starts
-            rind = max(which(rstart>0))
-            new.chr = seqnames(available[rind])
-            new.ir = IRanges(rstart[rind]+start(available[rind])-1, width = w[i])
-
-            ## FIX: this is the slowest part
-            seqnames(out)[i] = new.chr;
-            ranges(out)[i] = new.ir;
-          }
-        else
-          stop('Allocation failed.  Supplied widths are likely too large')
-      }
-
-    return(out)
+      ## FIX: this is the slowest part
+      seqnames(out)[i] = new.chr;
+      ranges(out)[i] = new.ir;
+    }
+    else
+      stop('Allocation failed.  Supplied widths are likely too large')
   }
+
+  return(out)
+}
 
 
 #' Trims pile of \code{GRanges} relative to the specified <local> coordinates of each range
@@ -348,44 +348,44 @@ gr.rand = function(w, genome)
 gr.trim = function(gr, starts=1, ends=1)
 
   ## note that I deleted ignore.strand and fromEnd options
-    {
-    starts = cbind(1:length(gr), starts)[, 2]
-    ends = cbind(1:length(gr), ends)[, 2]
+{
+  starts = cbind(1:length(gr), starts)[, 2]
+  ends = cbind(1:length(gr), ends)[, 2]
 
-    ##if (!ignore.strand)
-    ##    {
-    ##    ix = as.logical(strand(gr)=='-')
-    ##    if (any(ix))
-          ##  {
-            ##if (fromEnd)
-            ##    {
-            ##    tmp = starts[ix]
-            ##    starts[ix] = ends[ix]
-            ##    ends[ix] = tmp-1
-            ##}
-            ##else
-            ##    {
-      ##          starts[ix] = width(gr)[ix]-starts[ix]+1
-      ##          ends[ix] = width(gr)[ix]-ends[ix]+1
-            ##}
-    ##    }
-    ##}
+  ##if (!ignore.strand)
+  ##    {
+  ##    ix = as.logical(strand(gr)=='-')
+  ##    if (any(ix))
+  ##  {
+  ##if (fromEnd)
+  ##    {
+  ##    tmp = starts[ix]
+  ##    starts[ix] = ends[ix]
+  ##    ends[ix] = tmp-1
+  ##}
+  ##else
+  ##    {
+  ##          starts[ix] = width(gr)[ix]-starts[ix]+1
+  ##          ends[ix] = width(gr)[ix]-ends[ix]+1
+  ##}
+  ##    }
+  ##}
 
   ##  if (fromEnd) {
   ##    en = pmax(starts, end(gr)-ends);
   ##} else {
-      ends = pmax(starts, ends);
-      ends = pmin(ends, width(gr));
-      en = start(gr) + ends - 1;
+  ends = pmax(starts, ends);
+  ends = pmin(ends, width(gr));
+  en = start(gr) + ends - 1;
   ##}
 
-    st = start(gr)+starts-1;
-    st = pmin(st, en);
+  st = start(gr)+starts-1;
+  st = pmin(st, en);
 
-    out = GRanges(seqnames(gr), IRanges(st, en),
-                   seqlengths = seqlengths(gr), strand = strand(gr))
-    values(out) = values(gr)
-    return(out)
+  out = GRanges(seqnames(gr), IRanges(st, en),
+                seqlengths = seqlengths(gr), strand = strand(gr))
+  values(out) = values(gr)
+  return(out)
 }
 
 #' Randomly sample \code{GRanges} intervals within territory
@@ -412,60 +412,60 @@ gr.sample = function(gr, k, len = 100, replace = TRUE)
     gr = si2gr(gr)
 
   if (length(k)==1)
-    {
-      gr.f = gr.flatten(gr.trim(gr, starts = 1, ends = width(gr)-len), gap = 0);
-      terr = sum(gr.f$end-gr.f$start)
-      st = gr.f$start;
+  {
+    gr.f = gr.flatten(gr.trim(gr, starts = 1, ends = width(gr)-len), gap = 0);
+    terr = sum(gr.f$end-gr.f$start)
+    st = gr.f$start;
 
-      if (!replace)
-        {
-          if (!is.na(k))
-            s = len*sample(floor(terr/len), k, replace = FALSE)
-          else
-            s = seq(1, terr, len)
-        }
+    if (!replace)
+    {
+      if (!is.na(k))
+        s = len*sample(floor(terr/len), k, replace = FALSE)
       else
-        s = terr*stats::runif(k)
-
-      # map back to original gr's
-#      si = sapply(s, function(x) {i = 1; while (st[i]<x & i<=length(st)) {i = i+1}; return(i)})
-      si = rep(NA, length(s))
-      for (i in 1:nrow(gr.f))
-        si[s>=gr.f$start[i] & s<=gr.f$end[i]] = i
-
-      sg = s-st[si]+start(gr)[si];
-
-      return(GRanges(seqnames(gr)[si], IRanges(sg, sg+len-1), strand = strand(gr)[si], seqlengths = seqlengths(gr), query.id = si))
+        s = seq(1, terr, len)
     }
+    else
+      s = terr*stats::runif(k)
+
+    # map back to original gr's
+    #      si = sapply(s, function(x) {i = 1; while (st[i]<x & i<=length(st)) {i = i+1}; return(i)})
+    si = rep(NA, length(s))
+    for (i in 1:nrow(gr.f))
+      si[s>=gr.f$start[i] & s<=gr.f$end[i]] = i
+
+    sg = s-st[si]+start(gr)[si];
+
+    return(GRanges(seqnames(gr)[si], IRanges(sg, sg+len-1), strand = strand(gr)[si], seqlengths = seqlengths(gr), query.id = si))
+  }
   else
+  {
+    gr.df = data.frame(chr = as.character(seqnames(gr)), start = start(gr), end = end(gr))
+    gr.df$k = k;
+    gr.df$length = len
+    gr.df$replace = replace
+    tmp = lapply(1:length(gr), function(i)
     {
-      gr.df = data.frame(chr = as.character(seqnames(gr)), start = start(gr), end = end(gr))
-      gr.df$k = k;
-      gr.df$length = len
-      gr.df$replace = replace
-      tmp = lapply(1:length(gr), function(i)
-                    {
-                      if (!gr.df$replace[i])
-                        {
-                          if (!is.na(k[i]))
-                            {
-                              w = floor(width(gr)[i]/len)
-                              k[i] = min(k[i], w)
-                              if (k[i]>0)
-                                s = len*sample(w, k[i], replace = FALSE) + gr.df$start[i]
-                              else
-                                return(NULL)
-                            }
-                          else
-                            s = seq(gr.df$start[i], gr.df$end[i], len)
-                        }
-                      else
-                        s = (gr.df$end[i]-gr.df$start[i]-gr.df$len[i])*stats::runif(k[i])+gr.df$start[i]
+      if (!gr.df$replace[i])
+      {
+        if (!is.na(k[i]))
+        {
+          w = floor(width(gr)[i]/len)
+          k[i] = min(k[i], w)
+          if (k[i]>0)
+            s = len*sample(w, k[i], replace = FALSE) + gr.df$start[i]
+          else
+            return(NULL)
+        }
+        else
+          s = seq(gr.df$start[i], gr.df$end[i], len)
+      }
+      else
+        s = (gr.df$end[i]-gr.df$start[i]-gr.df$len[i])*stats::runif(k[i])+gr.df$start[i]
 
-                      return(data.frame(chr = gr.df$chr[i], start=s, end =s+len-1, strand = as.character(strand(gr)[i]), query.id = i))
-                    })
-      return(gr.fix(seg2gr(do.call('rbind', tmp)), gr))
-    }
+      return(data.frame(chr = gr.df$chr[i], start=s, end =s+len-1, strand = as.character(strand(gr)[i]), query.id = i))
+    })
+    return(gr.fix(seg2gr(do.call('rbind', tmp)), gr))
+  }
 }
 
 #' Create \code{GRanges} from \code{Seqinfo} or \code{BSgenome}
@@ -479,28 +479,28 @@ gr.sample = function(gr, k, len = 100, replace = TRUE)
 #' \dontrun{libary(BSgenome.Hsapiens.UCSC.hg19); si2gr(Hsapiens)}
 #' @export
 si2gr <- function(si, strip.empty = FALSE)
+{
+  if (is(si, "BSgenome"))
+    si <- Seqinfo(names(seqlengths(si)), seqlengths(si))
+  if (is(si, 'vector')) ## treat si as seqlengths if vector
+    si = Seqinfo(seqlengths = si, seqnames = names(si))
+  else if (!is(si, 'Seqinfo'))
+    si = seqinfo(si)
+
+  sl = seqlengths(si)
+  sn = seqnames(si);
+  sl[is.na(sl)] = 0;
+
+  if (strip.empty)
   {
-    if (is(si, "BSgenome"))
-        si <- Seqinfo(names(seqlengths(si)), seqlengths(si))
-    if (is(si, 'vector')) ## treat si as seqlengths if vector
-      si = Seqinfo(seqlengths = si, seqnames = names(si))
-    else if (!is(si, 'Seqinfo'))
-      si = seqinfo(si)
+    sn = sn[sl!=0];
+    sl = sl[sl!=0];
+  }
 
-    sl = seqlengths(si)
-    sn = seqnames(si);
-    sl[is.na(sl)] = 0;
+  sigr = GRanges(sn, IRanges(rep(1, length(sl)), width = sl), seqlengths = seqlengths(si), strand = rep('+', length(sl)))
+  names(sigr) = sn;
 
-    if (strip.empty)
-      {
-        sn = sn[sl!=0];
-        sl = sl[sl!=0];
-      }
-
-    sigr = GRanges(sn, IRanges(rep(1, length(sl)), width = sl), seqlengths = seqlengths(si), strand = rep('+', length(sl)))
-    names(sigr) = sn;
-
-    return(sigr)
+  return(sigr)
 }
 
 #' Concatenate \code{GRanges}, robust to different \code{mcols}
@@ -513,88 +513,88 @@ si2gr <- function(si, strip.empty = FALSE)
 #' grbind(gr.genes, gr.DNAase)
 #' @export
 grbind = function(x, ...)
-  {
-    if (missing('x'))
-      grs = list(...)
-    else if (class(x) != 'list')
-      grs <- c(list(x), list(...))
-    else
-      grs <- c(x, list(...))
+{
+  if (missing('x'))
+    grs = list(...)
+  else if (class(x) != 'list')
+    grs <- c(list(x), list(...))
+  else
+    grs <- c(x, list(...))
 
-    force.rrbind = FALSE
-    # if ('force.rrbind' %in% names(grs))
-    #   {
-    #     if (is.logical(grs[['force.rrbind']]))
-    #       force.rrbind = grs[['force.rrbind']]
-    #     grs = grs[-match('force.rrbind', names(grs))]
-    #   }
+  force.rrbind = FALSE
+  # if ('force.rrbind' %in% names(grs))
+  #   {
+  #     if (is.logical(grs[['force.rrbind']]))
+  #       force.rrbind = grs[['force.rrbind']]
+  #     grs = grs[-match('force.rrbind', names(grs))]
+  #   }
 
-    #grs = list(...);  # gets list of gr's
-    keep = sapply(grs, length)>0 & sapply(grs, function(x) inherits(x, 'GRanges'))
-    grs = grs[keep]
+  #grs = list(...);  # gets list of gr's
+  keep = sapply(grs, length)>0 & sapply(grs, function(x) inherits(x, 'GRanges'))
+  grs = grs[keep]
 
-    if (length(grs)==0)
-      return(NULL)
+  if (length(grs)==0)
+    return(NULL)
 
-    if (length(grs)==1)
-      return(grs[[1]])
+  if (length(grs)==1)
+    return(grs[[1]])
 
-    vals = lapply(grs, function(x) values(x))
+  vals = lapply(grs, function(x) values(x))
 
-    ## DataFrame from IRanges package can hold XStringSets. Convert first
+  ## DataFrame from IRanges package can hold XStringSets. Convert first
 
-    isDataFrame <- sapply(vals, class) == 'DataFrame'
-    if (any(isDataFrame))
-        vals[isDataFrame] = lapply(vals[isDataFrame], gr2dt)
+  isDataFrame <- sapply(vals, class) == 'DataFrame'
+  if (any(isDataFrame))
+    vals[isDataFrame] = lapply(vals[isDataFrame], gr2dt)
 
-#      if (any(sapply(vals[isDataFrame][[1]], function(y) inherits(y, 'XStringSet'))))
-#        stop('grbind: DataFrame from IRanges contains XStringSet objects. Convert to character, then grbind, then convert back')
-   ### TOFIX: get this to work with XStringSet
-   #   vals <- lapply(vals, function(x) {
-   #     isXStringSet <- sapply(x, function(y) inherits(y, 'XStringSet'))
-   #     x[,isXStringSet] <- DataFrame(sapply(x[,isXStringSet], as.character))
-   #     return(x)
-   #   })
+  #      if (any(sapply(vals[isDataFrame][[1]], function(y) inherits(y, 'XStringSet'))))
+  #        stop('grbind: DataFrame from IRanges contains XStringSet objects. Convert to character, then grbind, then convert back')
+  ### TOFIX: get this to work with XStringSet
+  #   vals <- lapply(vals, function(x) {
+  #     isXStringSet <- sapply(x, function(y) inherits(y, 'XStringSet'))
+  #     x[,isXStringSet] <- DataFrame(sapply(x[,isXStringSet], as.character))
+  #     return(x)
+  #   })
 
-    ### FIXING seqlengths when not exactly matching
-    sls = lapply(grs, seqlengths)
-    names(sls) = NULL
-    levs = unique(names(unlist(sls)))
-    sl.new = structure(rep(0, length(levs)), names = levs)
-    for (sl in sls)
-        sl.new[names(sl)] = pmax(sl.new[names(sl)], sl, na.rm = TRUE)
+  ### FIXING seqlengths when not exactly matching
+  sls = lapply(grs, seqlengths)
+  names(sls) = NULL
+  levs = unique(names(unlist(sls)))
+  sl.new = structure(rep(0, length(levs)), names = levs)
+  for (sl in sls)
+    sl.new[names(sl)] = pmax(sl.new[names(sl)], sl, na.rm = TRUE)
 
-    bare.grs = lapply(grs, function(x) gr.fix(x[,c()], sl.new))
-    out = tryCatch(do.call('c', bare.grs), error = function(e) NULL)
+  bare.grs = lapply(grs, function(x) gr.fix(x[,c()], sl.new))
+  out = tryCatch(do.call('c', bare.grs), error = function(e) NULL)
 
-    # if (is.null(out) | is.list(out)) ## something failed with concatenation, likely some weird ghost with concatenating GRanges with 'c', below is a temp fix
-    #     {
-    #         getsridofghostsomehow =  c(bare.grs[[1]], bare.grs[[2]])
-    #         out = tryCatch(do.call('c', bare.grs), error = function(e) NULL)
-    #
-    #         if (is.null(out) | is.list(out)) ## now we are really reaching
-    #             out = seg2gr(do.call('rrbind', lapply(bare.grs, as.data.frame)), seqlengths = sl.new)[, c()]
-    #     }
+  # if (is.null(out) | is.list(out)) ## something failed with concatenation, likely some weird ghost with concatenating GRanges with 'c', below is a temp fix
+  #     {
+  #         getsridofghostsomehow =  c(bare.grs[[1]], bare.grs[[2]])
+  #         out = tryCatch(do.call('c', bare.grs), error = function(e) NULL)
+  #
+  #         if (is.null(out) | is.list(out)) ## now we are really reaching
+  #             out = seg2gr(do.call('rrbind', lapply(bare.grs, as.data.frame)), seqlengths = sl.new)[, c()]
+  #     }
 
-    # hack to deal with empty value columns
-    ix <- (sapply(vals, ncol)==0)
-    if (any(ix))
-        vals[ix] = lapply(which(ix), function(x) data.frame(col.4214124124124 = rep(NA, length(grs[[x]]))))
+  # hack to deal with empty value columns
+  ix <- (sapply(vals, ncol)==0)
+  if (any(ix))
+    vals[ix] = lapply(which(ix), function(x) data.frame(col.4214124124124 = rep(NA, length(grs[[x]]))))
 
-    if (!force.rrbind)
-      tmp = tryCatch(do.call('rrbind', vals), error = function(e) NULL)
-    else
-        tmp = NULL
+  if (!force.rrbind)
+    tmp = tryCatch(do.call('rrbind', vals), error = function(e) NULL)
+  else
+    tmp = NULL
 
-    #if (is.null(tmp) | force.rrbind) ## sometimes rrbind2 gets picky because of type checking (rbindlist) .. so just run rrbind then
-    #   values(out) = do.call('rrbind', vals)
-    # else
-       values(out) = tmp
+  #if (is.null(tmp) | force.rrbind) ## sometimes rrbind2 gets picky because of type checking (rbindlist) .. so just run rrbind then
+  #   values(out) = do.call('rrbind', vals)
+  # else
+  values(out) = tmp
 
-    if (any(ix))
-        out$col.4214124124124 = NULL
-    return(out)
-  }
+  if (any(ix))
+    out$col.4214124124124 = NULL
+  return(out)
+}
 
 #' Concatenate \code{GRangesList} objects.
 #'
@@ -610,63 +610,63 @@ grbind = function(x, ...)
 #' @export
 #' @importFrom GenomicRanges mcols<- mcols split
 grlbind = function(...)
-  {
-    ## TODO: make this work for when underlying grs do not have matching features
-    ## currently will loose gr level features
-    grls = list(...)
+{
+  ## TODO: make this work for when underlying grs do not have matching features
+  ## currently will loose gr level features
+  grls = list(...)
 
-    ## check the input
-    if(any(sapply(grls, function(x) class(x) != "GRangesList")))
-      stop("All inputs must be a GRangesList")
+  ## check the input
+  if(any(sapply(grls, function(x) class(x) != "GRangesList")))
+    stop("All inputs must be a GRangesList")
 
-    ## annoying acrobatics to reconcile gr and grl level features for heterogenous input gr / grls
-    grls.ul = lapply(grls, grl.unlist)
-    grls.ul.rb = do.call('grbind', grls.ul)
-    sp = base::unlist(lapply(1:length(grls), function(x) rep(x, length(grls.ul[[x]]))))
-    gix = base::split(grls.ul.rb$grl.ix, sp)
-    gjx = base::split(1:length(grls.ul.rb), sp)
-    grls.ul.rb$grl.iix = grls.ul.rb$grl.ix = NULL
+  ## annoying acrobatics to reconcile gr and grl level features for heterogenous input gr / grls
+  grls.ul = lapply(grls, grl.unlist)
+  grls.ul.rb = do.call('grbind', grls.ul)
+  sp = base::unlist(lapply(1:length(grls), function(x) rep(x, length(grls.ul[[x]]))))
+  gix = base::split(grls.ul.rb$grl.ix, sp)
+  gjx = base::split(1:length(grls.ul.rb), sp)
+  grls.ul.rb$grl.iix = grls.ul.rb$grl.ix = NULL
 
-    grls.vals = lapply(grls, function(x)
-      { if (ncol(mcols(x))>0)  return(as.data.frame(mcols(x))) else return(data.frame(dummy241421 = rep(NA, length(x))))})
+  grls.vals = lapply(grls, function(x)
+  { if (ncol(mcols(x))>0)  return(as.data.frame(mcols(x))) else return(data.frame(dummy241421 = rep(NA, length(x))))})
 
-    grls.new = mapply(function(x,y) GenomicRanges::split(grls.ul.rb[x],y), gjx, gix)
+  grls.new = mapply(function(x,y) GenomicRanges::split(grls.ul.rb[x],y), gjx, gix)
 
-    ## do.call('c', grls.new) is not working for some reason (gives back list again, not GRangesList)
-    ## have to do this instead, not ideal
-    if (length(grls.new) > 1) {
-      out = grls.new[[1]]
-        for (i in 2:length(grls.new))
-          out = c(out, grls.new[[i]])
-    } else {
-      out = grls.new[[1]]
-    }
-
-    # out = do.call('c', grls.new)
-    #
-    # if (is.list(out))
-    #   {
-    #     if (length(grls.new)>1)
-    #       {
-    #         bla = c(grls.new[[1]], grls.new[[2]]) ## fix R ghost
-    #         out = do.call('c', grls.new)
-    #         if (is.list(out)) ## if still is list then do manual 'c'
-    #              {
-    #                out = grls.new[[1]]
-    #                for (i in 2:length(grls.new))
-    #                    out = c(out, grls.new[[i]])
-    #             }
-    #       }
-    #     else
-    #       out = grls.new[[1]]
-    #   }
-
-    out.val = do.call('rrbind', grls.vals)
-    out.val$dummy241421 = NULL
-    GenomicRanges::mcols(out) <- out.val
-
-    return(out)
+  ## do.call('c', grls.new) is not working for some reason (gives back list again, not GRangesList)
+  ## have to do this instead, not ideal
+  if (length(grls.new) > 1) {
+    out = grls.new[[1]]
+    for (i in 2:length(grls.new))
+      out = c(out, grls.new[[i]])
+  } else {
+    out = grls.new[[1]]
   }
+
+  # out = do.call('c', grls.new)
+  #
+  # if (is.list(out))
+  #   {
+  #     if (length(grls.new)>1)
+  #       {
+  #         bla = c(grls.new[[1]], grls.new[[2]]) ## fix R ghost
+  #         out = do.call('c', grls.new)
+  #         if (is.list(out)) ## if still is list then do manual 'c'
+  #              {
+  #                out = grls.new[[1]]
+  #                for (i in 2:length(grls.new))
+  #                    out = c(out, grls.new[[i]])
+  #             }
+  #       }
+  #     else
+  #       out = grls.new[[1]]
+  #   }
+
+  out.val = do.call('rrbind', grls.vals)
+  out.val$dummy241421 = NULL
+  GenomicRanges::mcols(out) <- out.val
+
+  return(out)
+}
 
 #' Prepend "chr" to \code{GRanges seqlevels}
 #'
@@ -678,11 +678,11 @@ grlbind = function(...)
 #' @importFrom GenomeInfoDb seqlevels seqlevels<-
 #' @export
 gr.chr = function(gr)
-  {
-    if (any(ix <- !grepl('^chr', seqlevels(gr))))
-      seqlevels(gr)[ix] = paste('chr', seqlevels(gr)[ix], sep = "")
-    return(gr)
-  }
+{
+  if (any(ix <- !grepl('^chr', seqlevels(gr))))
+    seqlevels(gr)[ix] = paste('chr', seqlevels(gr)[ix], sep = "")
+  return(gr)
+}
 
 #' Reduce \code{GRanges} and \code{GRangesList} to miminal footprint
 #'
@@ -697,23 +697,23 @@ gr.chr = function(gr)
 #' streduce(gr.genes, pad=1000)
 #' @export
 streduce = function(gr, pad = 0, sort = TRUE)
-  {
+{
 
-    if (inherits(gr, 'GRangesList'))
-      gr = unlist(gr)
+  if (inherits(gr, 'GRangesList'))
+    gr = unlist(gr)
 
-    if (any(is.na(seqlengths(gr))))
-      gr = gr.fix(gr)
+  if (any(is.na(seqlengths(gr))))
+    gr = gr.fix(gr)
 
-    #out = suppressWarnings(sort(reduce(gr.stripstrand(gr+pad))))
-    out = suppressWarnings(sort(reduce(gr.stripstrand(gr + pad))))
-    suppressWarnings(start(out) <-pmax(1, start(out)))
-#    out <- gr.tfix(out)
-    end(out) = pmin(end(out), seqlengths(out)[as.character(seqnames(out))])
+  #out = suppressWarnings(sort(reduce(gr.stripstrand(gr+pad))))
+  out = suppressWarnings(sort(reduce(gr.stripstrand(gr + pad))))
+  suppressWarnings(start(out) <-pmax(1, start(out)))
+  #    out <- gr.tfix(out)
+  end(out) = pmin(end(out), seqlengths(out)[as.character(seqnames(out))])
 
 
-    return(out)
-  }
+  return(out)
+}
 
 #' Return UCSC style interval string corresponding to \code{GRanges} pile (ie chr:start-end)
 #'
@@ -727,26 +727,26 @@ streduce = function(gr, pad = 0, sort = TRUE)
 #' gr.string(gr.genes, other.cols = c("name", "name2"))
 #' @export
 gr.string = function(gr, add.chr = FALSE, mb = FALSE, round = 3, other.cols = c())
-  {
-      if (length(gr)==0)
-          return(as.character(NULL))
-    sn = as.character(seqnames(gr));
-    if (add.chr)
-      sn = paste('chr', sn, sep = '');
+{
+  if (length(gr)==0)
+    return(as.character(NULL))
+  sn = as.character(seqnames(gr));
+  if (add.chr)
+    sn = paste('chr', sn, sep = '');
 
-    other.cols = intersect(names(values(gr)), other.cols)
-    if (length(other.cols)>0)
-      other.str = paste(';', do.call('paste', c(lapply(other.cols, function(x) values(gr)[, x]), list(sep = ';'))))
-    else
-      other.str = ''
+  other.cols = intersect(names(values(gr)), other.cols)
+  if (length(other.cols)>0)
+    other.str = paste(';', do.call('paste', c(lapply(other.cols, function(x) values(gr)[, x]), list(sep = ';'))))
+  else
+    other.str = ''
 
-    str = ifelse(as.logical(strand(gr)!='*'), as.character(strand(gr)), '')
+  str = ifelse(as.logical(strand(gr)!='*'), as.character(strand(gr)), '')
 
-    if (mb)
-      return(paste(sn, ':', round(start(gr)/1e6, round), '-', round(end(gr)/1e6, round), str, other.str, sep = ''))
-    else
-      return(paste(sn, ':', start(gr), '-', end(gr), str, other.str, sep = ''))
-  }
+  if (mb)
+    return(paste(sn, ':', round(start(gr)/1e6, round), '-', round(end(gr)/1e6, round), str, other.str, sep = ''))
+  else
+    return(paste(sn, ':', start(gr), '-', end(gr), str, other.str, sep = ''))
+}
 
 
 #' Create string representation of \code{GRangesList}
@@ -764,25 +764,25 @@ gr.string = function(gr, add.chr = FALSE, mb = FALSE, round = 3, other.cols = c(
 #' grl.string(grl.hiC, mb=TRUE)
 #' @export
 grl.string = function(grl, mb= FALSE, sep = ',', ...)
-  {
+{
 
-    if (class(grl) == "GRanges")
-      return(gr.string(grl, mb=mb, ...))
+  if (class(grl) == "GRanges")
+    return(gr.string(grl, mb=mb, ...))
 
-    if (class(grl) != "GRangesList")
-      stop("Input must be GRangesList (or GRanges, which is sent to gr.string)")
+  if (class(grl) != "GRangesList")
+    stop("Input must be GRangesList (or GRanges, which is sent to gr.string)")
 
-    gr = grl.unlist(grl)
-    if (!is.null(names(grl)))
-      nm = names(grl)
-    else
-      nm = 1:length(grl)
+  gr = grl.unlist(grl)
+  if (!is.null(names(grl)))
+    nm = names(grl)
+  else
+    nm = 1:length(grl)
 
-    grs = gr.string(gr, mb=mb, ...)
-    out = sapply(split(grs, gr$grl.ix), paste, collapse = sep)
-    names(out) = nm[as.numeric(names(out))]
-    return(out)
-  }
+  grs = gr.string(gr, mb=mb, ...)
+  out = sapply(split(grs, gr$grl.ix), paste, collapse = sep)
+  names(out) = nm[as.numeric(names(out))]
+  return(out)
+}
 
 #' "Fixes" \code{seqlengths} / \code{seqlevels}
 #'
@@ -800,77 +800,77 @@ grl.string = function(grl, mb= FALSE, sep = ',', ...)
 #' @importFrom GenomeInfoDb Seqinfo seqinfo keepSeqlevels seqlevels seqlengths seqlevels<- seqlengths<- genome<- seqnames
 #' @export
 gr.fix = function(gr, genome = NULL, gname = NULL,  drop = FALSE)
+{
+  #### marcin: now it is
+  ## if (inherits(gr, "GRangesList"))
+  ##   stop("gr.fix not setup to take GRangesList")
+
+  sn = V1 = NULL ## NOTE fix
+
+  if (!is.null(genome))
   {
-    #### marcin: now it is
-    ## if (inherits(gr, "GRangesList"))
-    ##   stop("gr.fix not setup to take GRangesList")
+    if (is.vector(genome))  ## assume seqlengths was provided (ie named vector of lengths)
+      genome = Seqinfo(names(genome), seqlengths = genome)
+    else if (!(is(genome, 'character') | inherits(genome, 'GRanges') | inherits(genome, 'BSgenome') | inherits(genome, 'GRangesList') | inherits(genome, 'Seqinfo')) & !is.vector(genome))
+      genome = seqinfo(genome)
 
-    sn = V1 = NULL ## NOTE fix
-
-    if (!is.null(genome))
+    if (!is.vector(genome))
+      if (!drop)
       {
-        if (is.vector(genome))  ## assume seqlengths was provided (ie named vector of lengths)
-          genome = Seqinfo(names(genome), seqlengths = genome)
-        else if (!(is(genome, 'character') | inherits(genome, 'GRanges') | inherits(genome, 'BSgenome') | inherits(genome, 'GRangesList') | inherits(genome, 'Seqinfo')) & !is.vector(genome))
-          genome = seqinfo(genome)
+        levs = union(seqlevels(genome), as.character(seqnames(seqinfo(gr))))
+        lens = structure(rep(NA, length(levs)), names = levs)
+        lens[seqlevels(genome)] = seqlengths(genome);
+        lens[seqlevels(gr)] = pmax(seqlengths(gr), lens[seqlevels(gr)], na.rm = TRUE)
 
-        if (!is.vector(genome))
-          if (!drop)
-            {
-              levs = union(seqlevels(genome), as.character(seqnames(seqinfo(gr))))
-              lens = structure(rep(NA, length(levs)), names = levs)
-              lens[seqlevels(genome)] = seqlengths(genome);
-              lens[seqlevels(gr)] = pmax(seqlengths(gr), lens[seqlevels(gr)], na.rm = TRUE)
-
-            }
-          else
-            lens = structure(seqlengths(genome), names = seqlevels(genome))
-        # else
-        #   {
-        #     if (is.character(genome))
-        #       genome = structure(rep(NA, length(genome)), names = genome)
-        #
-        #     lens = structure(NA, names = union(names(genome), seqlevels(gr)));
-        #
-        #     lens[seqlevels(gr)] = seqlengths(gr);
-        #     lens[names(genome)[!is.na(genome)]] = pmax(lens[names(genome)[!is.na(genome)]], genome[!is.na(genome)], na.rm = TRUE)
-        #
-        #     if (drop)
-        #       lens = lens[names(genome)]
-        #   }
-
-        seqlevels(gr, force = TRUE) = names(lens)
-        seqlengths(gr) = lens;
       }
     else
-      {
-        if (length(gr)>0)
-            {
-                if (is(gr, 'GRangesList'))
-                    tmp.gr = unlist(gr)
-                else
-                    tmp.gr = gr
+      lens = structure(seqlengths(genome), names = seqlevels(genome))
+    # else
+    #   {
+    #     if (is.character(genome))
+    #       genome = structure(rep(NA, length(genome)), names = genome)
+    #
+    #     lens = structure(NA, names = union(names(genome), seqlevels(gr)));
+    #
+    #     lens[seqlevels(gr)] = seqlengths(gr);
+    #     lens[names(genome)[!is.na(genome)]] = pmax(lens[names(genome)[!is.na(genome)]], genome[!is.na(genome)], na.rm = TRUE)
+    #
+    #     if (drop)
+    #       lens = lens[names(genome)]
+    #   }
 
-                tmp.sl = data.table(sn = as.character(seqnames(tmp.gr)), end = end(tmp.gr))[, max(end, na.rm = TRUE), by = sn][,  structure(V1, names = sn)][seqlevels(tmp.gr)]
-                names(tmp.sl) = seqlevels(tmp.gr)
-                seqlengths(tmp.gr)[!is.na(tmp.sl)] = suppressWarnings(pmax(tmp.sl[!is.na(tmp.sl)], seqlengths(tmp.gr)[!is.na(tmp.sl)], na.rm = TRUE))
-                gr = tmp.gr
-            }
-        if (drop)
-          gr = keepSeqlevels(gr, seqlevels(gr)[!is.na(seqlengths(gr))])
-
-      }
-
-    ## hack to get rid of annoying "genome"
-    if (!is.null(gname))
-        {
-            si = seqinfo(gr)
-            genome(si) = gname
-            gr@seqinfo = si
-        }
-
-    return(gr)
+    seqlevels(gr, force = TRUE) = names(lens)
+    seqlengths(gr) = lens;
   }
+  else
+  {
+    if (length(gr)>0)
+    {
+      if (is(gr, 'GRangesList'))
+        tmp.gr = unlist(gr)
+      else
+        tmp.gr = gr
+
+      tmp.sl = data.table(sn = as.character(seqnames(tmp.gr)), end = end(tmp.gr))[, max(end, na.rm = TRUE), by = sn][,  structure(V1, names = sn)][seqlevels(tmp.gr)]
+      names(tmp.sl) = seqlevels(tmp.gr)
+      seqlengths(tmp.gr)[!is.na(tmp.sl)] = suppressWarnings(pmax(tmp.sl[!is.na(tmp.sl)], seqlengths(tmp.gr)[!is.na(tmp.sl)], na.rm = TRUE))
+      gr = tmp.gr
+    }
+    if (drop)
+      gr = keepSeqlevels(gr, seqlevels(gr)[!is.na(seqlengths(gr))])
+
+  }
+
+  ## hack to get rid of annoying "genome"
+  if (!is.null(gname))
+  {
+    si = seqinfo(gr)
+    genome(si) = gname
+    gr@seqinfo = si
+  }
+
+  return(gr)
+}
 
 
 #' Lay ranges end-to-end onto a derivate "chromosome"
@@ -885,29 +885,45 @@ gr.fix = function(gr, genome = NULL, gname = NULL,  drop = FALSE)
 #' @importFrom GenomicRanges mcols
 #' @export
 gr.flatten = function(gr, gap = 0)
+{
+  if (length(gr) == 0)
+    return(data.frame())
+  else if (length(gr) == 1)
+    return(data.frame(start = 1, end = width(gr)))
+  else
   {
-    if (length(gr) == 0)
-      return(data.frame())
-    else if (length(gr) == 1)
-      return(data.frame(start = 1, end = width(gr)))
-    else
-      {
-        starts = as.numeric(cumsum(c(1, width(gr[1:(length(gr)-1)])+gap)))
-        ends = as.numeric(starts+width(gr)-1)
-		return(cbind(data.frame(start=starts, end=ends), as.data.frame(mcols(gr))))
-      }
+    starts = as.numeric(cumsum(c(1, width(gr[1:(length(gr)-1)])+gap)))
+    ends = as.numeric(starts+width(gr)-1)
+    return(cbind(data.frame(start=starts, end=ends), as.data.frame(mcols(gr))))
+  }
 }
 
 #' gr.stripstrand
 #'
-#' sets strand to "*"
+#' Sets strand to "*"
 #' @name gr.stripstrand
-#' @keywords internal
+#' @param gr \code{GRanges} to remove strand information from
+#' @return \code{GRanges} with strand set to \code{*}
+#' @export
 gr.stripstrand = function(gr)
-  {
-    strand(gr) = "*"
-    return(gr)
-  }
+{
+  strand(gr) = "*"
+  return(gr)
+}
+
+#' Create pairs of ranges and their strand-inverse
+#'
+#' From a \code{GRanges} returns a \code{GRangesList} with each item consisting
+#' of the original \code{GRanges} and its strand flip
+#' @name gr.pairflip
+#' @param gr \code{GRanges}
+#' @return \code{GRangesList} with each element of length 2
+#' @export
+gr.pairflip = function(gr)
+{
+  strand(gr)[strand(gr) =='*'] = '+';
+  return(split(c(gr, gr.flip(gr)), rep(c(1:length(gr)), 2)))
+}
 
 #' Flip strand on \code{GRanges}
 #'
@@ -917,21 +933,21 @@ gr.stripstrand = function(gr)
 #' @examples
 #' gr.flipstrand(GRanges(1, IRanges(c(10,10,10),20), strand=c("+","*","-")))
 #' @export
-gr.flipstrand <- function(gr)
-  {
-    if (!is(gr, 'GRanges'))
-      stop('GRanges input only')
+gr.flipstrand <- gr.flip <- function(gr)
+{
+  if (!is(gr, 'GRanges'))
+    stop('GRanges input only')
 
-    if (length(gr)==0)
-      return(gr)
-
-    which = cbind(1:length(gr), TRUE)[,2] == 1
-
-    if (any(which))
-      strand(gr)[which] = c('*'='*', '+'='-', '-'='+')[as.character(strand(gr))][which]
-
+  if (length(gr)==0)
     return(gr)
-  }
+
+  which = cbind(1:length(gr), TRUE)[,2] == 1
+
+  if (any(which))
+    strand(gr)[which] = c('*'='*', '+'='-', '-'='+')[as.character(strand(gr))][which]
+
+  return(gr)
+}
 
 #' Tile ranges across \code{GRanges}
 #'
@@ -946,30 +962,30 @@ gr.flipstrand <- function(gr)
 #' gr1 + 5
 #' @export
 gr.tile = function(gr, w = 1e3)
-  {
-    numw = tile.id = query.id = NULL ## getting past NOTE
-    if (!is(gr, 'GRanges'))
-      gr = si2gr(gr);
+{
+  numw = tile.id = query.id = NULL ## getting past NOTE
+  if (!is(gr, 'GRanges'))
+    gr = si2gr(gr);
 
-    ix = which(width(gr)>0)
-    gr = gr[ix]
+  ix = which(width(gr)>0)
+  gr = gr[ix]
 
-    if (length(gr)==0)
-        return(gr[c()][, c()])
+  if (length(gr)==0)
+    return(gr[c()][, c()])
 
-    ws = as.numeric(ceiling((width(gr))/w))
+  ws = as.numeric(ceiling((width(gr))/w))
 
-    st = rep(start(gr), ws)
-    en = rep(end(gr), ws)
-    strand = rep(as.character(strand(gr)), ws)
-    dt = data.table(query.id = rep(1:length(gr), ws), tile.id = 1:sum(ws))
-    dt[, numw := 0:(length(tile.id)-1), by = query.id]
-    start = pmin(st+w*dt$numw, en)
-    end = pmin(st+w*(dt$numw+1)-1, en)
+  st = rep(start(gr), ws)
+  en = rep(end(gr), ws)
+  strand = rep(as.character(strand(gr)), ws)
+  dt = data.table(query.id = rep(1:length(gr), ws), tile.id = 1:sum(ws))
+  dt[, numw := 0:(length(tile.id)-1), by = query.id]
+  start = pmin(st+w*dt$numw, en)
+  end = pmin(st+w*(dt$numw+1)-1, en)
 
-    out = GRanges(rep(as.character(seqnames(gr)), ws), IRanges(start, end), strand = strand, query.id = ix[dt$query.id], tile.id = 1:length(start), seqinfo = seqinfo(gr))
+  out = GRanges(rep(as.character(seqnames(gr)), ws), IRanges(start, end), strand = strand, query.id = ix[dt$query.id], tile.id = 1:length(start), seqinfo = seqinfo(gr))
 
-    return(out)
+  return(out)
 }
 
 #' gr.tile.map
@@ -986,73 +1002,359 @@ gr.tile = function(gr, w = 1e3)
 #' coordinates and only uses "starts"
 #' @export
 gr.tile.map = function(query, subject, verbose = FALSE)
-  {
+{
 
-    mc.cores =1 ## multicore not supported now
+  mc.cores =1 ## multicore not supported now
   if (length(GenomicRanges::gaps(query)) > 0)
     warning("Query GRanges has gaps. Unexpected behavior may follow")
   if (length(GenomicRanges::gaps(subject)) > 0)
     warning("Subject GRanges has gaps. Unexpected behavior may follow")
 
-    ix.q = order(query)
-    ix.s = order(subject)
+  ix.q = order(query)
+  ix.s = order(subject)
 
-    q.chr = as.character(seqnames(query))[ix.q]
-    s.chr = as.character(seqnames(subject))[ix.s]
+  q.chr = as.character(seqnames(query))[ix.q]
+  s.chr = as.character(seqnames(subject))[ix.s]
 
-    ql = base::split(ix.q, q.chr)
-    sl = base::split(ix.s, s.chr)
+  ql = base::split(ix.q, q.chr)
+  sl = base::split(ix.s, s.chr)
 
-    tmp <- parallel::mcmapply(
+  tmp <- parallel::mcmapply(
     #tmp <- lapply(
-      function(x,y)
+    function(x,y)
+    {
+      if (length(y)==0)
+        return(NULL)
+      all.pos = c(start(query)[x], start(subject)[y])
+      is.q = c(rep(T, length(x)), rep(F, length(y)))
+      all.ix = c(x, y)
+      ord.ix = order(all.pos)
+      all.pos = all.pos[ord.ix]
+      is.q = is.q[ord.ix]
+      all.ix = all.ix[ord.ix]
+      out = matrix(NA, nrow = length(all.pos), ncol = 2)
+      last.x = last.y = NA
+      for (i in 1:length(all.pos))
       {
-        if (length(y)==0)
-          return(NULL)
-        all.pos = c(start(query)[x], start(subject)[y])
-        is.q = c(rep(T, length(x)), rep(F, length(y)))
-        all.ix = c(x, y)
-        ord.ix = order(all.pos)
-        all.pos = all.pos[ord.ix]
-        is.q = is.q[ord.ix]
-        all.ix = all.ix[ord.ix]
-        out = matrix(NA, nrow = length(all.pos), ncol = 2)
-        last.x = last.y = NA
-        for (i in 1:length(all.pos))
-          {
-            if (verbose)
-              if (i %% 100000 == 0) cat('Iteration', i, 'of', length(all.pos), '\n')
-            if (is.q[i])
-              {
-                out[i, ] = c(all.ix[i], last.y)
+        if (verbose)
+          if (i %% 100000 == 0) cat('Iteration', i, 'of', length(all.pos), '\n')
+        if (is.q[i])
+        {
+          out[i, ] = c(all.ix[i], last.y)
 
-                if (i<length(all.pos)) ## edge case where subject and query intervals share a start point, leading to two consecutive all.pos
-                  if (all.pos[i] == all.pos[i+1])
-                    out[i, ] = NA
+          if (i<length(all.pos)) ## edge case where subject and query intervals share a start point, leading to two consecutive all.pos
+            if (all.pos[i] == all.pos[i+1])
+              out[i, ] = NA
 
-                last.x = all.ix[i]
-              }
-            else
-              {
-                out[i, ] = c(last.x, all.ix[i])
+            last.x = all.ix[i]
+        }
+        else
+        {
+          out[i, ] = c(last.x, all.ix[i])
 
-                if (i<length(all.pos)) ## edge case where subject and query intervals share a start point, leading to two consecutive all.pos
-                  if (all.pos[i] == all.pos[i+1])
-                    out[i, ] = NA
+          if (i<length(all.pos)) ## edge case where subject and query intervals share a start point, leading to two consecutive all.pos
+            if (all.pos[i] == all.pos[i+1])
+              out[i, ] = NA
 
-                last.y = all.ix[i]
-              }
-          }
-        out = out[rowSums(is.na(out))==0, ]
-        return(out)
-      }, ql, sl[names(ql)], mc.cores = mc.cores, SIMPLIFY = FALSE)
-      #}, ql, sl[names(ql)], SIMPLIFY = FALSE)
+            last.y = all.ix[i]
+        }
+      }
+      out = out[rowSums(is.na(out))==0, ]
+      return(out)
+    }, ql, sl[names(ql)], mc.cores = mc.cores, SIMPLIFY = FALSE)
+  #}, ql, sl[names(ql)], SIMPLIFY = FALSE)
 
-    m = munlist(tmp)[, -c(1:2), drop = FALSE]
-    out = split(m[,2], m[,1])[as.character(1:length(query))]
-    names(out) = as.character(1:length(query))
-    return(out)
+  m = munlist(tmp)[, -c(1:2), drop = FALSE]
+  out = split(m[,2], m[,1])[as.character(1:length(query))]
+  names(out) = as.character(1:length(query))
+  return(out)
+}
+
+#' Annotate \code{GRanges} with values from another \code{GRanges}
+#'
+#' Annotates \code{GRanges} in \code{query} with aggregated values of \code{GRanges} in \code{target} in field \code{val}.
+#' If \code{val} is numeric: given \code{target} with value column \code{target} representing ranged data
+#' (i.e. segment intensities), thn computes the value
+#' in each \code{query} \code{GRanges} as the weighted mean of its intersection with target
+#' (ie the target values weighted by the width of the intersections).
+#'
+#' Applications include (among others):
+#' \itemize{
+#' \item Querying the average value of target across a given query interval (e.g. exon to gene pileup)
+#' \item recasting a high res tiling in terms of low res intervals.
+#' }
+#' Usually query intervals are bigger than the target intervals.
+#'
+#'
+#'
+#' @note \code{query} and \code{target} can be \code{GRangesList} object, in which case val will refer to \code{GRangesList} level values fields
+#' @name gr.val
+#' @param val If a character field: then aggregation will paste together the (unique), overlapping values, collapsing by comma. \code{[NULL]}
+#' @param weighted Calculate a weighted mean. If \code{FALSE}, calculates unweighted mean. \code{[TRUE]}
+#' @param na.rm Remove NA values when calulating means. \code{[FALSE]}
+#' @param query \code{GRanges} of query ranges whose \code{val} column we will populate with aggregated values of \code{target}
+#' @param target \code{GRanges} of target ranges that already have "val" column populated
+#' @param FUN Optional different function to call than mean. Takes two arguments (value, na.rm = TRUE) if weighted = FALSE, and three (value, width, na.rm = TRUE) if weighted = TRUE
+#' @param mean Scalar logical flag. If \code{FALSE} then will return sum instead of mean, only applies if target \code{val} column is numeric.
+#' @param sep scalar character, specifies character to use as separator when aggregating character "vals" from target, only applies if target is numeric
+#' @param by scalar character, specifies additional "by" column of query AND target that will be used to match up query and target pairs (i.e. in addition to pure GRanges overlap), default is NULL
+#' @param max.slice Maximum number of query ranges to consider in one memory chunk. \code{[Inf]}
+#' @param if merge = FALSE then will cross every range in query with every level of "by" in target (and create data matrix), otherwise will assume query has "by" and merge only ranges that have matching "by" values in both query and target
+#' @param verbose Increase the verbosity of the output 
+#' @param ... Additional arguments to be sent to \code{\link{gr.findoverlaps}}. 
+#' @return \code{query} with the \code{val} field populated
+#' @export
+gr.val = function(query, target,
+                  val = NULL,
+                  mean = TRUE, # if false then will return (weighted) <sum> instead of <mean>, only applies if target is numeric
+                  weighted = mean, # if false will return unweighted sum / mean
+                  na.rm = FALSE, # only applies if val column of target is numeric
+                  by = NULL,
+                  by.prefix = val,
+                  merge = FALSE, # 
+                  verbose = FALSE,
+                  FUN = NULL, ## takes two  arguments (value, na.rm = TRUE) if weighted = FALSE, and three (value, width, na.rm = TRUE) if weighted = TRUE
+                  ##ignore.strand = TRUE,
+                  default.val = NA,
+                  max.slice = Inf, ## max row slice to process at a time
+                  ##mc.cores = 1,  ## is slicing how many cores to split across
+                  ...,
+                  sep = ', ' # only applies if val column of target is character
+)
+{
+  query.id = subject.id = NULL ## fix NOTE
+  
+  if (is.null(val))
+    val = 'value'
+
+  if (!(all(ix <- val %in% names(values(target)))))
+    values(target)[, val[!ix]] = 1
+
+  if (length(query)>max.slice)
+  {
+    verbose = TRUE
+    ix.l = split(1:length(query), ceiling(as.numeric((1:length(query)/max.slice))))
+    # return(do.call('grbind', mclapply(ix.l, function(ix) {
+    #   if (verbose)
+    #     cat(sprintf('Processing %s to %s of %s\n', min(ix), max(ix), length(query)))
+    #   gr.val(query[ix, ], target = target, val= val, mean = mean, weighted = weighted, na.rm = na.rm, verbose = TRUE, by = by, FUN = FUN, merge = merge, ignore.strand = ignore.strand, ...)
+    # }, mc.cores = mc.cores)))
+    return(do.call('grbind', lapply(ix.l, function(ix) {
+      if (verbose)
+        cat(sprintf('Processing %s to %s of %s\n', min(ix), max(ix), length(query)))
+      gr.val(query[ix, ], target = target, val= val, mean = mean, weighted = weighted, na.rm = na.rm, verbose = TRUE, by = by, FUN = FUN, merge = merge, ignore.strand = ignore.strand, ...)
+    })))
   }
+
+  if (inherits(target, 'GRangesList'))
+  {
+    target.was.grl = TRUE;
+    target.grl.id = as.data.frame(target)$element
+    val.vec = lapply(val, function(x) values(target)[, x])
+    target = unlist(target)
+    val.vec = lapply(val.vec, function(X) val.vec[target.grl.id])
+  }
+  else
+  {
+    if (!is.null(val))
+      val.vec = lapply(val, function(x) values(target)[, x])
+    else
+      val.vec = list(rep(1, length(target)))
+
+    target.grl.id = 1:length(target);
+    target.was.grl = FALSE;
+  }
+
+  if (inherits(query, 'GRangesList'))
+  {
+    query.was.grl = TRUE;
+    query.grl.id = rep(1:length(query), S4Vectors::elementLengths(query))
+    query = unlist(query)
+  }
+  else
+  {
+    query.grl.id = 1:length(query);
+    query.was.grl = FALSE;
+  }
+
+  if (!is.null(FUN))
+  {
+    args = names(formals(FUN))[1:3]
+
+    if (!is.null(args))
+    {
+      if (any(is.na(args)))
+        args[is.na(args)] = ''
+
+      if (weighted)
+      {
+        if (any(!(c('x', 'w', 'na.rm') %in% args)))
+          warning('FUN input must be function with three arguments: "x" = value, "w" = interval width, "na.rm" = na.rm flag')
+      }
+      else
+      {
+        if (any(!(c('x', 'na.rm') %in% args)))
+          warning('FUN input must be function with two arguments: "x" = value, "na.rm" = na.rm flag')
+      }
+    }
+  }
+
+  if (!merge)
+    hits = gr.findoverlaps(query, target, scol = by, ignore.strand = ignore.strand, verbose = verbose, return.type = 'data.table', ...)
+  else
+    hits = gr.findoverlaps(query, target, by = by, ignore.strand = ignore.strand, verbose = verbose, return.type = 'data.table', ...)
+
+  if (verbose)
+    cat(sprintf('aggregating hits\n'))
+
+  vals = val
+  val.vecs = val.vec
+
+  for (vix in 1:length(vals))
+  {
+    val = vals[[vix]]
+    val.vec = val.vecs[[vix]]
+    is.char = is.character(values(target)[, val]);
+    if (is.null(by) | merge == TRUE)
+    {
+      if (nrow(hits)>0)
+      {
+        values(query)[, val] = NA;
+        hits[, width := as.numeric(end - start)+1]
+        data.table::setkey(hits,  query.id)
+        if (is.char)
+        {
+          values(query)[, val] = '';
+          hits$id = 1:nrow(hits);
+          tmp = hits[, list(val = paste(setdiff(val.vec[subject.id], NA), collapse = sep)), by = query.id]
+          if (!is.na(default.val))
+            tmp[is.na(tmp)] = default.val
+          values(query)[tmp[,query.id], val] = tmp[,val]
+        }
+        else
+        {
+
+          #            val.vec = as.numeric(values(target)[, val]);
+          val.vec = as.numeric(val.vec)
+          if (weighted)
+          {
+            if (!is.null(FUN))
+              tmp = hits[, list(val = do.call(FUN, list(val.vec[subject.id], width, na.rm = na.rm))), by = query.id]
+            else if (mean)
+              tmp = hits[, list(val = sum(width * val.vec[subject.id], na.rm = na.rm)/sum(width)), by = query.id]
+            else
+              tmp = hits[, list(val = sum(width * val.vec[subject.id], na.rm = na.rm)), by = query.id]
+          }
+          else
+          {
+            if (!is.null(FUN))
+              tmp = hits[, list(val = do.call(FUN, list(val.vec[subject.id], na.rm = na.rm))), by = query.id]
+            else if (mean)
+              tmp = hits[, list(val =  mean(val.vec[subject.id], na.rm = na.rm)), by = query.id]
+            else
+              tmp = hits[, list(val = sum(val.vec[subject.id], na.rm = na.rm)), by = query.id]
+          }
+
+          if (!is.na(default.val))
+            tmp[is.na(tmp)] = default.val
+
+          values(query)[tmp[,query.id], val] = tmp[,val]
+        }
+      }
+    }
+    else ## by is not null
+    {
+
+      if (!is.null(by.prefix))
+        if (is.na(by.prefix))
+          by.prefix = NULL
+        else if (nchar(by.prefix)==0)
+          by.prefix = NULL
+
+        if (nrow(hits)>0)
+        {
+          hits[, width := as.numeric(end - start)+1]
+          if (is.char)
+          {
+            hits$id = 1:nrow(hits);
+            tmp = hits[, list(val = paste(setdiff(val.vec[subject.id], NA), collapse = sep)), keyby = list(query.id, bykey = eval(parse(text=by)))]
+
+            tmp2 = data.table::dcast.data.table(tmp, query.id ~ bykey, value.var = 'val')
+            setkey(tmp2, query.id)
+            new.df = as.data.frame(tmp2[list(1:length(query)), ])[ ,-1]
+
+            if (!is.na(default.val))
+              new.df[is.na(new.df)] = default.val
+
+            if (!is.null(by.prefix))
+              colnames(new.df) =  paste(by.prefix, names(tmp2)[-1], sep = '.')
+            else
+              colnames(new.df) =  names(tmp2)[-1]
+            new.names = c(colnames(values(query)), colnames(new.df))
+            values(query) = cbind(values(query), new.df)
+            colnames(values(query)) = new.names
+          }
+          else
+          {
+
+            #            val.vec = as.numeric(values(target)[, val]);
+            val.vec = as.numeric(val.vec)
+            if (weighted)
+            {
+              if (!is.null(FUN))
+              {
+                tmp = hits[, list(val = do.call(FUN, list(val.vec[subject.id], width, na.rm = na.rm))), keyby = list(query.id, bykey = eval(parse(text=by)))]
+              }
+              else if (mean)
+                tmp = hits[, list(val = sum(width * val.vec[subject.id], na.rm = na.rm)/sum(width)), keyby = list(query.id, bykey = eval(parse(text=by)))]
+              else
+                tmp = hits[, list(val = sum(width * val.vec[subject.id], na.rm = na.rm)), keyby = list(query.id, bykey = eval(parse(text=by)))]
+            }
+            else
+            {
+              if (!is.null(FUN))
+                tmp = hits[, list(val = do.call(FUN, list(val.vec[subject.id], na.rm = na.rm))), keyby = list(query.id, bykey = eval(parse(text=by)))]
+              else if (mean)
+                tmp = hits[, list(val =  mean(val.vec[subject.id], na.rm = na.rm)), keyby = list(query.id, bykey = eval(parse(text=by)))]
+              else
+                tmp = hits[, list(val = sum(val.vec[subject.id], na.rm = na.rm)), keyby = list(query.id, bykey = eval(parse(text=by)))]
+            }
+
+            tmp2 = dcast.data.table(tmp, query.id ~ bykey, value.var = 'val')
+            setkey(tmp2, query.id)
+            new.df = as.data.frame(tmp2[list(1:length(query)), ])[ ,-1, drop = FALSE]
+
+            if (!is.na(default.val))
+              new.df[is.na(new.df)] = default.val
+
+            if (!is.null(by.prefix))
+              colnames(new.df) =  paste(by.prefix, names(tmp2)[-1], sep = '.')
+            else
+              colnames(new.df) =  names(tmp2)[-1]
+
+            new.names = c(colnames(values(query)), colnames(new.df))
+            values(query) = cbind(values(query), new.df)
+            colnames(values(query)) = new.names
+          }
+        }
+    }
+  }
+
+  if (query.was.grl)
+    query = split(query, query.grl.id)
+
+  return(query)
+}
+
+# gr.duplicated
+#
+# More flexible version of gr.duplicated that allows to restrict duplicates
+# using "by" columns and allows in exact matching
+#
+gr.duplicated = function(query, by = NULL, type = 'any')
+{
+  return(duplicated(gr.match(query, query, by = by , type = type)))
+}
 
 #' Dice up \code{GRanges} into \code{width = 1} \code{GRanges} spanning the input (warning can produce a very large object)
 #'
@@ -1066,32 +1368,32 @@ gr.tile.map = function(query, subject, verbose = FALSE)
 #' gr.dice(GRanges(c(1,4), IRanges(c(10,10),20)))
 #' @export
 gr.dice = function(gr)
+{
+  sn = Rle(as.character(seqnames(gr)), width(gr))
+  tmp.st = start(gr)
+  tmp.en = end(gr)
+  st = unlist(lapply(1:length(gr), function(x) tmp.st[x]:tmp.en[x]))
+  str = Rle(as.character(strand(gr)), width(gr))
+
+  ## reverse for negative strand ranges
+  if (any(ix <- as.logical(strand(gr) == '-')))
   {
-    sn = Rle(as.character(seqnames(gr)), width(gr))
-    tmp.st = start(gr)
-    tmp.en = end(gr)
-    st = unlist(lapply(1:length(gr), function(x) tmp.st[x]:tmp.en[x]))
-    str = Rle(as.character(strand(gr)), width(gr))
+    w = width(gr)
+    q.id = unlist(lapply(1:length(gr), function(x) rep(x, w[x])))
+    q.l = split(1:length(st), q.id)
 
-    ## reverse for negative strand ranges
-    if (any(ix <- as.logical(strand(gr) == '-')))
-      {
-        w = width(gr)
-        q.id = unlist(lapply(1:length(gr), function(x) rep(x, w[x])))
-        q.l = split(1:length(st), q.id)
-
-        for (j in q.l[ix])
-          st[j] = rev(st[j])
-      }
-
-    ix = Rle(1:length(gr), width(gr))
-    out = GRanges(sn, IRanges(st, st), strand = str, seqlengths = seqlengths(gr))
-    values(out) = values(gr)[ix, ]
-
-    out = S4Vectors::split(out, ix)
-
-    return(out)
+    for (j in q.l[ix])
+      st[j] = rev(st[j])
   }
+
+  ix = Rle(1:length(gr), width(gr))
+  out = GRanges(sn, IRanges(st, st), strand = str, seqlengths = seqlengths(gr))
+  values(out) = values(gr)[ix, ]
+
+  out = S4Vectors::split(out, ix)
+
+  return(out)
+}
 
 
 #' Pairwise distance between two \code{GRanges}
@@ -1119,10 +1421,10 @@ gr.dist = function(gr1, gr2 = NULL, ignore.strand = FALSE, ...)
     gr2 = gr1;
 
   if (ignore.strand)
-    {
-      strand(gr1) = '*'
-      strand(gr2) = '*'
-    }
+  {
+    strand(gr1) = '*'
+    strand(gr2) = '*'
+  }
 
   ix1 = rep(1:length(gr1), length(gr2))
   ix2 = rep(1:length(gr2), each = length(gr1))
@@ -1146,43 +1448,43 @@ gr.dist = function(gr1, gr2 = NULL, ignore.strand = FALSE, ...)
 #' @name grl.in
 #' @export
 grl.in <- function(grl, windows, some = FALSE, only = FALSE, ...)
-  {
-    grl.iid = grl.id = NULL ## for getting past NOTE
+{
+  grl.iid = grl.id = NULL ## for getting past NOTE
 
-    if (length(grl)==0)
-      return(logical())
+  if (length(grl)==0)
+    return(logical())
 
-    if (length(windows)==0)
-      return(rep(TRUE, length(grl)))
+  if (length(windows)==0)
+    return(rep(TRUE, length(grl)))
 
-    numwin = length(windows);
-    gr = grl.unlist(grl)
-    h = GenomicRanges::findOverlaps(gr, windows, ...)
-    m = data.table(query.id = queryHits(h), subject.id = subjectHits(h))
-    #m = gr2dt(gr.findoverlaps(gr, windows, ...))
+  numwin = length(windows);
+  gr = grl.unlist(grl)
+  h = GenomicRanges::findOverlaps(gr, windows, ...)
+  m = data.table(query.id = queryHits(h), subject.id = subjectHits(h))
+  #m = gr2dt(gr.findoverlaps(gr, windows, ...))
 
-    out = rep(FALSE, length(grl))
-    if (nrow(m)==0)
-      return(out)
-
-    m$grl.id = gr$grl.ix[m$query.id]
-    m$grl.iid = gr$grl.iix[m$query.id]
-
-    if (some)
-        tmp = as.data.frame(m[, length(unique(grl.iid)), by = grl.id])
-    else if (only)
-      return(base::mapply(function(x, y) length(setdiff(x, y))==0,
-                    split(1:length(gr), factor(gr$grl.ix, 1:length(grl))),
-                    split(m$query.id, factor(m$grl.id, 1:length(grl)))))
-    else
-      tmp = stats::aggregate(formula = subject.id ~ grl.id, data = m, FUN = function(x) length(setdiff(1:numwin, x))==0)
-
-    out = rep(FALSE, length(grl))
-    out[tmp[,1]] = tmp[,2]
-    ##if (logical)
-        out = out!=0
+  out = rep(FALSE, length(grl))
+  if (nrow(m)==0)
     return(out)
-  }
+
+  m$grl.id = gr$grl.ix[m$query.id]
+  m$grl.iid = gr$grl.iix[m$query.id]
+
+  if (some)
+    tmp = as.data.frame(m[, length(unique(grl.iid)), by = grl.id])
+  else if (only)
+    return(base::mapply(function(x, y) length(setdiff(x, y))==0,
+                        split(1:length(gr), factor(gr$grl.ix, 1:length(grl))),
+                        split(m$query.id, factor(m$grl.id, 1:length(grl)))))
+  else
+    tmp = stats::aggregate(formula = subject.id ~ grl.id, data = m, FUN = function(x) length(setdiff(1:numwin, x))==0)
+
+  out = rep(FALSE, length(grl))
+  out[tmp[,1]] = tmp[,2]
+  ##if (logical)
+  out = out!=0
+  return(out)
+}
 
 #' Robust unlisting of \code{GRangesList} that keeps track of origin
 #'
@@ -1199,24 +1501,24 @@ grl.in <- function(grl, windows, some = FALSE, only = FALSE, ...)
 #' @export
 grl.unlist = function(grl)
 {
-    if (length(grl) == 0) ## JEREMIAH
-      return(GRanges())
+  if (length(grl) == 0) ## JEREMIAH
+    return(GRanges())
 
-    names(grl) = NULL
-    as.df = as.data.frame(grl)
+  names(grl) = NULL
+  as.df = as.data.frame(grl)
 
-    el = as.df$element
-    if (is.null(el))
-        el = as.df$group
+  el = as.df$element
+  if (is.null(el))
+    el = as.df$group
 
-    out = BiocGenerics::unlist(grl)
-    mcols(out)$grl.ix = el
-    tmp = rle(el)
+  out = BiocGenerics::unlist(grl)
+  mcols(out)$grl.ix = el
+  tmp = rle(el)
 
-    out$grl.iix = unlist(sapply(tmp$lengths, function(x) 1:x))
-    values(out) = cbind(values(grl)[out$grl.ix, , drop = FALSE], values(out))
-    return(out)
-  }
+  out$grl.iix = unlist(sapply(tmp$lengths, function(x) 1:x))
+  values(out) = cbind(values(grl)[out$grl.ix, , drop = FALSE], values(out))
+  return(out)
+}
 
 #' Pivot a \code{GRangesList}, inverting "x" and "y"
 #'
@@ -1233,11 +1535,11 @@ grl.unlist = function(grl)
 #' grl.pivot(grl.hiC)
 #' @export
 grl.pivot = function(x)
-  {
-    if (length(x) == 0)
-      return(GRangesList(GRanges(seqlengths = seqlengths(x)), GRanges(seqlengths = seqlengths(x))))
-    #gg <- GenomicRanges::split(GenomicRanges::unlist(x), rep(1:length(x[[1]]), length(x)))
-    return(GenomicRanges::split(GenomicRanges::unlist(x), rep(1:length(x[[1]]), length(x))))
+{
+  if (length(x) == 0)
+    return(GRangesList(GRanges(seqlengths = seqlengths(x)), GRanges(seqlengths = seqlengths(x))))
+  #gg <- GenomicRanges::split(GenomicRanges::unlist(x), rep(1:length(x[[1]]), length(x)))
+  return(GenomicRanges::split(GenomicRanges::unlist(x), rep(1:length(x[[1]]), length(x))))
 }
 
 
@@ -1393,7 +1695,7 @@ standardize_segs = function(seg, chr = FALSE)
   #   seg$seqnames = as.character(seg$seqnames)
   # }
   # else
-    val = NULL;
+  val = NULL;
 
   field.aliases = list(
     ID = c('id', 'patient', 'Sample'),
@@ -1566,18 +1868,18 @@ gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE,
       print(paste('Number of chunks:', nrow(ij)))
 
     out = do.call('c', lapply(1:nrow(ij),
-                                function(x)
-                                {
-                                  if (verbose)
-                                    cat(sprintf('chunk i = %s-%s (%s), j = %s-%s (%s)\n', ix1[ij[x,1]], ix1[ij[x,1]+1]-1, length(query),
-                                                ix2[ij[x,2]], (ix2[ij[x,2]+1]-1), length(subject)))
-                                  i.chunk = ix1[ij[x,1]]:(ix1[ij[x,1]+1]-1)
-                                  j.chunk = ix2[ij[x,2]]:(ix2[ij[x,2]+1]-1)
-                                  out = gr.findoverlaps(query[i.chunk], subject[j.chunk],  ignore.strand = ignore.strand, first = first, by = by, qcol = qcol, verbose = verbose, scol = scol, type = type, max.chunk = Inf, ...)
-                                  out$query.id = i.chunk[out$query.id]
-                                  out$subject.id = j.chunk[out$subject.id]
-                                  return(out)
-                                }))
+                              function(x)
+                              {
+                                if (verbose)
+                                  cat(sprintf('chunk i = %s-%s (%s), j = %s-%s (%s)\n', ix1[ij[x,1]], ix1[ij[x,1]+1]-1, length(query),
+                                              ix2[ij[x,2]], (ix2[ij[x,2]+1]-1), length(subject)))
+                                i.chunk = ix1[ij[x,1]]:(ix1[ij[x,1]+1]-1)
+                                j.chunk = ix2[ij[x,2]]:(ix2[ij[x,2]+1]-1)
+                                out = gr.findoverlaps(query[i.chunk], subject[j.chunk],  ignore.strand = ignore.strand, first = first, by = by, qcol = qcol, verbose = verbose, scol = scol, type = type, max.chunk = Inf, ...)
+                                out$query.id = i.chunk[out$query.id]
+                                out$subject.id = j.chunk[out$subject.id]
+                                return(out)
+                              }))
 
     ## sort by position, then sort by query, then subject id
     out <- sort(out[order(out$query.id, out$subject.id)])
@@ -1684,7 +1986,7 @@ gr.match = function(query, subject, ...)
   #   h = findOverlaps(query, subject)
   #   tmp = data.table(subject.id = subjectHits(h), query.id = queryHits(h))
   # } else {
-    tmp = gr.findoverlaps(query, subject, ...)
+  tmp = gr.findoverlaps(query, subject, ...)
   # }
   tmp = tmp[!duplicated(tmp$query.id)]
   out = rep(NA, length(query))
@@ -1714,8 +2016,8 @@ gr.match = function(query, subject, ...)
 #' gr.genes %*% gr.DNAase
 #setGeneric('%*%', function(gr, ...) standardGeneric('%*%'))
 setMethod("%*%", signature(x = "GRanges"), function(x, y) {
-    gr = gr.findoverlaps(x, y, qcol = names(values(x)), scol = names(values(y)))
-   return(gr)
+  gr = gr.findoverlaps(x, y, qcol = names(values(x)), scol = names(values(y)))
+  return(gr)
 })
 
 #' Find overlaps between rearrangements represented by \code{GRangesList} objects
@@ -1763,7 +2065,7 @@ ra.overlaps = function(ra1, ra2, pad = 0, ...)
   if (is.null(tmp))
   {
     # if (arr.ind)
-      return(matrix())
+    return(matrix())
     # else
     #   return(sparseMatrix(length(ra1), length(ra2), x = 0))
   }
@@ -1773,10 +2075,10 @@ ra.overlaps = function(ra1, ra2, pad = 0, ...)
   colnames(tmp) = c('ra1.ix', 'ra2.ix')
 
   # if (arr.ind) {
-    ro <- tmp[order(tmp[,1], tmp[,2]), ]
-    if (class(ro)=='integer')
-      ro <- matrix(ro, ncol=2, nrow=1, dimnames=list(c(), c('ra1.ix', 'ra2.ix')))
-    return(ro)
+  ro <- tmp[order(tmp[,1], tmp[,2]), ]
+  if (class(ro)=='integer')
+    ro <- matrix(ro, ncol=2, nrow=1, dimnames=list(c(), c('ra1.ix', 'ra2.ix')))
+  return(ro)
   # } else {
   #   ro <- sparseMatrix(tmp[,1], tmp[,2], x = 1, dims = c(length(ra1), length(ra2)))
   #   return(ro)

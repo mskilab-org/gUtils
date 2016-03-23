@@ -342,6 +342,12 @@ test_that('ra.overlaps', {
   expect_equal(ncol(ro), 2)
   expect_equal(nrow(ra.overlaps(grl1, grl1)), 115)
 
+  ## make one that overlaps, but wrong signs
+  grl3 <- grl1[115]
+  strand(grl3[[1]]) <- c("+", "-")
+  expect_equal(ra.overlaps(grl3, grl2)[1], NA)
+
+  ## test empty inputs and no overlaps inputs
   expect_equal(ra.overlaps(GRangesList(), grl1)[1], NA)
   expect_equal(ra.overlaps(grl2[2:3], grl1)[1], NA)
 })
