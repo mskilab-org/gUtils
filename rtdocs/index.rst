@@ -4,7 +4,7 @@
    contain the root `toctree` directive.
 
 Welcome to gUtils's documentation!
-==================================
+=================================
 
 Contents:
 
@@ -16,7 +16,7 @@ Contents:
    data.rst
    utils.rst
    tutorial.rst
-
+   
 Indices and tables
 ==================
 

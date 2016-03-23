@@ -37,7 +37,7 @@ will return the subset of gr1 entries for whose metadata column $gene has “EGF
    COSMICgenes <- read.delim("cosmicdata.tsv")
 
    ## save the gene symbols into a factor
-   geneSymbols <- OSMICgenes[,1]
+   geneSymbols <- COSMICgenes[,1]
 
    ## loading gene definitions which we can use to plot windows (GRanges)
    genes = readRDS('files/genes.rds')
