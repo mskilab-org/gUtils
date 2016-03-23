@@ -20,9 +20,11 @@ gr.val(query, target, val = NULL, mean = TRUE, weighted = mean,
 
 \item{weighted}{Calculate a weighted mean. If \code{FALSE}, calculates unweighted mean. \code{[TRUE]}}
 
-\item{na.rm}{Remove NA values when calulating means. \code{[FALSE]}}
+\item{na.rm}{Remove NA values when calulating means. only applies if val column of target is numeric \code{[FALSE]}}
 
 \item{by}{scalar character, specifies additional "by" column of query AND target that will be used to match up query and target pairs (i.e. in addition to pure GRanges overlap), default is NULL}
+
+\item{merge}{if merge = FALSE then will cross every range in query with every level of "by" in target (and create data matrix), otherwise will assume query has "by" and merge only ranges that have matching "by" values in both query and target}
 
 \item{verbose}{Increase the verbosity of the output}
 
@@ -32,9 +34,7 @@ gr.val(query, target, val = NULL, mean = TRUE, weighted = mean,
 
 \item{...}{Additional arguments to be sent to \code{\link{gr.findoverlaps}}.}
 
-\item{sep}{scalar character, specifies character to use as separator when aggregating character "vals" from target, only applies if target is numeric}
-
-\item{if}{merge = FALSE then will cross every range in query with every level of "by" in target (and create data matrix), otherwise will assume query has "by" and merge only ranges that have matching "by" values in both query and target}
+\item{sep}{scalar character, specifies character to use as separator when aggregating character "vals" from target, only applies if target is character}
 }
 \value{
 \code{query} with the \code{val} field populated

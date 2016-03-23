@@ -1085,41 +1085,39 @@ gr.tile.map = function(query, subject, verbose = FALSE)
 #' }
 #' Usually query intervals are bigger than the target intervals.
 #'
-#'
-#'
 #' @note \code{query} and \code{target} can be \code{GRangesList} object, in which case val will refer to \code{GRangesList} level values fields
 #' @name gr.val
 #' @param val If a character field: then aggregation will paste together the (unique), overlapping values, collapsing by comma. \code{[NULL]}
 #' @param weighted Calculate a weighted mean. If \code{FALSE}, calculates unweighted mean. \code{[TRUE]}
-#' @param na.rm Remove NA values when calulating means. \code{[FALSE]}
+#' @param na.rm Remove NA values when calulating means. only applies if val column of target is numeric \code{[FALSE]}
 #' @param query \code{GRanges} of query ranges whose \code{val} column we will populate with aggregated values of \code{target}
 #' @param target \code{GRanges} of target ranges that already have "val" column populated
 #' @param FUN Optional different function to call than mean. Takes two arguments (value, na.rm = TRUE) if weighted = FALSE, and three (value, width, na.rm = TRUE) if weighted = TRUE
 #' @param mean Scalar logical flag. If \code{FALSE} then will return sum instead of mean, only applies if target \code{val} column is numeric.
-#' @param sep scalar character, specifies character to use as separator when aggregating character "vals" from target, only applies if target is numeric
+#' @param sep scalar character, specifies character to use as separator when aggregating character "vals" from target, only applies if target is character
 #' @param by scalar character, specifies additional "by" column of query AND target that will be used to match up query and target pairs (i.e. in addition to pure GRanges overlap), default is NULL
 #' @param max.slice Maximum number of query ranges to consider in one memory chunk. \code{[Inf]}
-#' @param if merge = FALSE then will cross every range in query with every level of "by" in target (and create data matrix), otherwise will assume query has "by" and merge only ranges that have matching "by" values in both query and target
+#' @param merge if merge = FALSE then will cross every range in query with every level of "by" in target (and create data matrix), otherwise will assume query has "by" and merge only ranges that have matching "by" values in both query and target
 #' @param verbose Increase the verbosity of the output 
 #' @param ... Additional arguments to be sent to \code{\link{gr.findoverlaps}}. 
 #' @return \code{query} with the \code{val} field populated
 #' @export
 gr.val = function(query, target,
                   val = NULL,
-                  mean = TRUE, # if false then will return (weighted) <sum> instead of <mean>, only applies if target is numeric
-                  weighted = mean, # if false will return unweighted sum / mean
-                  na.rm = FALSE, # only applies if val column of target is numeric
+                  mean = TRUE,
+                  weighted = mean, 
+                  na.rm = FALSE, 
                   by = NULL,
                   by.prefix = val,
-                  merge = FALSE, # 
+                  merge = FALSE, 
                   verbose = FALSE,
-                  FUN = NULL, ## takes two  arguments (value, na.rm = TRUE) if weighted = FALSE, and three (value, width, na.rm = TRUE) if weighted = TRUE
+                  FUN = NULL, 
                   ##ignore.strand = TRUE,
                   default.val = NA,
-                  max.slice = Inf, ## max row slice to process at a time
+                  max.slice = Inf, 
                   ##mc.cores = 1,  ## is slicing how many cores to split across
                   ...,
-                  sep = ', ' # only applies if val column of target is character
+                  sep = ', ' 
 )
 {
   query.id = subject.id = NULL ## fix NOTE
@@ -1142,7 +1140,7 @@ gr.val = function(query, target,
     return(do.call('grbind', lapply(ix.l, function(ix) {
       if (verbose)
         cat(sprintf('Processing %s to %s of %s\n', min(ix), max(ix), length(query)))
-      gr.val(query[ix, ], target = target, val= val, mean = mean, weighted = weighted, na.rm = na.rm, verbose = TRUE, by = by, FUN = FUN, merge = merge, ignore.strand = ignore.strand, ...)
+      gr.val(query[ix, ], target = target, val= val, mean = mean, weighted = weighted, na.rm = na.rm, verbose = TRUE, by = by, FUN = FUN, merge = merge, ...)
     })))
   }
 
@@ -1200,9 +1198,9 @@ gr.val = function(query, target,
   }
 
   if (!merge)
-    hits = gr.findoverlaps(query, target, scol = by, ignore.strand = ignore.strand, verbose = verbose, return.type = 'data.table', ...)
+    hits = gr.findoverlaps(query, target, scol = by, verbose = verbose, return.type = 'data.table', ...)
   else
-    hits = gr.findoverlaps(query, target, by = by, ignore.strand = ignore.strand, verbose = verbose, return.type = 'data.table', ...)
+    hits = gr.findoverlaps(query, target, by = by, verbose = verbose, return.type = 'data.table', ...)
 
   if (verbose)
     cat(sprintf('aggregating hits\n'))
@@ -1280,7 +1278,7 @@ gr.val = function(query, target,
             tmp = hits[, list(val = paste(setdiff(val.vec[subject.id], NA), collapse = sep)), keyby = list(query.id, bykey = eval(parse(text=by)))]
 
             tmp2 = data.table::dcast.data.table(tmp, query.id ~ bykey, value.var = 'val')
-            setkey(tmp2, query.id)
+            data.table::setkey(tmp2, query.id)
             new.df = as.data.frame(tmp2[list(1:length(query)), ])[ ,-1]
 
             if (!is.na(default.val))
@@ -1320,8 +1318,8 @@ gr.val = function(query, target,
                 tmp = hits[, list(val = sum(val.vec[subject.id], na.rm = na.rm)), keyby = list(query.id, bykey = eval(parse(text=by)))]
             }
 
-            tmp2 = dcast.data.table(tmp, query.id ~ bykey, value.var = 'val')
-            setkey(tmp2, query.id)
+            tmp2 = data.table::dcast.data.table(tmp, query.id ~ bykey, value.var = 'val')
+            data.table::setkey(tmp2, query.id)
             new.df = as.data.frame(tmp2[list(1:length(query)), ])[ ,-1, drop = FALSE]
 
             if (!is.na(default.val))
@@ -1432,6 +1430,115 @@ gr.dist = function(gr1, gr2 = NULL, ignore.strand = FALSE, ...)
   out = matrix(suppressWarnings(distance(gr1[ix1], gr2[ix2], ...)), nrow = length(gr1), ncol = length(gr2))
 
   return(out)
+}
+
+#' Remove \code{GRanges} names inside a \code{GRangesList}
+#' @param grl \code{GRangesList} with names elements 
+#' @return \code{GRangesList} where \code{GRanges} have no names
+#' @name grl.stripnames
+grl.stripnames = function(grl)
+{
+  ele = tryCatch(as.data.frame(grl)$element, error = function(e) e)    
+  if (inherits(ele, 'error'))
+    ele = unlist(lapply(1:length(grl), function(x) rep(x, length(grl[[x]]))))
+  
+  gr = unlist(grl);
+  names(gr) = NULL;
+  
+  out = split(gr, ele);
+  values(out) = values(grl)
+  names(out) = names(grl)
+  
+  return(out)
+}
+
+#' Queries an \code{\link{RleList}} representing genomic data 
+#' 
+#' (ie a list whose names represent seqnames ie chromosomes, and lengths represent seqlengths)
+#' via \code{GRanges} object
+#'
+#' @param subject.rle \code{Rle} 
+#' @param mc.cores Number of cores to apply when doing chunked operation
+#' @param query.gr TODO
+#' @param verbose Set the verbosity of the output
+#' @param chunksize Number of \code{query.gr} ranges to consider in one memory chunk. 1e9
+#' @return Rle representing the (concatenated) vector of data (reversing order in case of negative strand input)
+#' @note Throws warning if seqlengths(gr) do not correspond to the lengths of the \code{RleList} components
+#' @export
+rle.query = function(subject.rle, query.gr, verbose = FALSE, mc.cores = 1, chunksize = 1e9) ## mc.cores only relevant if there are over 1e9 bases to be queried from subject.rle
+{
+  was.grl = FALSE
+  
+  if (is(query.gr, 'GRangesList'))
+  {
+    was.grl = TRUE    
+    query.gr = grl.unlist(query.gr)
+  }
+  
+  ##     if (!identical(names(subject.rle), seqlevels(query.gr)))
+  ##       warning('seqlevels of subject and query are not the same')
+  
+  ##     com.seq = intersect(seqlevels(query.gr), names(subject.rle))
+  
+  ##     if (!identical(sapply(subject.rle[com.seq], length), seqlengths(query.gr)[com.seq]))
+  ##       warning('seqlengths of subject and query are not the same')
+  
+  chunksize = pmin(1e9, chunksize)
+  if ((sum(as.numeric(width(query.gr))))>chunksize) ## otherwise integer overflow
+  {
+    tmp = rle(ceiling(cumsum(as.numeric(width(query.gr)))/chunksize))
+    chunks = cbind(cumsum(c(1, tmp$lengths[-length(tmp$lengths)])), cumsum(c(tmp$lengths)))
+    if (verbose)
+      cat(sprintf('chunking up into %s chunks \n', nrow(chunks)))
+    out = do.call('c', parallel::mclapply(1:nrow(chunks), function(x) rle.query(subject.rle, query.gr[chunks[x,1]:chunks[x,2]]), mc.cores = mc.cores))
+}
+  else
+  {    
+    out = Rle(NA, sum(as.numeric(width(query.gr))));
+    
+    if (length(query.gr)>1)
+    {
+      st.ix = cumsum(c(1, width(query.gr)[1:(length(query.gr)-1)]))
+    }else
+    {
+      st.ix = 1    
+    }
+    out.ix = IRanges(st.ix, st.ix + width(query.gr)-1) ## ranges in out corresponding to query
+    
+    for (chr in intersect(names(subject.rle), unique(as.character(seqnames(query.gr)))))
+    {
+      ix = which(as.character(seqnames(query.gr)) == chr)
+      rix = ranges(query.gr)[ix]
+      m = max(end(rix))
+      if (length(subject.rle[[chr]]) < m) ## pad subject rle if not long enough
+      {
+        subject.rle[[chr]] = c(subject.rle[[chr]], Rle(NA, m - length(subject.rle[[chr]])))
+      }
+      out[unlist(as.integer(out.ix[ix]))] = subject.rle[[chr]][rix]
+    }
+    
+    if("-" %in% as.character(strand(query.gr)))
+    {
+      id = NULL; V1 = NULL ## NOTE fix
+      tmp = data.table(ix = 1:sum(width(out.ix)), id = rep(1:length(out.ix), width(out.ix)), strand = rep(as.character(strand(query.gr)), width(out.ix)), key = 'ix')
+      out = out[tmp[, rev(ix), by = id][, V1]]                                                             
+      ## strand.col = c(1, 2)
+      ## names(strand.col) = c("+", "-")
+      ## cumsums = cumsum(width(out.ix))
+      ## exon.max = rep(cumsums, times = width(out.ix))
+      ## exon.min = rep(c(0, cumsums[1:(length(cumsums) - 1)]), times = width(out.ix))
+      ## negs = exon.max - 0:(length(out)-1) + exon.min 
+      
+      ## pos.neg.mat = cbind(1:length(out), negs)
+      ## index = pos.neg.mat[cbind(1:length(out), strand.col[strand])]
+      ## out = out[index]
+    }
+  }
+  
+  if (was.grl)
+    out = split(out, Rle(query.gr$grl.ix, width(query.gr)))
+  
+  return(out)        
 }
 
 #' Check intersection of \code{GRangesList} with windows on genome
@@ -1964,6 +2071,56 @@ gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE,
   }
 }
 
+
+#' Versatile implementation of \code{GenomicRanges::over}
+#'
+#' returns T / F vector if query range i is found in any range in subject
+#'
+#' @param query \code{GRanges}
+#' @param subject \code{GRanges}
+#' @param ... Argument to be sent to \code{\link{gr.findoverlaps}} (e.g. \code{by})
+#' @name gr.in
+#' @export
+gr.in = function(query, subject, ...)
+{
+  tmp = gr.findoverlaps(query, subject, ...)
+  out = rep(FALSE, length(query))
+  out[tmp$query.id] = TRUE
+  
+  return(out)    
+}
+
+#' Collapse adjacent ranges
+#'
+#' Like \code{GenomicRanges::reduce} except only collapses <<adjacent>> ranges in the input
+#' @param gr \code{GRanges} to collapse
+#' @param pad Padding that allows for not quite adjacent elements to be considered overlapping. 1
+#' @return Collapsed ranges
+#' @name gr.collapse
+#' @export
+gr.collapse = function(gr, pad = 1)
+{
+  tmp = gr.findoverlaps(gr + pad, gr + pad, ignore.strand = FALSE)
+  m = rep(FALSE, length(gr))
+  m[tmp$query.id[tmp$query.id == (tmp$subject.id-1)]] = TRUE
+  
+  ## will not collapse if two intersecting ranges are in the wrong "order" (ie not increasing (decreasing) on pos (neg) strand
+  m[which((strand(gr)[-length(gr)] == '+' & (start(gr)[-length(gr)] > start(gr)[-1])) |
+            (strand(gr)[-length(gr)] == '-' & (end(gr)[-length(gr)] < end(gr)[-1])))] = FALSE
+  
+  m = as(m, 'IRanges')
+  
+  if (length(m)>0)
+  {
+    end(m) = end(m)+1
+    tmp = cbind(start(gr)[start(m)], end(gr)[start(m)], start(gr)[end(m)], end(gr)[end(m)])
+    s = pmin(start(gr)[start(m)], end(gr)[start(m)], start(gr)[end(m)], end(gr)[end(m)])
+    e = pmax(start(gr)[start(m)], end(gr)[start(m)], start(gr)[end(m)], end(gr)[end(m)])
+    return(GRanges(seqnames(gr)[start(m)], IRanges(s, e), strand = strand(gr)[start(m)], seqlengths = seqlengths(gr)))
+  }
+  else
+    return(gr[c()])                
+}
 
 #' Alternative \code{GenomicRanges::match} that accepts additional \code{\link{gr.findoverlaps}} options
 #'
