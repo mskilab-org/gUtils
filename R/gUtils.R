@@ -1933,6 +1933,7 @@ munlist = function(x, force.rbind = FALSE, force.cbind = FALSE, force.list = FAL
 #' @param ... Additional arguments sent to \code{IRanges::findOverlaps}.
 #' @param max.chunk Maximum number of \code{query*subject} ranges to consider at once. Lower number increases runtime but decreased memory. If \code{length(query)*length(subject)} is less than \code{max.chunk}, overlaps will run in one batch.\code{[1e13]}
 #' @param verbose Increase the verbosity. \code{[FALSE]}
+#' @param mc.cores Number of cores to use when running in chunked mode
 #' @return \code{GRanges} pile of the intersection regions, with \code{query.id} and \code{subject.id} marking sources
 #' @export
 gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE,
@@ -1943,6 +1944,7 @@ gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE,
                            return.type = 'same',
                            max.chunk = 1e13,
                            verbose = FALSE,
+                           mc.cores = 1,
                            ...)
 {
 
@@ -1988,7 +1990,7 @@ gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE,
     if (verbose)
       print(paste('Number of chunks:', nrow(ij)))
 
-    out = do.call('c', lapply(1:nrow(ij),
+    out = do.call('c', parallel::mclapply(1:nrow(ij),
                               function(x)
                               {
                                 if (verbose)
@@ -2000,7 +2002,7 @@ gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE,
                                 out$query.id = i.chunk[out$query.id]
                                 out$subject.id = j.chunk[out$subject.id]
                                 return(out)
-                              }))
+                              }, mc.cores = mc.cores))
 
     ## sort by position, then sort by query, then subject id
     out <- sort(out[order(out$query.id, out$subject.id)])
