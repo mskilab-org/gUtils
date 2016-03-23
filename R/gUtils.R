@@ -1701,6 +1701,20 @@ rrbind = function(..., union = TRUE, as.data.table = FALSE)
   return(rout)
 }
 
+#' Apply \code{gsub} to seqlevels of a \code{GRanges}
+#' 
+#' Apply gsub to seqlevels of gr, by default removing 'chr', and "0.1" suffixes, and replacing "MT" with "M"
+#' @param gr \code{GRanges} to switch out seqlevels for 
+#' @param a Vector of regular expressions of things to sub-out
+#' @param b Vector of values to sub in
+#' @name gr.sub
+#' @export
+gr.sub = function(gr, a = c('(^chr)(\\.1$)', 'MT'), b= c('', 'M'))
+{
+  tmp = mapply(function(x, y) seqlevels(gr) <<- gsub(x, y, seqlevels(gr)), a, b)
+  return(gr)
+}
+
 #' @name seg2gr
 #' @title Convert GRange like data.frames into GRanges
 #' @description
@@ -1714,7 +1728,7 @@ rrbind = function(..., union = TRUE, as.data.table = FALSE)
 #' @param segs data frame of segments with fields denoting chromosome, start, end, and other metadata (see standardized segs for seg data frame input formats)
 #' @param seqlengths seqlengths of output GRanges object
 #' @param seqinfo seqinfo of output GRanges object
-#' @keywords internal
+#' @export
 seg2gr = function(segs, key = NULL, seqlengths = NULL, seqinfo = Seqinfo())
 {
   if (is(segs, 'data.table'))

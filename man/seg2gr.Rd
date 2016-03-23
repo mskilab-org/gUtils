@@ -18,5 +18,4 @@ Take data frame of ranges "segs" and converts into granges object porting over a
 "segs" data frame can obey any number of conventions to specify chrom, start, and end of ranges
 (eg $pos1, $pos2, $Start_position, $End_position) --> see "standardize_segs" for more info
 }
-\keyword{internal}
 
