@@ -6,7 +6,8 @@
 \usage{
 gr.findoverlaps(query, subject, ignore.strand = TRUE, first = FALSE,
   qcol = NULL, scol = NULL, type = "any", by = NULL,
-  return.type = "same", max.chunk = 1e+13, verbose = FALSE, ...)
+  return.type = "same", max.chunk = 1e+13, verbose = FALSE,
+  mc.cores = 1, ...)
 }
 \arguments{
 \item{query}{Query \code{GRanges} pile}
@@ -30,6 +31,8 @@ gr.findoverlaps(query, subject, ignore.strand = TRUE, first = FALSE,
 \item{max.chunk}{Maximum number of \code{query*subject} ranges to consider at once. Lower number increases runtime but decreased memory. If \code{length(query)*length(subject)} is less than \code{max.chunk}, overlaps will run in one batch.\code{[1e13]}}
 
 \item{verbose}{Increase the verbosity. \code{[FALSE]}}
+
+\item{mc.cores}{Number of cores to use when running in chunked mode}
 
 \item{...}{Additional arguments sent to \code{IRanges::findOverlaps}.}
 }

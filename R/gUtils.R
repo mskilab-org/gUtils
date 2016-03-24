@@ -1132,16 +1132,11 @@ gr.val = function(query, target,
   {
     verbose = TRUE
     ix.l = split(1:length(query), ceiling(as.numeric((1:length(query)/max.slice))))
-    # return(do.call('grbind', mclapply(ix.l, function(ix) {
-    #   if (verbose)
-    #     cat(sprintf('Processing %s to %s of %s\n', min(ix), max(ix), length(query)))
-    #   gr.val(query[ix, ], target = target, val= val, mean = mean, weighted = weighted, na.rm = na.rm, verbose = TRUE, by = by, FUN = FUN, merge = merge, ignore.strand = ignore.strand, ...)
-    # }, mc.cores = mc.cores)))
-    return(do.call('grbind', lapply(ix.l, function(ix) {
+    return(do.call('grbind', mclapply(ix.l, function(ix) {
       if (verbose)
         cat(sprintf('Processing %s to %s of %s\n', min(ix), max(ix), length(query)))
-      gr.val(query[ix, ], target = target, val= val, mean = mean, weighted = weighted, na.rm = na.rm, verbose = TRUE, by = by, FUN = FUN, merge = merge, ...)
-    })))
+      gr.val(query[ix, ], target = target, val= val, mean = mean, weighted = weighted, na.rm = na.rm, verbose = TRUE, by = by, FUN = FUN, merge = merge, ignore.strand = ignore.strand, ...)
+    }, mc.cores = mc.cores)))
   }
 
   if (inherits(target, 'GRangesList'))
