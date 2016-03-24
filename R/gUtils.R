@@ -567,7 +567,7 @@ grbind = function(x, ...)
 
   bare.grs = lapply(grs, function(x) gr.fix(x[,c()], sl.new))
   ##out = tryCatch(do.call('c', bare.grs), error = function(e) NULL) ## this is annoyingly not working
-  out <- rbindlist(lapply(bare.grs, gr2dt))  
+  out <- dt2gr(rbindlist(lapply(bare.grs, gr2dt)))
 
   # if (is.null(out) | is.list(out)) ## something failed with concatenation, likely some weird ghost with concatenating GRanges with 'c', below is a temp fix
   #     {
