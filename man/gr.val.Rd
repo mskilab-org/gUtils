@@ -6,8 +6,8 @@
 \usage{
 gr.val(query, target, val = NULL, mean = TRUE, weighted = mean,
   na.rm = FALSE, by = NULL, by.prefix = val, merge = FALSE,
-  verbose = FALSE, FUN = NULL, default.val = NA, max.slice = Inf, ...,
-  sep = ", ")
+  verbose = FALSE, FUN = NULL, default.val = NA, max.slice = Inf,
+  mc.cores = 1, ..., sep = ", ")
 }
 \arguments{
 \item{query}{\code{GRanges} of query ranges whose \code{val} column we will populate with aggregated values of \code{target}}

@@ -165,12 +165,13 @@ dt2gr <- function(dt) {
   if (!'strand' %in% colnames(dt))
     dt$strand <- '*'
   sf <- factor(dt$strand, levels=c('+', '-', '*'))
-  ff <- factor(dt$seqnames, levels=unique(sort(dt$seqnames)))
+  ff <- factor(dt$seqnames, levels=sort(unique(dt$seqnames)))
   out <- GRanges(seqnames=ff, ranges=rr, strand=sf)
+  NOT_ALLOWED <- c("seqnames", "ranges", "strand", "seqlevels", "seqlengths", "isCircular", "start", "end", "width", "element")
   if (inherits(dt, 'data.table'))
-    mc <- as.data.frame(dt[, setdiff(colnames(dt), c('start', 'end', 'seqnames', 'strand')), with=FALSE])
+    mc <- as.data.frame(dt[, setdiff(colnames(dt), NOT_ALLOWED), with=FALSE])
   else if (inherits(dt, 'data.frame'))
-    mc <- as.data.frame(dt[, setdiff(colnames(dt), c('start', 'end', 'seqnames', 'strand'))])
+    mc <- as.data.frame(dt[, setdiff(colnames(dt), NOT_ALLOWED)])
   else
     warning("Needs to be data.table or data.frame")
   if (nrow(mc))
@@ -565,7 +566,8 @@ grbind = function(x, ...)
     sl.new[names(sl)] = pmax(sl.new[names(sl)], sl, na.rm = TRUE)
 
   bare.grs = lapply(grs, function(x) gr.fix(x[,c()], sl.new))
-  out = tryCatch(do.call('c', bare.grs), error = function(e) NULL)
+  ##out = tryCatch(do.call('c', bare.grs), error = function(e) NULL) ## this is annoyingly not working
+  out <- rbindlist(lapply(bare.grs, gr2dt))  
 
   # if (is.null(out) | is.list(out)) ## something failed with concatenation, likely some weird ghost with concatenating GRanges with 'c', below is a temp fix
   #     {
@@ -1115,7 +1117,7 @@ gr.val = function(query, target,
                   ##ignore.strand = TRUE,
                   default.val = NA,
                   max.slice = Inf, 
-                  ##mc.cores = 1,  ## is slicing how many cores to split across
+                  mc.cores = 1,  ## is slicing how many cores to split across
                   ...,
                   sep = ', ' 
 )
