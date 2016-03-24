@@ -529,7 +529,7 @@ grbind = function(x, ...)
   #       force.rrbind = grs[['force.rrbind']]
   #     grs = grs[-match('force.rrbind', names(grs))]
   #   }
-
+browser()
   #grs = list(...);  # gets list of gr's
   keep = sapply(grs, length)>0 & sapply(grs, function(x) inherits(x, 'GRanges'))
   grs = grs[keep]
