@@ -566,6 +566,7 @@ grbind = function(x, ...)
     sl.new[names(sl)] = pmax(sl.new[names(sl)], sl, na.rm = TRUE)
 
   bare.grs = lapply(grs, function(x) gr.fix(x[,c()], sl.new))
+
   ##out = tryCatch(do.call('c', bare.grs), error = function(e) NULL) ## this is annoyingly not working
   out <- dt2gr(rbindlist(lapply(bare.grs, gr2dt)))
 
