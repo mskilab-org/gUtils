@@ -1135,7 +1135,7 @@ gr.val = function(query, target,
     return(do.call('grbind', mclapply(ix.l, function(ix) {
       if (verbose)
         cat(sprintf('Processing %s to %s of %s\n', min(ix), max(ix), length(query)))
-      gr.val(query[ix, ], target = target, val= val, mean = mean, weighted = weighted, na.rm = na.rm, verbose = TRUE, by = by, FUN = FUN, merge = merge, ignore.strand = ignore.strand, ...)
+      gr.val(query[ix, ], target = target, val= val, mean = mean, weighted = weighted, na.rm = na.rm, verbose = TRUE, by = by, FUN = FUN, merge = merge, ...)
     }, mc.cores = mc.cores)))
   }
 
