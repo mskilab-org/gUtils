@@ -6,7 +6,7 @@
 \usage{
 gr.findoverlaps(query, subject, ignore.strand = TRUE, first = FALSE,
   qcol = NULL, scol = NULL, type = "any", by = NULL,
-  return.type = "same", max.chunk = 10000000000000, verbose = FALSE,
+  return.type = "same", max.chunk = 1e+13, verbose = FALSE,
   mc.cores = 1, ...)
 }
 \arguments{
