@@ -24,13 +24,19 @@ gr.val(query, target, val = NULL, mean = TRUE, weighted = mean,
 
 \item{by}{scalar character, specifies additional "by" column of query AND target that will be used to match up query and target pairs (i.e. in addition to pure GRanges overlap), default is NULL}
 
+\item{by.prefix}{Choose a set of \code{val} fields by a shared prefix.}
+
 \item{merge}{if merge = FALSE then will cross every range in query with every level of "by" in target (and create data matrix), otherwise will assume query has "by" and merge only ranges that have matching "by" values in both query and target}
 
 \item{verbose}{Increase the verbosity of the output}
 
 \item{FUN}{Optional different function to call than mean. Takes two arguments (value, na.rm = TRUE) if weighted = FALSE, and three (value, width, na.rm = TRUE) if weighted = TRUE}
 
+\item{default.val}{If no hit in \code{target} found in \code{query}, fill output \code{val} field with this value.}
+
 \item{max.slice}{Maximum number of query ranges to consider in one memory chunk. \code{[Inf]}}
+
+\item{mc.cores}{Number of cores to use when running in chunked mode}
 
 \item{...}{Additional arguments to be sent to \code{\link{gr.findoverlaps}}.}
 

@@ -21,6 +21,6 @@ gr.string(gr, add.chr = FALSE, mb = FALSE, round = 3, other.cols = c())
 Return UCSC style interval string corresponding to \code{GRanges} pile (ie chr:start-end)
 }
 \examples{
-gr.string(gr.genes, other.cols = c("name", "name2"))
+gr.string(example_genes, other.cols = c("name", "name2"))
 }
 

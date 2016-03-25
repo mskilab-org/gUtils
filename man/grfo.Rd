@@ -24,7 +24,7 @@ Example usage: \cr
 x %*% y
 }
 \examples{
-gr.genes \%*\% gr.DNAase
+example_genes \%*\% example_dnase
 }
 \author{
 Marcin Imielinski

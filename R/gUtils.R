@@ -2,15 +2,16 @@
 #'
 #' DNAaseI hypersensitivity sites from UCSC Table Browser hg19,
 #' subsampled to 10,000 sites
-#' @name gr.DNAase
+#' @name example_dnase
 #' @docType data
 #' @keywords data
 #' @format \code{GRanges}
 NULL
 
-#' RefSeq genes from UCSC Table Browser hg19, subsampled to 10,000 genes
+#' RefSeq genes for hg19
 #'
-#' @name gr.genes
+#' RefSeq genes with exon count and name
+#' @name example_genes
 #' @docType data
 #' @keywords data
 #' @format \code{GRanges}
@@ -40,6 +41,37 @@ NULL
 #' @format \code{Seqinfo}
 NULL
 
+#' Output standard human genome seqlengths
+#'
+#' Outputs a standard seqlengths for human genome +/- "chr". 
+#' @note A default genome can be set with the environment variable DEFAULT_BSGENOME. This
+#' must include the full namespace of the genome as well, e.g.: \code{DEFAULT_BSGENOME=BSgenome.Hsapiens.UCSC.hg19::Hsapiens}
+#' @param genome A \code{BSgenome} or object with a \code{seqlengths} accessor. Default is hg19, but loads with warning unless explicitly provided
+#' @param chr Flag for whether to keep "chr". Default FALSE
+#' @param include.junk Flag for whether to not trim to only 1-22, X, Y, M. Default FALSE
+#' @return Named integer vector with elements corresponding to the genome seqlengths
+#' @export
+hg_seqlengths = function(genome = NULL, chr = FALSE, include.junk = FALSE)
+{
+  
+  if (is.null(genome)) {
+    if (nchar(dbs <- Sys.getenv("DEFAULT_BSGENOME")) == 0)
+      stop("hg_seqlengths: supply genome or set default with env variable DEFAULT_BSGENOME (e.g. BSgenome.Hsapiens.UCSC.hg19::Hsapiens)")
+    genome = eval(parse(text=dbs))
+    print(paste("hg_seqlengths: using default genome --", dbs))
+  }
+    
+  sl = seqlengths(genome)
+  
+  if (!include.junk)
+    sl = sl[c(paste('chr', 1:22, sep = ''), 'chrX', 'chrY', 'chrM')]
+  
+  if (!chr)
+    names(sl) = gsub('chr', '', names(sl))
+  
+  return(sl)          
+}
+
 #' HiC data for chr14 from Lieberman-Aiden 2009 (in hg19), subsampled
 #' to 10,000 interactions
 #'
@@ -58,7 +90,7 @@ NULL
 #' @param gr \code{GRanges} pile to convert to \code{data.table}
 #' @return \code{data.table} with seqnames, start, end, width, strand and all of the meta data. Width is end-inclusive (e.g. [6,7] width = 2)
 #' @examples
-#' gr2dt(gr.genes)
+#' gr2dt(example_genes)
 #' @export
 gr2dt <- function(gr)
 {
@@ -79,8 +111,8 @@ gr2dt <- function(gr)
 #' @return \code{GRanges} object of width 1 ranges representing start of each genomic range in the input.
 #' @importFrom GenomicRanges GRanges
 #' @examples
-#' gr.start(gr.DNAase, width=200)
-#' gr.start(gr.DNAase, width=200, clip=TRUE)
+#' gr.start(example_dnase, width=200)
+#' gr.start(example_dnase, width=200, clip=TRUE)
 #' @export
 gr.start <- function(x, width = 1, force = FALSE, ignore.strand = TRUE, clip = FALSE)
 {
@@ -190,7 +222,7 @@ dt2gr <- function(dt) {
 #' @param ignore.strand If set to \code{FALSE}, will extend '-' strands from the other direction. \code{[TRUE]}
 #' @return \code{GRanges} object of width = \code{width} ranges representing end of each genomic range in the input.
 #' @examples
-#' gr.end(gr.DNAase, width=200, clip=TRUE)
+#' gr.end(example_dnase, width=200, clip=TRUE)
 #' @importFrom GenomeInfoDb seqlengths
 #' @importFrom GenomicRanges strand seqnames values<- values
 #' @export
@@ -404,7 +436,7 @@ gr.trim = function(gr, starts=1, ends=1)
 #'
 #' @examples
 #' ## sample 5 \code{GRanges} of length 10 each from territory of RefSeq genes
-#' gr.sample(reduce(gr.genes), k=5, len=10)
+#' gr.sample(reduce(example_genes), k=5, len=10)
 #' @note This is different from \code{GenomicRanges::sample} function, which just samples from a pile of \code{GRanges}
 #' @export
 gr.sample = function(gr, k, len = 100, replace = TRUE)
@@ -452,10 +484,12 @@ gr.sample = function(gr, k, len = 100, replace = TRUE)
         {
           w = floor(width(gr)[i]/len)
           k[i] = min(k[i], w)
-          if (k[i]>0)
+          if (k[i]>0) {
             s = len*sample(w, k[i], replace = FALSE) + gr.df$start[i]
-          else
+          } else {
+            warning("gr.sample: trying to sample range of length > width of supplied GRanges element. Returning NULL for this element.")
             return(NULL)
+          }
         }
         else
           s = seq(gr.df$start[i], gr.df$end[i], len)
@@ -465,6 +499,11 @@ gr.sample = function(gr, k, len = 100, replace = TRUE)
 
       return(data.frame(chr = gr.df$chr[i], start=s, end =s+len-1, strand = as.character(strand(gr)[i]), query.id = i))
     })
+    
+    ## add check that not all widths are zero
+    if (all(sapply(tmp, is.null)))
+      stop("gr.sample: Could not sample any ranges. Check that width of input is greater than request width of output")
+    
     return(gr.fix(seg2gr(do.call('rbind', tmp)), gr))
   }
 }
@@ -511,7 +550,7 @@ si2gr <- function(si, strip.empty = FALSE)
 #' @param ... additional \code{GRanges}
 #' @note Does not fill in the \code{Seqinfo} for the output \code{GRanges}
 #' @return Concatenated \code{GRanges}
-#' grbind(gr.genes, gr.DNAase)
+#' grbind(example_genes, example_dnase)
 #' @export
 grbind = function(x, ...)
 {
@@ -697,7 +736,7 @@ gr.chr = function(gr)
 #' @importFrom GenomicRanges reduce
 #' @examples
 #' streduce(grl.hiC, pad=10)
-#' streduce(gr.genes, pad=1000)
+#' streduce(example_genes, pad=1000)
 #' @export
 streduce = function(gr, pad = 0, sort = TRUE)
 {
@@ -727,7 +766,7 @@ streduce = function(gr, pad = 0, sort = TRUE)
 #' @param other.cols Names of additional \code{mcols} fields to add to the string (seperated by ";")
 #' @name gr.string
 #' @examples
-#' gr.string(gr.genes, other.cols = c("name", "name2"))
+#' gr.string(example_genes, other.cols = c("name", "name2"))
 #' @export
 gr.string = function(gr, add.chr = FALSE, mb = FALSE, round = 3, other.cols = c())
 {
@@ -1102,6 +1141,9 @@ gr.tile.map = function(query, subject, verbose = FALSE)
 #' @param max.slice Maximum number of query ranges to consider in one memory chunk. \code{[Inf]}
 #' @param merge if merge = FALSE then will cross every range in query with every level of "by" in target (and create data matrix), otherwise will assume query has "by" and merge only ranges that have matching "by" values in both query and target
 #' @param verbose Increase the verbosity of the output 
+#' @param mc.cores Number of cores to use when running in chunked mode
+#' @param by.prefix Choose a set of \code{val} fields by a shared prefix.
+#' @param default.val If no hit in \code{target} found in \code{query}, fill output \code{val} field with this value.
 #' @param ... Additional arguments to be sent to \code{\link{gr.findoverlaps}}. 
 #' @return \code{query} with the \code{val} field populated
 #' @export
@@ -1135,7 +1177,7 @@ gr.val = function(query, target,
   {
     verbose = TRUE
     ix.l = split(1:length(query), ceiling(as.numeric((1:length(query)/max.slice))))
-    return(do.call('grbind', mclapply(ix.l, function(ix) {
+    return(do.call('grbind', parallel::mclapply(ix.l, function(ix) {
       if (verbose)
         cat(sprintf('Processing %s to %s of %s\n', min(ix), max(ix), length(query)))
       gr.val(query[ix, ], target = target, val= val, mean = mean, weighted = weighted, na.rm = na.rm, verbose = TRUE, by = by, FUN = FUN, merge = merge, ...)
@@ -1727,7 +1769,7 @@ gr.sub = function(gr, a = c('(^chr)(\\.1$)', 'MT'), b= c('', 'M'))
 #' @param seqlengths seqlengths of output GRanges object
 #' @param seqinfo seqinfo of output GRanges object
 #' @export
-seg2gr = function(segs, key = NULL, seqlengths = NULL, seqinfo = Seqinfo())
+seg2gr = function(segs, seqlengths = NULL, seqinfo = Seqinfo())
 {
   if (is(segs, 'data.table'))
     segs = as.data.frame(segs)
@@ -1783,9 +1825,9 @@ seg2gr = function(segs, key = NULL, seqlengths = NULL, seqinfo = Seqinfo())
     out = gr.fix(out)
 
   values(out) = segs[, setdiff(names(segs), GR.NONO.FIELDS)]
-
-  if (!is.null(key))
-    names(out) = key;
+# 
+#   if (!is.null(key))
+#     names(out) = key;
 
   return(out);
 }
@@ -1975,6 +2017,7 @@ gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE,
   if (is.data.table(subject))
     subject <- dt2gr(subject)
 
+  ss <- seqinfo(query)
   ## chunked operation
   if ((as.numeric(length(query)) * as.numeric(length(subject))) > max.chunk)
   {
@@ -1999,6 +2042,7 @@ gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE,
                                 out = gr.findoverlaps(query[i.chunk], subject[j.chunk],  ignore.strand = ignore.strand, first = first, by = by, qcol = qcol, verbose = verbose, scol = scol, type = type, max.chunk = Inf, ...)
                                 out$query.id = i.chunk[out$query.id]
                                 out$subject.id = j.chunk[out$subject.id]
+                                out <- gr.fix(out, ss)
                                 return(out)
                               }, mc.cores = mc.cores))
 
@@ -2006,8 +2050,12 @@ gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE,
     out <- sort(out[order(out$query.id, out$subject.id)])
 
     convert = FALSE
-    if ((return.type == 'same' & is(query, 'data.table')) | return.type == 'data.table')
+    if ((return.type == 'same' & is(query, 'data.table')) | return.type == 'data.table') {
       out = gr2dt(out)
+    } else {
+      out <- gr.fix(out, ss)
+    }
+
     return(out)
   }
 
@@ -2065,6 +2113,7 @@ gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE,
     if (!is.null(scol))
       values(out.gr) = cbind(values(out.gr), values(subject)[out.gr$subject.id, scol, drop = FALSE])
 
+    out.gr <- gr.fix(out.gr, ss)
     ## sort by position, then sort by query, then subject id
     return(sort(out.gr[order(out.gr$query.id, out.gr$subject.id)]))
   } else { ## return data.table
@@ -2184,7 +2233,7 @@ gr.match = function(query, subject, ...)
 #' @docType methods
 #' @aliases %*%,GRanges-method
 #' @examples
-#' gr.genes %*% gr.DNAase
+#' example_genes %*% example_dnase
 #setGeneric('%*%', function(gr, ...) standardGeneric('%*%'))
 setMethod("%*%", signature(x = "GRanges"), function(x, y) {
   gr = gr.findoverlaps(x, y, qcol = names(values(x)), scol = names(values(y)))
@@ -2205,6 +2254,9 @@ setMethod("%*%", signature(x = "GRanges"), function(x, y) {
 #' @export
 ra.overlaps = function(ra1, ra2, pad = 0, ...)
 {
+  if (any(S4Vectors::elementLengths(ra1) != 2) || any(S4Vectors::elementLengths(ra2) != 2))
+    stop("ra.overlaps: expecting all elements to have length 2")
+  
   bp1 = grl.unlist(ra1) + pad
   bp2 = grl.unlist(ra2) + pad
   h = GenomicRanges::findOverlaps(bp1, bp2, ...) ## was gr.findoverlaps
