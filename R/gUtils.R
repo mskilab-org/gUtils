@@ -313,8 +313,7 @@ gr.mid = function(x)
 #' @importFrom GenomeInfoDb seqinfo seqnames<-
 #' @importFrom GenomicRanges gaps ranges ranges<-
 #' @examples
-#' ## Generate a single random interval of width 10, on "chr" of length 1000
-#' gr.rand(10, Seqinfo("1", 1000))
+#' ## Generate 5 non-overlapping regions of width 10 on hg19
 #' gr.rand(rep(10,5), BSgenome.Hsapiens.UCSC.hg19::Hsapiens)
 #' @export
 gr.rand = function(w, genome)
