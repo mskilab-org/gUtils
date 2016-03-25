@@ -315,9 +315,7 @@ gr.mid = function(x)
 #' @examples
 #' ## Generate a single random interval of width 10, on "chr" of length 1000
 #' gr.rand(10, Seqinfo("1", 1000))
-#' ## Generate 5 non-overlapping regions of width 10 on hg19
-#' library(BSgenome.Hsapiens.UCSC.hg19)
-#' gr.rand(rep(10,5), Hsapiens)
+#' gr.rand(rep(10,5), BSgenome.Hsapiens.UCSC.hg19::Hsapiens)
 #' @export
 gr.rand = function(w, genome)
 {
@@ -516,7 +514,7 @@ gr.sample = function(gr, k, len = 100, replace = TRUE)
 #' @param strip.empty Don't know. \code{[FALSE]}
 #' @return \code{GRanges} representing the range of the input genome
 #' @examples
-#' \dontrun{libary(BSgenome.Hsapiens.UCSC.hg19); si2gr(Hsapiens)}
+#' si2gr(BSgenome.Hsapiens.UCSC.hg19::Hsapiens)
 #' @export
 si2gr <- function(si, strip.empty = FALSE)
 {
@@ -2360,6 +2358,8 @@ gr.simplify = function(gr, field = NULL, include.val = TRUE, split = FALSE, pad 
   return(out)
 }
 
+setGeneric('%Q%', function(x, ...) standardGeneric('%Q%'))
+
 #' @name %Q%
 #' @title query ranges by applying an expression to ranges metadata
 #' @description
@@ -2368,10 +2368,12 @@ gr.simplify = function(gr, field = NULL, include.val = TRUE, split = FALSE, pad 
 #'
 #' @return subset of gr that matches query
 #' @rdname gr.query
-#' @exportMethod %Q%
+#' @docType methods
+#' @aliases %Q%,GRanges-method
+#' @param x \code{GRanges} to match against a query \code{GRanges}
+#' @param y \code{GRanges} with metadata to be queried
 #' @export
 #' @author Marcin Imielinski
-setGeneric('%Q%', function(x, ...) standardGeneric('%Q%'))
 setMethod("%Q%", signature(x = "GRanges"), function(x, y) {
     condition_call  = substitute(y)
     ix = eval(condition_call, as.data.frame(x))

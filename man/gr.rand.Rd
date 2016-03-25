@@ -24,8 +24,6 @@ This function is currently quite slow, needs optimization
 \examples{
 ## Generate a single random interval of width 10, on "chr" of length 1000
 gr.rand(10, Seqinfo("1", 1000))
-## Generate 5 non-overlapping regions of width 10 on hg19
-library(BSgenome.Hsapiens.UCSC.hg19)
-gr.rand(rep(10,5), Hsapiens)
+gr.rand(rep(10,5), BSgenome.Hsapiens.UCSC.hg19::Hsapiens)
 }
 
