@@ -2307,3 +2307,22 @@ gr.simplify = function(gr, field = NULL, include.val = TRUE, split = FALSE, pad 
 
   return(out)
 }
+
+#' @name %Q%
+#' @title query ranges by applying an expression to ranges metadata
+#' @description
+#'
+#' gr %Q% query returns the subsets of gr1 that matches meta data statement in query
+#'
+#' @return subset of gr that matches query
+#' @rdname gr.query
+#' @exportMethod %Q%
+#' @export
+#' @author Marcin Imielinski
+setGeneric('%Q%', function(x, ...) standardGeneric('%Q%'))
+setMethod("%Q%", signature(x = "GRanges"), function(x, y) {
+    condition_call  = substitute(y)
+    ix = eval(condition_call, as.data.frame(x))
+    return(x[ix])
+})
+
