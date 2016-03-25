@@ -30,6 +30,6 @@ This is different from \code{GenomicRanges::sample} function, which just samples
 }
 \examples{
 ## sample 5 \\code{GRanges} of length 10 each from territory of RefSeq genes
-gr.sample(reduce(gr.genes), k=5, len=10)
+gr.sample(reduce(example_genes), k=5, len=10)
 }
 

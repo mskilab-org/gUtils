@@ -5,7 +5,7 @@
 \title{Queries an \code{\link{RleList}} representing genomic data}
 \usage{
 rle.query(subject.rle, query.gr, verbose = FALSE, mc.cores = 1,
-  chunksize = 1e+09)
+  chunksize = 1000000000)
 }
 \arguments{
 \item{subject.rle}{\code{Rle}}

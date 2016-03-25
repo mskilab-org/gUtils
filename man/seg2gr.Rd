@@ -4,7 +4,7 @@
 \alias{seg2gr}
 \title{Convert GRange like data.frames into GRanges}
 \usage{
-seg2gr(segs, key = NULL, seqlengths = NULL, seqinfo = Seqinfo())
+seg2gr(segs, seqlengths = NULL, seqinfo = Seqinfo())
 }
 \arguments{
 \item{segs}{data frame of segments with fields denoting chromosome, start, end, and other metadata (see standardized segs for seg data frame input formats)}

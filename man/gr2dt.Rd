@@ -16,6 +16,6 @@ gr2dt(gr)
 Converts \code{GRanges} to \code{data.table}
 }
 \examples{
-gr2dt(gr.genes)
+gr2dt(example_genes)
 }
 

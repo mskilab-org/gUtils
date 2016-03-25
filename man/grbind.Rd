@@ -13,7 +13,7 @@ grbind(x, ...)
 }
 \value{
 Concatenated \code{GRanges}
-grbind(gr.genes, gr.DNAase)
+grbind(example_genes, example_dnase)
 }
 \description{
 Concatenates \code{GRanges} objects, taking the union of their features if they have non-overlapping features

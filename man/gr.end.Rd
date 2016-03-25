@@ -24,6 +24,6 @@ gr.end(x, width = 1, force = FALSE, ignore.strand = TRUE, clip = TRUE)
 Alternative to \code{GenomicRanges::flank} that will provide end positions *within* intervals
 }
 \examples{
-gr.end(gr.DNAase, width=200, clip=TRUE)
+gr.end(example_dnase, width=200, clip=TRUE)
 }
 
