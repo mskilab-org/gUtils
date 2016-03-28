@@ -2397,4 +2397,3 @@ setMethod("%^%", signature(x = "GRanges"), function(x, y) {
         y = parse.gr(y)
     return(gr.in(x, y))
 })
-
