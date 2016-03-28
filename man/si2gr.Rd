@@ -19,6 +19,6 @@ Creates a genomic ranges from seqinfo object
 ie a pile of ranges spanning the genome
 }
 \examples{
-\dontrun{libary(BSgenome.Hsapiens.UCSC.hg19); si2gr(Hsapiens)}
+si2gr(BSgenome.Hsapiens.UCSC.hg19::Hsapiens)
 }
 
