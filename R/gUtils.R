@@ -2379,3 +2379,22 @@ setMethod("%Q%", signature(x = "GRanges"), function(x, y) {
     return(x[ix])
 })
 
+#' @name %^%
+#' @title gr.in shortcut
+#' @description
+#' Shortcut for gr.in (standard arguments)
+#'
+#' gr1 %^% gr2
+#'
+#' @return logical vector of length gr1 which is TRUE at entry i only if gr1[i] intersects at least one interval in gr2 (strand agnostic)
+#' @rdname gr.in
+#' @exportMethod %^%
+#' @export
+#' @author Marcin Imielinski
+setGeneric('%^%', function(x, ...) standardGeneric('%^%'))
+setMethod("%^%", signature(x = "GRanges"), function(x, y) {
+    if (is.character(y))
+        y = parse.gr(y)
+    return(gr.in(x, y))
+})
+
