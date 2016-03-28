@@ -2397,3 +2397,21 @@ setMethod("%^%", signature(x = "GRanges"), function(x, y) {
         y = parse.gr(y)
     return(gr.in(x, y))
 })
+
+#' @name %$%
+#' @title gr.val shortcut to get mean values of subject "x" meta data fields in query "y" (strand agnostic)
+#' @description
+#' Shortcut for gr.val (using val = names(values(y)))
+#'
+#' gr1 %$% gr2
+#'
+#'
+#' @return gr1 with extra meta data fields populated from gr2
+#' @rdname gr.val
+#' @exportMethod %$%
+#' @export
+#' @author Marcin Imielinski
+setGeneric('%$%', function(x, ...) standardGeneric('%$%'))
+setMethod("%$%", signature(x = "GRanges"), function(x, y) {
+    return(gr.val(x, y, val = names(values(y))))
+})
