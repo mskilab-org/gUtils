@@ -369,3 +369,13 @@ test_that('ra.overlaps', {
   expect_equal(ncol(ro), 2)
   expect_equal(nrow(ra.overlaps(grl2, grl2)), length(grl2))
 })
+
+test_that('%Q% works', {
+    testset <- GRanges(seqnames = Rle(1,c(5)) , ranges = IRanges(1:5 , end = 2000:2004) , strand = Rle(strand(c("+")) , c(5)) , mean = c(1, -2 , -5 , 5 ,6))
+    expect_equal(length(testset %Q% (mean > 0)) , 3)    
+})
+
+test_that('%^% works', {
+    testset <- GRanges(seqnames = Rle(1,c(5)) , ranges = IRanges(1:5 , end = 2000:2004) , strand = Rle(strand(c("+")) , c(5)) , mean = c(1, -2 , -5 , 5 ,6)) 
+    expect_equal(length(testset %^% testset) , 5)
+})
