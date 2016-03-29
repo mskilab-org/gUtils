@@ -1659,7 +1659,7 @@ grl.unlist = function(grl)
   mcols(out)$grl.ix = el
   tmp = rle(el)
 
-  out$grl.iix = as.integer(sapply(tmp$lengths, function(x) 1:x))
+  out$grl.iix = as.integer(unlist(sapply(tmp$lengths, function(x) 1:x)))
   values(out) = BiocGenerics::cbind(values(grl)[out$grl.ix, , drop = FALSE], values(out))
   return(out)
 }
