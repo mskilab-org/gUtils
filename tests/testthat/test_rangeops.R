@@ -7,7 +7,7 @@ gr2 <- GRanges(1, IRanges(c(1,9), c(6,14)), strand=c('+','-'), seqinfo=Seqinfo("
 dt <- data.table(seqnames=1, start=c(2,5,10), end=c(3,8,15))
 
 test_that("hg_seqlengths", {
-  expect_error(hg_seqlengths())
+#  expect_error(hg_seqlengths())
   ee <- structure(names="1", 249250621L)
   expect_identical(hg_seqlengths(Hsapiens)[1],ee)
   expect_equal(names(hg_seqlengths(Hsapiens, chr=TRUE)[1]), "chr1")
@@ -273,6 +273,16 @@ test_that("streduce", {
   gg <- streduce(example_genes, pad=10)
   expect_equal(length(gg), length(reduce(gg)))
 })
+
+test_that("parse.gr", {
+              parse.gr(c('1:1e6-5e6+', '2:2e6-5e6-'))
+          })
+
+test_that("parse.grl", {
+              parse.grl(c('1:1e6-5e6+;5:10-2000', '2:2e6-5e6-;10:100231321-100231399')) 
+              
+})
+
 
 test_that("grl.pivot", {
   gg <- grl.pivot(grl.hiC)

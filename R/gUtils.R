@@ -55,10 +55,16 @@ hg_seqlengths = function(genome = NULL, chr = FALSE, include.junk = FALSE)
 {
   
   if (is.null(genome)) {
-    if (nchar(dbs <- Sys.getenv("DEFAULT_BSGENOME")) == 0)
-      stop("hg_seqlengths: supply genome or set default with env variable DEFAULT_BSGENOME (e.g. BSgenome.Hsapiens.UCSC.hg19::Hsapiens)")
-    genome = eval(parse(text=dbs))
-    print(paste("hg_seqlengths: using default genome --", dbs))
+      if (nchar(dbs <- Sys.getenv("DEFAULT_BSGENOME")) == 0)
+          {
+              warning("hg_seqlengths: supply genome seqlengths or set default with env variable DEFAULT_BSGENOME (e.g. BSgenome.Hsapiens.UCSC.hg19::Hsapiens)")
+               return(NULL)
+          }
+    else
+        {
+            genome = eval(parse(text=dbs))
+            print(paste("hg_seqlengths: using default genome --", dbs))
+        }
   }
     
   sl = seqlengths(genome)
@@ -860,7 +866,6 @@ gr.fix = function(gr, genome = NULL, gname = NULL,  drop = FALSE)
         lens = structure(rep(NA, length(levs)), names = levs)
         lens[seqlevels(genome)] = seqlengths(genome);
         lens[seqlevels(gr)] = pmax(seqlengths(gr), lens[seqlevels(gr)], na.rm = TRUE)
-
       }
     else
       lens = structure(seqlengths(genome), names = seqlevels(genome))
@@ -907,7 +912,7 @@ gr.fix = function(gr, genome = NULL, gname = NULL,  drop = FALSE)
     genome(si) = gname
     gr@seqinfo = si
   }
-
+  
   return(gr)
 }
 
@@ -1425,7 +1430,7 @@ gr.dice = function(gr)
   out = GRanges(sn, IRanges(st, st), strand = str, seqlengths = seqlengths(gr))
   values(out) = values(gr)[ix, ]
 
-  out = S4Vectors::split(out, ix)
+  out = GenomicRanges::split(out, ix)
 
   return(out)
 }
@@ -2056,8 +2061,16 @@ gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE,
     return(out)
   }
 
-  ## perform the actual overlaps
-  h <- GenomicRanges::findOverlaps(query, subject, type = type, ignore.strand = ignore.strand, ...)
+  ## perform the actual overlaps  
+  h <- tryCatch(GenomicRanges::findOverlaps(query, subject, type = type, ignore.strand = ignore.strand, ...), error = function(e) NULL)
+  if (is.null(h)) ## if any seqlengths badness happens overrride
+      {
+          warning('seqlength mismatch .. no worries, just letting you know')
+          query = gr.fix(query, subject)
+          subject = gr.fix(subject, query)
+          h <- GenomicRanges::findOverlaps(query, subject, type = type, ignore.strand = ignore.strand, ...)
+      }
+  
   r <- ranges(h, ranges(query), ranges(subject))
   h.df <- data.table(start = start(r), end = end(r), query.id = queryHits(h),
                      subject.id = subjectHits(h), seqnames = as.character(seqnames(query)[queryHits(h)]))
@@ -2105,10 +2118,10 @@ gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE,
     out.gr <- dt2gr(h.df)
 
     if (!is.null(qcol))
-      values(out.gr) = cbind(values(out.gr), values(query)[out.gr$query.id, qcol, drop = FALSE])
+      values(out.gr) = cbind(as.data.frame(values(out.gr)), as.data.frame(values(query)[out.gr$query.id, qcol, drop = FALSE]))
 
     if (!is.null(scol))
-      values(out.gr) = cbind(values(out.gr), values(subject)[out.gr$subject.id, scol, drop = FALSE])
+      values(out.gr) = cbind(as.data.frame(values(out.gr)), as.data.frame(values(subject)[out.gr$subject.id, scol, drop = FALSE]))
 
     out.gr <- gr.fix(out.gr, ss)
     ## sort by position, then sort by query, then subject id
@@ -2388,6 +2401,8 @@ setMethod("%Q%", signature(x = "GRanges"), function(x, y) {
 #'
 #' @return logical vector of length gr1 which is TRUE at entry i only if gr1[i] intersects at least one interval in gr2 (strand agnostic)
 #' @rdname gr.in
+#' @param x  GRanges object
+#' @param ... additional arguments to gr.in
 #' @exportMethod %^%
 #' @export
 #' @author Marcin Imielinski
@@ -2397,6 +2412,7 @@ setMethod("%^%", signature(x = "GRanges"), function(x, y) {
         y = parse.gr(y)
     return(gr.in(x, y))
 })
+
 
 #' @name %$%
 #' @title gr.val shortcut to get mean values of subject "x" meta data fields in query "y" (strand agnostic)
@@ -2408,6 +2424,7 @@ setMethod("%^%", signature(x = "GRanges"), function(x, y) {
 #'
 #' @return gr1 with extra meta data fields populated from gr2
 #' @rdname gr.val
+#' @param x  GRanges object
 #' @exportMethod %$%
 #' @export
 #' @author Marcin Imielinski
@@ -2415,3 +2432,50 @@ setGeneric('%$%', function(x, ...) standardGeneric('%$%'))
 setMethod("%$%", signature(x = "GRanges"), function(x, y) {
     return(gr.val(x, y, val = names(values(y))))
 })
+
+
+#' parse.grl
+#'
+#' quick function to parse \code{GRangesList} from character vector IGV / UCSC style strings of format gr1;gr2;gr3 where each gr is of format chr:start-end[+/-]
+#'
+#' @name parse.grl
+#' @param x  character vector representing a GRangesList with UCSC style coordinates (chr:start-end[+-]) representing a [signed] Granges and  ";" separators within each item of x separating individaul each GRAnges
+#' @param seqlengths   named integer vector representing genome (hg_seqlengths() by default)
+#' @export
+parse.grl = function(x, seqlengths = hg_seqlengths())
+{
+  nm = names(x)
+  tmp = strsplit(x, '[;]')
+  tmp.u = unlist(tmp)
+  tmp.u = gsub('\\,', '', tmp.u)
+  tmp.id = rep(1:length(tmp), sapply(tmp, length))
+  str = gsub('.*([\\+\\-])$','\\1', tmp.u)
+  spl = strsplit(tmp.u, '[\\:\\-\\+]', perl = T)
+  if (any(ix <- sapply(spl, length)!=3))
+    spl[ix] = strsplit(gUtils::gr.string(gUtils::si2gr(seqlengths)[sapply(spl[ix], function(x) x[[1]])], mb = F), '[\\:\\-\\+]', perl = T)
+
+  if (any(ix <- !str %in% c('+', '-')))
+    str[ix] = '*'
+  df = cbind(as.data.frame(matrix(unlist(spl), ncol = 3, byrow = T), stringsAsFactors = F), str)
+  names(df) = c('chr', 'start', 'end', 'strand')
+  df$start = as.numeric(df$start)
+  df$end = as.numeric(df$end)
+  rownames(df) = NULL
+  
+  gr = gUtils::seg2gr(df, seqlengths = seqlengths)[, c()]
+  grl = GenomicRanges::split(gr, tmp.id)
+  names(grl) = nm
+  return(grl)
+}
+
+#' parse.gr
+#'
+#' quick function to parse gr from character vector IGV / UCSC style strings of format gr1;gr2;gr3 wohere each gr is of format chr:start-end[+/-]
+#'
+#' @name parse.gr
+#' @param ... arguments to parse.grl i.e. character strings in UCSC style chr:start-end[+-]
+#' @export
+parse.gr = function(...)
+{
+  return(unlist(parse.grl(...)))
+}
