@@ -52,18 +52,17 @@ NULL
 #' @return Named integer vector with elements corresponding to the genome seqlengths
 #' @export
 hg_seqlengths = function(genome = NULL, chr = FALSE, include.junk = FALSE)
-{
-  
+{  
   if (is.null(genome)) {
       if (nchar(dbs <- Sys.getenv("DEFAULT_BSGENOME")) == 0)
           {
-              warning("hg_seqlengths: supply genome seqlengths or set default with env variable DEFAULT_BSGENOME (e.g. BSgenome.Hsapiens.UCSC.hg19::Hsapiens)")
-               return(NULL)
+              warning('hg_seqlengths: supply genome seqlengths or set default with env variable DEFAULT_BSGENOME (e.g. Sys.getenv(DEFAULT_BSGENOME = "BSgenome.Hsapiens.UCSC.hg19::Hsapiens")')
+              return(NULL)
           }
     else
         {
             genome = eval(parse(text=dbs))
-            print(paste("hg_seqlengths: using default genome --", dbs))
+            warning(paste("using default genome:", dbs))
         }
   }
     
@@ -1808,15 +1807,15 @@ seg2gr = function(segs, seqlengths = NULL, seqinfo = Seqinfo())
 
   if (length(seqlengths)>0)
   {
-    # if (length(wtf  <- setdiff(segs$chr, names(seqlengths))))
-    # {
-    #   warning('some seqnames in seg object were not included in provided seqlengths: ', paste(wtf, collapse = ','))
-    #   seqlengths[as.character(wtf)] = NA
-    # }
-    # segs$pos1 <- as.numeric(segs$pos1)
-    # segs$pos2 <- as.numeric(segs$pos2)
-    #
-    # out = GRanges(seqnames = segs$chr, ranges = IRanges(segs$pos1, segs$pos2), names = levels(levels), strand = segs$strand, seqlengths = seqlengths)
+    if (length(wtf  <- setdiff(segs$chr, names(seqlengths))))
+    {
+      warning('some seqnames in seg object were not included in provided seqlengths: ', paste(wtf, collapse = ','))
+      seqlengths[as.character(wtf)] = NA
+    }
+    segs$pos1 <- as.numeric(segs$pos1)
+    segs$pos2 <- as.numeric(segs$pos2)
+    
+    out = GRanges(seqnames = segs$chr, ranges = IRanges(segs$pos1, segs$pos2), names = levels(levels), strand = segs$strand, seqlengths = seqlengths)
   }
   else
     out = GRanges(seqnames = as.character(segs$chr), ranges = IRanges(segs$pos1, segs$pos2), names = levels(levels), strand = segs$strand)
@@ -2317,6 +2316,145 @@ ra.overlaps = function(ra1, ra2, pad = 0, ...)
   #   return(ro)
   # }
 }
+
+#' Merges rearrangements represented by \code{GRangesList} objects
+#'
+#' Determines overlaps between two or more piles of rearrangement junctions (as named or numbered arguments) +/- padding
+#' and will merge those that overlap into single junctions in the output, and then keep track for each output junction which
+#' of the input junctions it was "seen in" using logical flag  meta data fields prefixed by "seen.by." and then the argument name
+#' (or "seen.by.ra" and the argument number)
+#'
+#' @param ... GRangesList representing rearrangements to be merged 
+#' @param pad non-negative integer specifying padding
+#' @param ind  logical flag (default FALSE) specifying whether the "seen.by" fields should contain indices of inputs (rather than logical flags) and NA if the given junction is missing
+#' @param ignore.strand whether to ignore strand (implies all strand information will be ignored, use at your own risk)
+#' @return \code{GRangesList} of merged junctions with meta data fields specifying which of the inputs each outputted junction was "seen.by"
+#' @name ra.merge
+#' @examples
+#'
+#' # generate some junctions
+#' ra1 = split(GRanges(1, IRanges(1:10, width = 1), strand = rep(c('+', '-'), 5)), rep(1:5, each = 2)) 
+#' ra2 = split(GRanges(1, IRanges(4 + 1:10, width = 1), strand = rep(c('+', '-'), 5)), rep(1:5, each = 2))
+#'
+#' ram = ra.merge(ra1, ra2)
+#' values(ram) # shows the metadata with TRUE / FALSE flags
+#' 
+#' ram2 = ra.merge(ra1, ra2, pad = 5) # more inexact matching results in more merging
+#' values(ram2)
+#' 
+#' ram3 = ra.merge(ra1, ra2, ind = TRUE) #indices instead of flags
+#' values(ram3)
+#' @export
+ra.merge = function(..., pad = 0, ind = FALSE, ignore.strand = FALSE)
+    {
+        ## hey why not
+        .rrbind2 = function(..., union = T, as.data.table = FALSE)
+            {
+                dfs = list(...);  # gets list of data frames
+                dfs = dfs[!sapply(dfs, is.null)]
+                dfs = dfs[sapply(dfs, ncol)>0]
+                names.list = lapply(dfs, names);
+                cols = unique(unlist(names.list));
+                unshared = lapply(names.list, function(x) setdiff(cols, x));
+                ix = which(sapply(dfs, nrow)>0)
+                ## only call expanded dfs if needed
+                if (any(sapply(unshared, length) != 0))
+                    expanded.dts <- lapply(ix, function(x) {
+                                               tmp = dfs[[x]]
+                                               if (is.data.table(dfs[[x]]))
+                                                   tmp = as.data.frame(tmp)
+                                               tmp[, unshared[[x]]] = NA;
+                                               return(as.data.table(as.data.frame(tmp[, cols])))
+                                           })
+                else
+                    expanded.dts <- lapply(dfs, function(x) as.data.table(as.data.frame(x)))
+
+                ## convert data frames (or DataFrame) to data table.
+                ## need to convert DataFrame to data.frmae for data.table(...) call.
+                ## structure call is way faster than data.table(as.data.frame(...))
+                ## and works on data.frame and DataFrame
+                                        #    dts <- lapply(expanded.dfs, function(x) structure(as.list(x), class='data.table'))
+                                        #   rout <- data.frame(rbindlist(dts))
+
+                rout <- rbindlist(expanded.dts)
+                if (!as.data.table)
+                    rout = as.data.frame(rout)
+
+                if (!union)
+                    {
+                        shared = setdiff(cols, unique(unlist(unshared)))
+                        rout = rout[, shared];
+                    }
+
+                return(rout)
+            }
+        
+        ra = list(...)
+        nm = names(ra)
+        if (is.null(nm))
+            nm = paste('ra', 1:length(ra), sep = '')
+        nm = paste('seen.by', nm, sep = '.')
+        if (length(nm)==0)
+            return(NULL)
+        out = ra[[1]]
+        values(out) = cbind(as.data.frame(matrix(FALSE, nrow = length(out), ncol = length(nm), dimnames = list(NULL, nm))), values(out))
+
+
+        if (!ind)
+            values(out)[, nm[1]] = TRUE
+        else
+            values(out)[, nm[1]] = 1:length(out)
+            
+        if (length(ra)>1)
+            {
+                for (i in 2:length(ra))
+                    {
+                        this.ra = ra[[i]]
+                        if (length(this.ra)>0)
+                            {
+                                values(this.ra) = cbind(as.data.frame(matrix(FALSE, nrow = length(this.ra), ncol = length(nm), dimnames = list(NULL, nm))), values(this.ra))
+                                ovix = ra.overlaps(out, this.ra, pad = pad, ignore.strand = ignore.strand)
+
+                                if (!ind)
+                                    values(this.ra)[[nm[i]]] = TRUE
+                                else
+                                    values(this.ra)[[nm[i]]] = 1:length(this.ra)
+
+                                if (!ind)
+                                    {
+                                        if (!all(is.na(ovix)))
+                                            values(out)[, nm[i]][ovix[,1]] = TRUE
+                                    }
+                                else
+                                    {
+                                        values(out)[, nm[i]] = NA
+                                        if (!all(is.na(ovix)))
+                                            values(out)[, nm[i]][ovix[,1]] = ovix[,1]
+                                    }
+                                
+                                if (!all(is.na(ovix))) ## which are new ranges not already present in out, we will add these 
+                                    nix = setdiff(1:length(this.ra), ovix[,2])
+                                else
+                                    nix = 1:length(this.ra)
+                                
+                                if (length(nix)>0)
+                                    {
+                                        val1 = values(out)
+                                        val2 = values(this.ra)
+                                        if (ind)
+                                            val2[, nm[1:(i-1)]] = NA
+                                        else
+                                            val2[, nm[1:(i-1)]] = FALSE                                        
+                                        values(out) = NULL                                        
+                                        values(this.ra) = NULL
+                                        out = grlbind(out, this.ra[nix])
+                                        values(out) = .rrbind2(val1, val2[nix, ])
+                                    }
+                            }
+                    }
+            }
+        return(out)
+    }
 
 #' Simplify granges by collapsing all non-overlapping adjacent ranges that share a given "field" value
 #' (adjacent == adjacent in the input GRanges object)
