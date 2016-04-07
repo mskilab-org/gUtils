@@ -2674,46 +2674,59 @@ ra.merge = function(..., pad = 0, ind = FALSE, ignore.strand = FALSE)
 #' @param pad Pad ranges by this amount before doing merge. [1], which merges contiguous but non-overlapping ranges.
 #' @return Simplified GRanges with "field" populated with uniquely contiguous values
 #' @export
-gr.simplify = function(gr, field = NULL, include.val = TRUE, split = FALSE, pad = 1)
-{
-  tmp = as.logical(suppressWarnings(width(IRanges::pintersect(ranges(gr[-length(gr)]), ranges(gr[-1]+pad), resolve.empty = 'max.start'))>0) &
-                     seqnames(gr[-length(gr)]) == seqnames(gr[-1]) & strand(gr[-length(gr)]) == strand(gr[-1]))
+#'
+#' 
+#' Simplify granges by collapsing all non-overlapping adjacent ranges that share a given "field" value
+#' (adjacent == adjacent in the input GRanges object)
+#'
+#' @param gr takes in gr or grl
+#' @param field character scalar, corresponding to value field of gr
+#' @param val Default NULL
+#' @param include.val scalar logical, will include in out gr values field of first matching record in input gr
+#' @param split Default FALSE
+#' @param pad Default 1
+#' @return Simplified GRanges with "field" populated with uniquely contiguous values
+#' @export
+gr.simplify = function(gr, field = NULL, val = NULL, include.val = TRUE, split = FALSE, pad = 1)
+  {
+    tmp = as.logical(suppressWarnings(width(pintersect(ranges(gr[-length(gr)]), ranges(gr[-1]+pad), resolve.empty = 'max.start'))>0) &
+      seqnames(gr[-length(gr)]) == seqnames(gr[-1]) & strand(gr[-length(gr)]) == strand(gr[-1]))
+    
+    tmp = as.vector(c(0, cumsum(!tmp)))
+    
+    if (!is.null(field))      
+      tmp = paste(tmp, values(gr)[, field])
 
-  tmp = as.vector(c(0, cumsum(!tmp)))
+    if (!is.null(val))
+      tmp = paste(tmp, val)
+    
+    r = rle(tmp)
+    
+    lix = unlist(lapply(1:length(r$lengths), function(x) rep(x, r$lengths[x])))
+    sn.gr = split(as.character(seqnames(gr)), lix)
+    st.gr = split(start(gr), lix)
+    en.gr = split(end(gr), lix)
+    str.gr = split(as.character(strand(gr)), lix)
 
-  if (!is.null(field))
-    tmp = paste(tmp, values(gr)[, field])
+    st.gr.min = sapply(st.gr, min)
+    en.gr.max = sapply(en.gr, max)
+    
+    out = GRanges(sapply(sn.gr, function(x) x[1]), IRanges(st.gr.min, en.gr.max),
+            strand = sapply(str.gr, function(x) x[1]), seqinfo = seqinfo(gr))
 
-  # if (!is.null(val))
-  #   tmp = paste(tmp, val)
-
-  r = base::rle(tmp)
-
-  lix = unlist(lapply(1:length(r$lengths), function(x) rep(x, r$lengths[x])))
-  sn.gr = split(as.character(seqnames(gr)), lix)
-  st.gr = split(start(gr), lix)
-  en.gr = split(end(gr), lix)
-  str.gr = split(as.character(strand(gr)), lix)
-
-  st.gr.min = sapply(st.gr, min)
-  en.gr.max = sapply(en.gr, max)
-
-  out = GRanges(sapply(sn.gr, function(x) x[1]), IRanges(st.gr.min, en.gr.max),
-                strand = sapply(str.gr, function(x) x[1]), seqinfo = seqinfo(gr))
-
-  ix = match(1:length(out), lix)
-
-  if (include.val)
-    values(out) = values(gr)[ix, ]
-
-  if (split)
-    if (!is.null(field))
-      out = split(out, values(gr)[ix, field])
-  else
-    out = GRangesList(out)
-
-  return(out)
-}
+    ix = match(1:length(out), lix)
+    
+    if (include.val)
+      values(out) = values(gr)[ix, ]
+        
+    if (split)
+      if (!is.null(field))
+        out = split(out, values(gr)[ix, field])
+      else
+        out = GRangesList(out)
+            
+    return(out)
+  }  
 
 setGeneric('%Q%', function(x, ...) standardGeneric('%Q%'))
 
