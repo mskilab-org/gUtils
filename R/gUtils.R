@@ -2674,19 +2674,6 @@ ra.merge = function(..., pad = 0, ind = FALSE, ignore.strand = FALSE)
 #' @param pad Pad ranges by this amount before doing merge. [1], which merges contiguous but non-overlapping ranges.
 #' @return Simplified GRanges with "field" populated with uniquely contiguous values
 #' @export
-#'
-#' 
-#' Simplify granges by collapsing all non-overlapping adjacent ranges that share a given "field" value
-#' (adjacent == adjacent in the input GRanges object)
-#'
-#' @param gr takes in gr or grl
-#' @param field character scalar, corresponding to value field of gr
-#' @param val Default NULL
-#' @param include.val scalar logical, will include in out gr values field of first matching record in input gr
-#' @param split Default FALSE
-#' @param pad Default 1
-#' @return Simplified GRanges with "field" populated with uniquely contiguous values
-#' @export
 gr.simplify = function(gr, field = NULL, val = NULL, include.val = TRUE, split = FALSE, pad = 1)
   {
     tmp = as.logical(suppressWarnings(width(pintersect(ranges(gr[-length(gr)]), ranges(gr[-1]+pad), resolve.empty = 'max.start'))>0) &
