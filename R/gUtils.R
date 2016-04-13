@@ -56,7 +56,7 @@ hg_seqlengths = function(genome = NULL, chr = FALSE, include.junk = FALSE)
   if (is.null(genome)) {
       if (nchar(dbs <- Sys.getenv("DEFAULT_BSGENOME")) == 0)
           {
-              warning('hg_seqlengths: supply genome seqlengths or set default with env variable DEFAULT_BSGENOME (e.g. Sys.getenv(DEFAULT_BSGENOME = "BSgenome.Hsapiens.UCSC.hg19::Hsapiens")')
+              warning('hg_seqlengths: supply genome seqlengths or set default with env variable DEFAULT_BSGENOME (e.g. Sys.setenv(DEFAULT_BSGENOME = "BSgenome.Hsapiens.UCSC.hg19::Hsapiens")')
               return(NULL)
           }
     else
