@@ -1821,10 +1821,12 @@ seg2gr = function(segs, seqlengths = NULL, seqinfo = Seqinfo())
     segs$strand = "*"
 
   if (any(ix <- !(segs$strand %in% c('+', '-', '*'))))
-    segs$strand[ix] = "*"
+      segs$strand[ix] = "*"
 
+        browser()
   if (length(seqlengths)>0)
-  {
+      {
+
     if (length(wtf  <- setdiff(segs$chr, names(seqlengths))))
     {
       warning('some seqnames in seg object were not included in provided seqlengths: ', paste(wtf, collapse = ','))
@@ -2803,17 +2805,22 @@ parse.grl = function(x, seqlengths = hg_seqlengths())
   tmp.id = rep(1:length(tmp), sapply(tmp, length))
   str = gsub('.*([\\+\\-])$','\\1', tmp.u)
   spl = strsplit(tmp.u, '[\\:\\-\\+]', perl = T)
+  
   if (any(ix <- sapply(spl, length)!=3))
-    spl[ix] = strsplit(gUtils::gr.string(gUtils::si2gr(seqlengths)[sapply(spl[ix], function(x) x[[1]])], mb = F), '[\\:\\-\\+]', perl = T)
+      {
+          if (is.null(seqlengths))
+              stop('Need to define genome boundaries to use chromosome only coordinate strings')
+          spl[ix] = strsplit(gUtils::gr.string(gUtils::si2gr(seqlengths)[sapply(spl[ix], function(x) x[[1]])], mb = F), '[\\:\\-\\+]', perl = T)
+      }
 
   if (any(ix <- !str %in% c('+', '-')))
-    str[ix] = '*'
+      str[ix] = '*'
   df = cbind(as.data.frame(matrix(unlist(spl), ncol = 3, byrow = T), stringsAsFactors = F), str)
   names(df) = c('chr', 'start', 'end', 'strand')
   df$start = as.numeric(df$start)
   df$end = as.numeric(df$end)
   rownames(df) = NULL
-  
+
   gr = gUtils::seg2gr(df, seqlengths = seqlengths)[, c()]
   grl = GenomicRanges::split(gr, tmp.id)
   names(grl) = nm
