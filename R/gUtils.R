@@ -1657,8 +1657,15 @@ grl.in <- function(grl, windows, some = FALSE, only = FALSE, logical = FALSE, ..
 grl.unlist = function(grl)
 {
   if (length(grl) == 0) ## JEREMIAH
-    return(GRanges())
+      return(GRanges())
 
+  if (is(grl, 'GRanges')) 
+      {
+          grl$grl.ix = 1
+          grl$grl.iix = 1:length(grl)
+          return(grl)
+      }
+  
   names(grl) = NULL
   as.df = as.data.frame(grl)
 
