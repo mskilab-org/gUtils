@@ -1823,7 +1823,6 @@ seg2gr = function(segs, seqlengths = NULL, seqinfo = Seqinfo())
   if (any(ix <- !(segs$strand %in% c('+', '-', '*'))))
       segs$strand[ix] = "*"
 
-        browser()
   if (length(seqlengths)>0)
       {
 
