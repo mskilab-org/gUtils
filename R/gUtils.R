@@ -1859,7 +1859,23 @@ seg2gr = function(segs, seqlengths = NULL, seqinfo = Seqinfo())
 #' Takes and returns segs data frame standardized to a single format (ie $chr, $pos1, $pos2)
 #'
 #' if chr = TRUE will ensure "chr" prefix is added to chromossome(if does not exist)
-#' @keywords internal
+#'
+#' @export
+#'
+#' @name seg2gr
+#' @title Convert GRange like data.frames into GRanges
+#' @description
+#'
+#' Take data frame of ranges "segs" and converts into granges object porting over additional value columns
+#' "segs" data frame can obey any number of conventions to specify chrom, start, and end of ranges
+#' (eg $pos1, $pos2, $Start_position, $End_position) --> see "standardize_segs" for more info
+#'
+#' @importFrom GenomicRanges
+#'    GRanges
+#' @param segs data frame of segments with fields denoting chromosome, start, end, and other metadata (see standardized segs for seg data frame input formats)
+#' @param seqlengths seqlengths of output GRanges object
+#' @param seqinfo seqinfo of output GRanges object
+#' @export
 standardize_segs = function(seg, chr = FALSE)
 {
   #if (inherits(seg, 'IRangesList'))
