@@ -833,7 +833,7 @@ grl.string = function(grl, mb= FALSE, sep = ',', ...)
 
 #' "Fixes" \code{seqlengths} / \code{seqlevels}
 #'
-#' If "genome" not specified will replace \code{NA} \code{seqlengths} in \code{GRanges} to reflect largest coordinate per \code{seqlevel}
+#' If "genome" not specified will replace \code{NA} \code{seqlengths} in GRanges to reflect largest coordinate per \code{seqlevel}
 #' and removes all \code{NA seqlevels} after this fix.
 #'
 #' if "genome" defined (i.e. as \code{Seqinfo} object, or a \code{BSgenome}, \code{GRanges}, \code{GRangesList} object with populated \code{seqlengths}),
