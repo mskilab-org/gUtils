@@ -2400,12 +2400,12 @@ setMethod("%Q%", signature(x = "GRanges"), function(x, y) {
 #' gr1 %^% gr2
 #'
 #' @return logical vector of length gr1 which is TRUE at entry i only if gr1[i] intersects at least one interval in gr2 (strand agnostic)
-#' @rdname gr.in
-#' @param x  GRanges object
+#' @rdname gr.in-shortcut
+#' @param x \code{GRanges} object
 #' @param ... additional arguments to gr.in
-#' @exportMethod %^%
 #' @export
-#' @author Marcin Imielinski
+#' @docType methods
+#' @aliases %^%,GRanges-method
 setGeneric('%^%', function(x, ...) standardGeneric('%^%'))
 setMethod("%^%", signature(x = "GRanges"), function(x, y) {
     if (is.character(y))
@@ -2421,12 +2421,10 @@ setMethod("%^%", signature(x = "GRanges"), function(x, y) {
 #'
 #' gr1 %$% gr2
 #'
-#'
 #' @return gr1 with extra meta data fields populated from gr2
-#' @rdname gr.val
-#' @param x  GRanges object
+#' @rdname gr.val-shortcut
+#' @param x \code{GRanges} object
 #' @exportMethod %$%
-#' @export
 #' @author Marcin Imielinski
 setGeneric('%$%', function(x, ...) standardGeneric('%$%'))
 setMethod("%$%", signature(x = "GRanges"), function(x, y) {
