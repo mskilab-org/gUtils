@@ -353,11 +353,6 @@ test_that("gr.tile.map", {
 
 })
 
-test_that('ra.overlaps throws error', {
- ss<- split(example_genes, example_genes$name)
- expect_error(ra.overlaps(ss,ss))
-})
-
 test_that("ra.overlaps handles empty",{
   ## test empty inputs and no overlaps inputs
   expect_equal(ra.overlaps(GRangesList(), grl1)[1], NA)

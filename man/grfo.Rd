@@ -6,7 +6,7 @@
 \alias{\%*\%,GRanges-method}
 \title{Metadata join with coordinates as keys (wrapper to \code{\link{gr.findoverlaps}})}
 \usage{
-\S4method{\%*\%}{GRanges}(x, y)
+\S4method{\%*\%}{GRanges,ANY}(x, y)
 }
 \arguments{
 \item{x}{\code{GRanges}}
