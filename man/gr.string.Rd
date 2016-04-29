@@ -4,7 +4,8 @@
 \alias{gr.string}
 \title{Return UCSC style interval string corresponding to \code{GRanges} pile (ie chr:start-end)}
 \usage{
-gr.string(gr, add.chr = FALSE, mb = FALSE, round = 3, other.cols = c())
+gr.string(gr, add.chr = FALSE, mb = FALSE, round = 3, other.cols = c(),
+  pretty = FALSE)
 }
 \arguments{
 \item{gr}{\code{GRanges} pile to get intervals from}

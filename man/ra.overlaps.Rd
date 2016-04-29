@@ -2,24 +2,31 @@
 % Please edit documentation in R/gUtils.R
 \name{ra.overlaps}
 \alias{ra.overlaps}
-\title{Find overlaps between rearrangements represented by \code{GRangesList} objects}
+\title{ra.overlaps}
 \usage{
-ra.overlaps(ra1, ra2, pad = 0, ...)
+ra.overlaps(ra1, ra2, pad = 0, arr.ind = T, ignore.strand = FALSE, ...)
 }
 \arguments{
-\item{ra1}{\code{GRangesList} of pairs of signed ranges representing a rearrangement set}
+\item{ra1}{\code{GRangesList} with rearrangement set 1}
 
-\item{ra2}{\code{GRangesList} of pairs of signed ranges representing a rearrangement set}
+\item{ra2}{\code{GRangesList} with rearrangement set 2}
 
-\item{pad}{Pad each breakpoint when considering overlaps. \code{[0]}}
+\item{pad}{Amount to pad the overlaps by. Larger is more permissive. Default is exact (0)}
 
-\item{...}{Additional arguments to be sent to \code{\link{findOverlaps}} (e.g. \code{ignore.strand})}
-}
-\value{
-\code{matrix} with the indices of \code{ra1} that overlap with \code{ra2} and vice-versa
+\item{arr.ind}{Default TRUE}
+
+\item{ignore.strand}{Ignore rearrangement orientation when doing overlaps. Default FALSE}
+
+\item{...}{params to be sent to \code{\link{gr.findoverlaps}}}
 }
 \description{
-Determines overlaps between two piles of rearrangement junctions, each \code{GRangesLists} of signed locus pairs,
-against each other. returning a sparseMatrix that is T at entry ij if junction i overlaps junction j.
+Determines overlaps between two piles of rearrangement junctions ra1 and ra2 (each GRangesLists of signed locus pairs)
+against each other, returning a sparseMatrix that is T at entry ij if junction i overlaps junction j.
+}
+\details{
+if argument pad = 0 (default) then only perfect overlap will validate, otherwise if pad>0 is given, then
+padded overlap is allowed
+
+strand matters, though we test overlap of both ra1[i] vs ra2[j] and gr.flip(ra2[j])
 }
 

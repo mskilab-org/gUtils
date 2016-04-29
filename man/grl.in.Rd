@@ -4,7 +4,7 @@
 \alias{grl.in}
 \title{Check intersection of \code{GRangesList} with windows on genome}
 \usage{
-grl.in(grl, windows, some = FALSE, only = FALSE, ...)
+grl.in(grl, windows, some = FALSE, only = FALSE, logical = FALSE, ...)
 }
 \arguments{
 \item{grl}{\code{GRangesList} object to query for membership in \code{windows}}
@@ -14,6 +14,8 @@ grl.in(grl, windows, some = FALSE, only = FALSE, ...)
 \item{some}{Will return \code{TRUE} for \code{GRangesList} elements that intersect at least on window range [FALSE]}
 
 \item{only}{Will return \code{TRUE} for \code{GRangesList} elements only if there are no elements of query that fail to interesect with windows [FALSE]}
+
+\item{logical}{will return logical otherwise will return numeric vector of number of windows overlapping each grl}
 
 \item{...}{Additional parameters to be passed on to \code{GenomicRanges::findOverlaps}}
 }
