@@ -117,6 +117,61 @@ gr2dt <- function(gr)
   return(out)
 }
 
+#' Converts \code{GRanges} to \code{data.table}
+#'
+#' and a field grl.iix which saves the (local) index that that gr was in its corresponding grl item
+#' @param x \code{GRanges} to convert
+#' @name grdt
+#' @export
+grdt = function(x)
+{
+  ## new approach just directly instantiating data table
+  cmd = 'data.frame(';
+  if (is(x, 'GRanges'))
+  {
+    was.gr = TRUE
+    f = c('seqnames', 'start', 'end', 'strand', 'width')
+    f2 = c('as.character(seqnames', 'c(start', 'c(end', 'as.character(strand', 'as.numeric(width')
+    cmd = paste(cmd, paste(f, '=', f2, '(x))', sep = '', collapse = ','), sep = '')
+    value.f = names(values(x))
+  }
+  else
+  {
+    was.gr = FALSE
+    value.f = names(x)
+  }
+  
+  if (length(value.f)>0)
+  {
+    if (was.gr)
+      cmd = paste(cmd, ',', sep = '')
+    class.f = sapply(value.f, function(f) eval(parse(text=sprintf("class(x$'%s')", f))))
+    
+    .StringSetListAsList = function(x) ### why do I need to do this, bioconductor peeps??
+    {
+      tmp1 = as.character(unlist(x))
+      tmp2 = rep(1:length(x), elementLengths(x))
+      return(split(tmp1, tmp2))
+    }
+    
+    ## take care of annoying S4 / DataFrame / data.frame (wish-they-were-non-)issues
+    as.statement = ifelse(grepl('Integer', class.f), 'as.integer',
+                          ifelse(grepl('Character', class.f), 'as.character',
+                                 ifelse(grepl('StringSetList', class.f), '.StringSetListAsList',
+                                        ifelse(grepl('StringSet$', class.f), 'as.character',
+                                               ifelse(grepl('factor$', class.f), 'as.character',
+                                                      ifelse(grepl('List', class.f), 'as.list',
+                                                             ifelse(grepl('factor', class.f), 'as.character',
+                                                                    ifelse(grepl('List', class.f), 'as.list', 'c'))))))))
+    cmd = paste(cmd, paste(value.f, '=', as.statement, "(x$'", value.f, "')", sep = '', collapse = ','), sep = '')
+  }
+  
+  cmd = paste(cmd, ')', sep = '')
+  
+  #      browser()
+  return(as.data.table(eval(parse(text =cmd))))
+}
+
 #' Get GRanges corresponding to beginning of range
 #'
 #' @param x \code{GRanges} object to operate on
@@ -801,7 +856,7 @@ gr.string = function(gr, add.chr = FALSE, mb = FALSE, round = 3, other.cols = c(
             return(paste(sn, ':', round(start(gr)/1e6, round), '-', round(end(gr)/1e6, round), str, other.str, sep = ''))
         else
             if (pretty)
-                return(paste(sn, ':', str_trim(prettyNum(start(gr), big.mark = ',')), '-', str_trim(prettyNum(end(gr), big.mark = ',')), str, other.str, sep = ''))
+                return(paste(sn, ':', stringr::str_trim(prettyNum(start(gr), big.mark = ',')), '-', stringr::str_trim(prettyNum(end(gr), big.mark = ',')), str, other.str, sep = ''))
             else
                 return(paste(sn, ':', start(gr), '-', end(gr), str, other.str, sep = ''))
     }
@@ -2190,7 +2245,7 @@ gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE,
 }
 
 
-#' gr.peaks
+#' Find peaks in a \code{GRanges} over a given meta-data field
 #'
 #' Finds "peaks" in an input GRanges with value field y.
 #' first piles up ranges according to field score (default = 1 for each range)
@@ -2202,7 +2257,7 @@ gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE,
 #' (FUN must take in a single argument and return a scalar)
 #' if id.field is not NULL, AGG.FUN is a second fun to aggregate values from id.field to output interval
 #'
-#' @param gr Granges
+#' @param gr \code{GRanges} with some meta-data field to find peaks on
 #' @param field character field specifying metadata to find peaks on, default "score, can be NULL in which case the count is computed
 #' @param minima logical flag whether to find minima or maxima
 #' @param id.field character denoting field whose values specifyx individual tracks (e.g. samples)
@@ -2226,12 +2281,19 @@ gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE,
 #' ## can quickly find out what genes lie in the top peaks by agggregating back with
 #' ## original example_genes
 #' pk[1:10] %$% example_genes[, 'name']
-#'
-#' 
-gr.peaks = function(gr, field = 'score', minima = F, peel = 0, id.field = NULL, bootstrap = TRUE, na.rm = TRUE, pbootstrap = 0.95, nbootstrap = 1e4, FUN = NULL, AGG.FUN = sum,
-    peel.gr = NULL, ## when peeling will use these segs instead of gr (which can just be a standard granges of scores)
-    score.only = FALSE,
-    verbose = peel>0)
+gr.peaks = function(gr, field = 'score', 
+                    minima = FALSE, 
+                    peel = 0, 
+                    id.field = NULL, 
+                    bootstrap = TRUE, 
+                    na.rm = TRUE, 
+                    pbootstrap = 0.95, 
+                    nbootstrap = 1e4, 
+                    FUN = NULL, 
+                    AGG.FUN = sum,
+      peel.gr = NULL, ## when peeling will use these segs instead of gr (which can just be a standard granges of scores)
+      score.only = FALSE,
+      verbose = peel>0)
 
     {
 
@@ -2292,7 +2354,7 @@ gr.peaks = function(gr, field = 'score', minima = F, peel = 0, id.field = NULL, 
                                 tmp.peak.gr = gr[gr.in(gr, tmp.peak)]
                                 ov = gr.findoverlaps(tmp.peak, tmp.peak.gr)
                                 ed = rbind(ov$query.id, ov$subject.id+length(tmp.peak))[1:(length(ov)*2)]
-                                cl = clusters(graph(ed), 'weak')$membership
+                                cl = igraph::clusters(igraph::graph(ed), 'weak')$membership
                                 tmp = tmp.peak[cl[1:length(tmp.peak)] %in% cl[1]]
                                 peak = GRanges(seqnames(tmp)[1], IRanges(min(start(tmp)), max(end(tmp))))
                                 values(peak)[, field] = values(tmp.peak)[, field][1]
@@ -2352,14 +2414,14 @@ gr.peaks = function(gr, field = 'score', minima = F, peel = 0, id.field = NULL, 
 
         if (!is.null(FUN))
             {
-                agr = disjoin(gr)
+                agr = GenomicRanges::disjoin(gr)
                 values(agr)[, field] = NA
                 tmp.mat = cbind(as.matrix(values(gr.val(agr[, c()], gr, field, weighted = FALSE, verbose = verbose, by = id.field, FUN = FUN, default.val = 0))))
                 values(agr)[, field] = apply(tmp.mat, 1, AGG.FUN)
                 gr = agr
             }
 
-        cov = as(coverage(gr, weight = values(gr)[, field]), 'GRanges')
+        cov = as(GenomicRanges::coverage(gr, weight = values(gr)[, field]), 'GRanges')
 
         if (score.only)
             return(cov)
@@ -2710,12 +2772,11 @@ setMethod("%$$%", signature(x = "GRanges"), function(x, y) {
 #' @param ... params to be sent to \code{\link{gr.findoverlaps}}
 #' @name ra.overlaps
 #' @export
-ra.overlaps = function(ra1, ra2, pad = 0, arr.ind = T, ignore.strand=FALSE, ...)
+ra.overlaps = function(ra1, ra2, pad = 0, arr.ind = TRUE, ignore.strand=FALSE, ...)
     {
         bp1 = grl.unlist(ra1) + pad
         bp2 = grl.unlist(ra2) + pad
         ix = gr.findoverlaps(bp1, bp2, ignore.strand = ignore.strand, ...)
-
 
         .make_matches = function(ix, bp1, bp2)
             {
@@ -2741,7 +2802,7 @@ ra.overlaps = function(ra1, ra2, pad = 0, arr.ind = T, ignore.strand=FALSE, ...)
                 if (arr.ind)
                     return(matrix())
                 else
-                    return(sparseMatrix(length(ra1), length(ra2), x = 0))
+                    return(Matrix::sparseMatrix(length(ra1), length(ra2), x = 0))
             }
 
         rownames(tmp) = NULL
@@ -2754,7 +2815,7 @@ ra.overlaps = function(ra1, ra2, pad = 0, arr.ind = T, ignore.strand=FALSE, ...)
                 ro <- matrix(ro, ncol=2, nrow=1, dimnames=list(c(), c('ra1.ix', 'ra2.ix')))
             return(ro)
         } else {
-            ro <- sparseMatrix(tmp[,1], tmp[,2], x = 1, dims = c(length(ra1), length(ra2)))
+            ro <- Matrix::sparseMatrix(tmp[,1], tmp[,2], x = 1, dims = c(length(ra1), length(ra2)))
             return(ro)
         }
     }
@@ -2912,7 +2973,7 @@ ra.merge = function(..., pad = 0, ind = FALSE, ignore.strand = FALSE)
 #' @export
 gr.simplify = function(gr, field = NULL, val = NULL, include.val = TRUE, split = FALSE, pad = 1)
   {
-    tmp = as.logical(suppressWarnings(width(pintersect(ranges(gr[-length(gr)]), ranges(gr[-1]+pad), resolve.empty = 'max.start'))>0) &
+    tmp = as.logical(suppressWarnings(width(GenomicRanges::pintersect(ranges(gr[-length(gr)]), ranges(gr[-1]+pad), resolve.empty = 'max.start'))>0) &
       seqnames(gr[-length(gr)]) == seqnames(gr[-1]) & strand(gr[-length(gr)]) == strand(gr[-1]))
     
     tmp = as.vector(c(0, cumsum(!tmp)))
@@ -2981,12 +3042,12 @@ setMethod("%Q%", signature(x = "GRanges"), function(x, y) {
 #' gr1 %^% gr2
 #'
 #' @return logical vector of length gr1 which is TRUE at entry i only if gr1[i] intersects at least one interval in gr2 (strand agnostic)
-#' @rdname gr.in
-#' @param x  GRanges object
+#' @rdname gr.in-shortcut
+#' @param x \code{GRanges} object
 #' @param ... additional arguments to gr.in
-#' @exportMethod %^%
 #' @export
-#' @author Marcin Imielinski
+#' @docType methods
+#' @aliases %^%,GRanges-method
 setGeneric('%^%', function(x, ...) standardGeneric('%^%'))
 setMethod("%^%", signature(x = "GRanges"), function(x, y) {
     if (is.character(y))
@@ -3002,12 +3063,10 @@ setMethod("%^%", signature(x = "GRanges"), function(x, y) {
 #'
 #' gr1 %$% gr2
 #'
-#'
 #' @return gr1 with extra meta data fields populated from gr2
-#' @rdname gr.val
-#' @param x  GRanges object
+#' @rdname gr.val-shortcut
+#' @param x \code{GRanges} object
 #' @exportMethod %$%
-#' @export
 #' @author Marcin Imielinski
 setGeneric('%$%', function(x, ...) standardGeneric('%$%'))
 setMethod("%$%", signature(x = "GRanges"), function(x, y) {
