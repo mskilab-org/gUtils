@@ -19,7 +19,7 @@ gr.fix(gr, genome = NULL, gname = NULL, drop = FALSE)
 \code{GRanges} pile with the fixed \code{Seqinfo}
 }
 \description{
-If "genome" not specified will replace \code{NA} \code{seqlengths} in \code{GRanges} to reflect largest coordinate per \code{seqlevel}
+If "genome" not specified will replace \code{NA} \code{seqlengths} in GRanges to reflect largest coordinate per \code{seqlevel}
 and removes all \code{NA seqlevels} after this fix.
 }
 \details{

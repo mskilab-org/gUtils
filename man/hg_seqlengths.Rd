@@ -21,6 +21,6 @@ Outputs a standard seqlengths for human genome +/- "chr".
 }
 \note{
 A default genome can be set with the environment variable DEFAULT_BSGENOME. This
-must include the full namespace of the genome as well, e.g.: \code{DEFAULT_BSGENOME=BSgenome.Hsapiens.UCSC.hg19::Hsapiens}
+can be the full namespace of the genome  e.g.: \code{DEFAULT_BSGENOME=BSgenome.Hsapiens.UCSC.hg19::Hsapiens} OR  a URL / file path pointing to a chrom.sizes text file (e.g. http://genome.ucsc.edu/goldenpath/help/hg19.chrom.sizes) specifying a genome definition
 }
 

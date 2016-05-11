@@ -45,31 +45,42 @@ NULL
 #'
 #' Outputs a standard seqlengths for human genome +/- "chr". 
 #' @note A default genome can be set with the environment variable DEFAULT_BSGENOME. This
-#' must include the full namespace of the genome as well, e.g.: \code{DEFAULT_BSGENOME=BSgenome.Hsapiens.UCSC.hg19::Hsapiens}
+#' can be the full namespace of the genome  e.g.: \code{DEFAULT_BSGENOME=BSgenome.Hsapiens.UCSC.hg19::Hsapiens} OR  a URL / file path pointing to a chrom.sizes text file (e.g. http://genome.ucsc.edu/goldenpath/help/hg19.chrom.sizes) specifying a genome definition
 #' @param genome A \code{BSgenome} or object with a \code{seqlengths} accessor. Default is hg19, but loads with warning unless explicitly provided
 #' @param chr Flag for whether to keep "chr". Default FALSE
 #' @param include.junk Flag for whether to not trim to only 1-22, X, Y, M. Default FALSE
 #' @return Named integer vector with elements corresponding to the genome seqlengths
 #' @export
 hg_seqlengths = function(genome = NULL, chr = FALSE, include.junk = FALSE)
-{  
-  if (is.null(genome)) {
-      if (nchar(dbs <- Sys.getenv("DEFAULT_BSGENOME")) == 0)
-          {
-              warning('hg_seqlengths: supply genome seqlengths or set default with env variable DEFAULT_BSGENOME (e.g. Sys.setenv(DEFAULT_BSGENOME = "BSgenome.Hsapiens.UCSC.hg19::Hsapiens")')
-              return(NULL)
-          }
-    else
-        {
-            genome = eval(parse(text=dbs))
-            warning(paste("using default genome:", dbs))
-        }
-  }
+{
+    sl = NULL
+    if (is.null(genome)) {
+        if (nchar(dbs <- Sys.getenv("DEFAULT_BSGENOME")) == 0)
+            {
+                warning('hg_seqlengths: supply genome seqlengths or set default with env variable DEFAULT_BSGENOME (e.g. Sys.setenv(DEFAULT_BSGENOME = "BSgenome.Hsapiens.UCSC.hg19::Hsapiens").  DEFAULT_BSGENOME can also be set to a path or URL of a tab delimited text *.chrom.sizes file')
+                return(NULL)
+            }
+        else
+            {
+                tmp = tryCatch(read.delim(dbs, header = FALSE), error= function(e) NULL)
+                                                    
+                if (is.null(tmp))
+                    {
+                        genome = tryCatch(eval(parse(text=dbs)), error = function(e) NULL)
+                        if (is.null(genome))
+                            stop(sprintf("Error loading %s as BSGenome library ...\nPlease check DEFAULT_BSGENOME setting and set to either an R library BSGenome object or a valid http URL or filepath pointing to a chrom.sizes tab delimited text file.", dbs))
+                    }
+                else
+                    sl = structure(tmp[,2], names = as.character(tmp[,1]))
+                                        #            warning(paste("using default genome:", dbs))
+            }}                
     
-  sl = seqlengths(genome)
+    if (is.null(sl))
+        sl = seqlengths(genome)
   
   if (!include.junk)
-    sl = sl[c(paste('chr', 1:22, sep = ''), 'chrX', 'chrY', 'chrM')]
+      sl = sl[nchar(names(sl))<=2]
+#    sl = sl[c(paste('chr', 1:22, sep = ''), 'chrX', 'chrY', 'chrM')]
   
   if (!chr)
     names(sl) = gsub('chr', '', names(sl))
@@ -2453,31 +2464,232 @@ gr.match = function(query, subject, ...)
   return(out)
 }
 
-#' @name %*%
-#' @title Metadata join with coordinates as keys (wrapper to \code{\link{gr.findoverlaps}})
+subset2 <- function(x, condition) {
+    condition_call <- substitute(condition)
+    r <- eval(condition_call, x)
+    browser()
+    x[r, ]
+}
+
+#' @name %WW%
+#' @title subset x on y ranges wise obeying strand
 #' @description
-#' Shortcut for gr.findoverlaps with \code{qcol} and \code{scol} filled in with all the query and subject metadata names.
-#' This function is useful for piping \code{GRanges} operations together. Another way to think of %*% is as a
-#' join of the metadata, with genomic coordinates as the keys. \cr
-#' Example usage: \cr
-#' x %*% y
-#' @param x \code{GRanges}
-#' @param y \code{GRanges}
-#' @return \code{GRanges} containing every pairwise intersection of ranges in \code{x} and \code{y} with a join of the corresponding  metadata
-#' @rdname grfo
-#' @exportMethod %*%
+#' shortcut for x[gr.in(x,y, ignore.strand = FALSE)]
+#'
+#' gr1 %WW% gr2 returns the subsets of gr that overlaps gr2 not ignoring strand
+#'
+#' @return subset of gr1 that overlaps gr2
+#' @rdname gr.in
+#' @exportMethod %WW%
 #' @export
-#' @importFrom methods setMethod
 #' @author Marcin Imielinski
-#' @docType methods
-#' @aliases %*%,GRanges-method
-#' @examples
-#' example_genes %*% example_dnase
-#setGeneric('%*%', function(gr, ...) standardGeneric('%*%'))
-setMethod("%*%", signature(x = "GRanges"), function(x, y) {
-  gr = gr.findoverlaps(x, y, qcol = names(values(x)), scol = names(values(y)))
-  return(gr)
+setGeneric('%WW%', function(x, ...) standardGeneric('%WW%'))
+setMethod("%WW%", signature(x = "GRanges"), function(x, y) {
+    if (is.character(y))
+        y = parse.gr(y)
+    return(x[gr.in(x, y, ignore.strand = FALSE)])
 })
+
+
+#' @name %O%
+#' @title gr.val shortcut to get fractional overlap of gr1 by gr2, ignoring strand
+#' @description
+#' Shortcut for gr.val (using val = names(values(y)))
+#'
+#' gr1 %O% gr2
+#'
+#' @return fractional overlap of gr1 with gr2
+#' @rdname gr.val
+#' @exportMethod %O%
+#' @export
+#' @author Marcin Imielinski
+setGeneric('%O%', function(x, ...) standardGeneric('%O%'))
+setMethod("%O%", signature(x = "GRanges"), function(x, y) {
+    ov = grdt(gr.findoverlaps(x, reduce(y)))[ , sum(width), keyby = query.id]
+    x$width.ov = 0
+    x$width.ov[ov$query.id] = ov$V1
+    return(x$width.ov/width(x))
+})
+
+#' @name %OO%
+#' @title gr.val shortcut to get fractional overlap of gr1 by gr2, respecting strand
+#' @description
+#' Shortcut for gr.val (using val = names(values(y)))
+#'
+#' gr1 %OO% gr2
+#'
+#' @return fractional overlap  of gr1 with gr2
+#' @rdname gr.val
+#' @exportMethod %OO%
+#' @export
+#' 
+#' @author Marcin Imielinski
+setGeneric('%OO%', function(x, ...) standardGeneric('%OO%'))
+setMethod("%OO%", signature(x = "GRanges"), function(x, y) {
+    ov = grdt(gr.findoverlaps(x, reduce(y), ignore.strand = FALSE))[ , sum(width), keyby = query.id]
+    x$width.ov = 0
+    x$width.ov[ov$query.id] = ov$V1
+    return(x$width.ov/width(x))
+})
+
+#' @name %o%
+#' @title gr.val shortcut to total per interval width of overlap of gr1 with gr2, ignoring strand
+#' @description
+#' Shortcut for gr.val (using val = names(values(y)))
+#'
+#' gr1 %o% gr2
+#'
+#' @return bases overlap of gr1 with gr2
+#' @rdname gr.val
+#' @exportMethod %o%
+#' @export
+#' @author Marcin Imielinski
+setGeneric('%o%', function(x, ...) standardGeneric('%o%'))
+setMethod("%o%", signature(x = "GRanges"), function(x, y) {
+    ov = grdt(gr.findoverlaps(x, reduce(y)))[ , sum(width), keyby = query.id]
+    x$width.ov = 0
+    x$width.ov[ov$query.id] = ov$V1
+    return(x$width.ov)
+})
+
+
+#' @name %oo%
+#' @title gr.val shortcut to total per interval width of overlap of gr1 with gr2, respecting strand
+#' @description
+#' Shortcut for gr.val (using val = names(values(y)))
+#'
+#' gr1 %oo% gr2
+#'
+#' @return bases overlap  of gr1 with gr2
+#' @rdname gr.val
+#' @exportMethod %oo%
+#' @export
+#' @author Marcin Imielinski
+setGeneric('%oo%', function(x, ...) standardGeneric('%oo%'))
+setMethod("%oo%", signature(x = "GRanges"), function(x, y) {
+    ov = grdt(gr.findoverlaps(x, y, ignore.strand = FALSE))[ , sum(width), keyby = query.id]
+    x$width.ov = 0
+    x$width.ov[ov$query.id] = ov$V1
+    return(x$width.ov)
+})
+
+#' @name %N%
+#' @title gr.val shortcut to get total numbers of intervals in gr2 overlapping with each interval in  gr1, ignoring strand
+#' @description
+#' Shortcut for gr.val (using val = names(values(y)))
+#'
+#' gr1 %N% gr2
+#'
+#' @return bases overlap of gr1 with gr2
+#' @rdname gr.val
+#' @exportMethod %N%
+#' @export
+#' @author Marcin Imielinski
+setGeneric('%N%', function(x, ...) standardGeneric('%N%'))
+setMethod("%N%", signature(x = "GRanges"), function(x, y) {
+    ov = grdt(gr.findoverlaps(x, reduce(y)))[ , length(width), keyby = query.id]
+    x$width.ov = 0
+    x$width.ov[ov$query.id] = ov$V1
+    return(x$width.ov)
+})
+
+#' @name %NN%
+#' @title gr.val shortcut to get total numbers of intervals in gr2 overlapping with each interval in  gr1, respecting strand
+#' @description
+#' Shortcut for gr.val (using val = names(values(y)))
+#'
+#' gr1 %NN% gr2
+#'
+#' @return bases overlap  of gr1 with gr2
+#' @rdname gr.val
+#' @exportMethod %N%
+#' @export
+#' @author Marcin Imielinski
+setGeneric('%NN%', function(x, ...) standardGeneric('%NN%'))
+setMethod("%NN%", signature(x = "GRanges"), function(x, y) {
+    ov = grdt(gr.findoverlaps(x, y, ignore.strand = FALSE))[ , length(width), keyby = query.id]
+    x$width.ov = 0
+    x$width.ov[ov$query.id] = ov$V1
+    return(x$width.ov)
+})
+
+#' @name %_%
+#' @title setdiff shortcut (strand agnostic)
+#' @description
+#' Shortcut for setdiff
+#'
+#' gr1 %_% gr2
+#'
+#' @return granges representing setdiff of input interval
+#' @rdname gr.setdiff
+#' @exportMethod %_%
+#' @export
+#' @author Marcin Imielinski
+setGeneric('%_%', function(x, ...) standardGeneric('%_%'))
+setMethod("%_%", signature(x = "GRanges"), function(x, y) {
+    if (is.character(y))
+        y = parse.gr(y)
+    setdiff(gr.stripstrand(x[, c()]), gr.stripstrand(y[, c()]))
+})
+
+#' @name %**%
+#' @title gr.findoverlaps (respects strand)
+#' @description
+#' Shortcut for gr.findoverlaps
+#'
+#' gr1 %**% gr2
+#'
+#' @return new granges containing every pairwise intersection of ranges in gr1 and gr2 with a join of the corresponding metadata
+#' @rdname grfo
+#' @exportMethod %**%
+#' @export
+#' @author Marcin Imielinski
+setGeneric('%**%', function(x, ...) standardGeneric('%**%'))
+setMethod("%**%", signature(x = "GRanges"), function(x, y) {
+    if (is.character(y))
+        y = parse.gr(y)
+    gr = gr.findoverlaps(x, y, qcol = names(values(x)), scol = names(values(y)), ignore.strand = FALSE)
+    return(gr)
+})
+
+#' @name %^^%
+#' @title gr.in shortcut (respects strand)
+#' @description
+#' Shortcut for gr.in
+#'
+#' gr1 %^^% gr2
+#'
+#' @return logical vector of length gr1 which is TRUE at entry i only if gr1[i] intersects at least one interval in gr2
+#' @rdname gr.in
+#' @exportMethod %^^%
+#' @export
+#' @author Marcin Imielinski
+setGeneric('%^^%', function(x, ...) standardGeneric('%^^%'))
+setMethod("%^^%", signature(x = "GRanges"), function(x, y) {
+    if (is.character(y))
+        y = parse.gr(y)
+    return(gr.in(x, y, ignore.strand = FALSE))
+})
+
+#' @name %$$%
+#' @title gr.val shortcut to get mean values of subject "x" meta data fields in query "y" (respects strand)
+#' @description
+#' Shortcut for gr.val (using val = names(values(y)))
+#'
+#' gr1 %$$% gr2
+#'
+#' @return gr1 with extra meta data fields populated from gr2
+#' @rdname gr.val
+#' @exportMethod %$$%
+#' @export
+#' @author Marcin Imielinski
+setGeneric('%$$%', function(x, ...) standardGeneric('%$$%'))
+setMethod("%$$%", signature(x = "GRanges"), function(x, y) {
+    if (is.character(y))
+        y = parse.gr(y)
+    return(gr.val(x, y, val = names(values(y)), ignore.strand = FALSE))
+})
+
 
 
 #' ra.overlaps
