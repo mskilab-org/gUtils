@@ -1706,6 +1706,8 @@ rle.query = function(subject.rle, query.gr, verbose = FALSE, mc.cores = 1, chunk
   return(out)        
 }
 
+
+
 #' Check intersection of \code{GRangesList} with windows on genome
 #'
 #' Like %in% for grl but now will return a logical vector that is true at position if i
