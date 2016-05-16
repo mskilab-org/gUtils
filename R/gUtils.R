@@ -1654,7 +1654,7 @@ rle.query = function(subject.rle, query.gr, verbose = FALSE, mc.cores = 1, chunk
 #' Check intersection of \code{GRangesList} with windows on genome
 #'
 #' Like %in% for grl but now will return a logical vector that is true at position if i
-#' only if the ranges in grl[i] intersect all, some, only  windows in the subject
+#' only if the ranges in grl[i] intersect <<all>>, <<some>>, <<only>>  windows in the subject
 #'
 #' eg can use to identify read pairs whose ends are contained inside two genes)
 #' @param grl \code{GRangesList} object to query for membership in \code{windows}
@@ -1836,7 +1836,7 @@ rrbind = function(..., union = TRUE, as.data.table = FALSE)
 #' @export
 gr.sub = function(gr, a = c('(^chr)(\\.1$)', 'MT'), b= c('', 'M'))
 {
-  tmp = mapply(function(x, y) seqlevels(gr) <- gsub(x, y, seqlevels(gr)), a, b)
+  tmp = mapply(function(x, y) seqlevels(gr) <<- gsub(x, y, seqlevels(gr)), a, b)
   return(gr)
 }
 
@@ -2467,7 +2467,7 @@ gr.in = function(query, subject, ...)
 
 #' Collapse adjacent ranges
 #'
-#' Like \code{GenomicRanges::reduce} except only collapses adjacent ranges in the input
+#' Like \code{GenomicRanges::reduce} except only collapses <<adjacent>> ranges in the input
 #' @param gr \code{GRanges} to collapse
 #' @param pad Padding that allows for not quite adjacent elements to be considered overlapping. 1
 #' @return Collapsed ranges
