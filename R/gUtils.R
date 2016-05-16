@@ -2312,11 +2312,7 @@ gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE,
 #' (FUN must take in a single argument and return a scalar)
 #' if id.field is not NULL, AGG.FUN is a second fun to aggregate values from id.field to output interval
 #'
-<<<<<<< HEAD
 #' @param gr \code{GRanges} with some meta-data field to find peaks on 
-=======
-#' @param gr \code{GRanges} with some meta-data field to find peaks on
->>>>>>> 3b75e0b0d8c2973534f85a2acab998187fb45110
 #' @param field character field specifying metadata to find peaks on, default "score, can be NULL in which case the count is computed
 #' @param minima logical flag whether to find minima or maxima
 #' @param id.field character denoting field whose values specifyx individual tracks (e.g. samples)
@@ -2340,7 +2336,6 @@ gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE,
 #' ## can quickly find out what genes lie in the top peaks by agggregating back with
 #' ## original example_genes
 #' pk[1:10] %$% example_genes[, 'name']
-<<<<<<< HEAD
 #'
 #' 
 gr.peaks = function(gr, field = 'score',
@@ -2357,24 +2352,6 @@ gr.peaks = function(gr, field = 'score',
                     score.only = FALSE,
                           verbose = peel>0)
 {
-=======
-gr.peaks = function(gr, field = 'score', 
-                    minima = FALSE, 
-                    peel = 0, 
-                    id.field = NULL, 
-                    bootstrap = TRUE, 
-                    na.rm = TRUE, 
-                    pbootstrap = 0.95, 
-                    nbootstrap = 1e4, 
-                    FUN = NULL, 
-                    AGG.FUN = sum,
-      peel.gr = NULL, ## when peeling will use these segs instead of gr (which can just be a standard granges of scores)
-      score.only = FALSE,
-      verbose = peel>0)
-
-    {
->>>>>>> 3b75e0b0d8c2973534f85a2acab998187fb45110
-
 
         if (!is(gr, 'GRanges'))
             gr = seg2gr(gr)
