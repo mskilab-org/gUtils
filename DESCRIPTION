@@ -18,7 +18,10 @@ Imports:
     GenomeInfoDb (>= 1.2),
     parallel,
     BiocGenerics(>= 0.12),
-    methods
+    methods,
+    igraph,
+    Matrix,
+    stringr
 Suggests:
     BSgenome.Hsapiens.UCSC.hg19,
     testthat,
@@ -27,4 +30,4 @@ Suggests:
 License: GPL-2
 BugReports: http://github.com/mskilab/gUtils/issues
 LazyData: true
-RoxygenNote: 5.0.1
+RoxygenNote: 5.0.1.9000
