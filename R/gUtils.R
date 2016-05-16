@@ -253,7 +253,7 @@ gr.start <- function(x, width = 1, force = FALSE, ignore.strand = TRUE, clip = F
 #' @param dt \code{data.table} to convert to \code{GRanges}
 #' @return \code{GRanges} object of \code{length = nrow(dt)}
 #' @importFrom data.table data.table
-#' @importFrom GenomicRanges GRanges mcols<-
+#' @importFrom GenomicRanges GRanges mcols
 #' @importFrom IRanges IRanges
 #' @name dt2gr
 #' @examples
