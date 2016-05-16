@@ -172,6 +172,61 @@ grdt = function(x)
 }
 
 
+#' Converts \code{GRanges} to \code{data.table}
+#'
+#' and a field grl.iix which saves the (local) index that that gr was in its corresponding grl item
+#' @param x \code{GRanges} to convert
+#' @name grdt
+#' @export
+grdt = function(x)
+{
+  ## new approach just directly instantiating data table
+  cmd = 'data.frame(';
+  if (is(x, 'GRanges'))
+  {
+    was.gr = TRUE
+    f = c('seqnames', 'start', 'end', 'strand', 'width')
+    f2 = c('as.character(seqnames', 'c(start', 'c(end', 'as.character(strand', 'as.numeric(width')
+    cmd = paste(cmd, paste(f, '=', f2, '(x))', sep = '', collapse = ','), sep = '')
+    value.f = names(values(x))
+  }
+  else
+  {
+    was.gr = FALSE
+    value.f = names(x)
+  }
+  
+  if (length(value.f)>0)
+  {
+    if (was.gr)
+      cmd = paste(cmd, ',', sep = '')
+    class.f = sapply(value.f, function(f) eval(parse(text=sprintf("class(x$'%s')", f))))
+    
+    .StringSetListAsList = function(x) ### why do I need to do this, bioconductor peeps??
+    {
+      tmp1 = as.character(unlist(x))
+      tmp2 = rep(1:length(x), elementLengths(x))
+      return(split(tmp1, tmp2))
+    }
+    
+    ## take care of annoying S4 / DataFrame / data.frame (wish-they-were-non-)issues
+    as.statement = ifelse(grepl('Integer', class.f), 'as.integer',
+                          ifelse(grepl('Character', class.f), 'as.character',
+                                 ifelse(grepl('StringSetList', class.f), '.StringSetListAsList',
+                                        ifelse(grepl('StringSet$', class.f), 'as.character',
+                                               ifelse(grepl('factor$', class.f), 'as.character',
+                                                      ifelse(grepl('List', class.f), 'as.list',
+                                                             ifelse(grepl('factor', class.f), 'as.character',
+                                                                    ifelse(grepl('List', class.f), 'as.list', 'c'))))))))
+    cmd = paste(cmd, paste(value.f, '=', as.statement, "(x$'", value.f, "')", sep = '', collapse = ','), sep = '')
+  }
+  
+  cmd = paste(cmd, ')', sep = '')
+  
+  #      browser()
+  return(as.data.table(eval(parse(text =cmd))))
+}
+
 #' Get GRanges corresponding to beginning of range
 #'
 #' @param x \code{GRanges} object to operate on
@@ -253,7 +308,7 @@ gr.start <- function(x, width = 1, force = FALSE, ignore.strand = TRUE, clip = F
 #' @param dt \code{data.table} to convert to \code{GRanges}
 #' @return \code{GRanges} object of \code{length = nrow(dt)}
 #' @importFrom data.table data.table
-#' @importFrom GenomicRanges GRanges mcols<-
+#' @importFrom GenomicRanges GRanges mcols
 #' @importFrom IRanges IRanges
 #' @name dt2gr
 #' @examples
@@ -2257,7 +2312,11 @@ gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE,
 #' (FUN must take in a single argument and return a scalar)
 #' if id.field is not NULL, AGG.FUN is a second fun to aggregate values from id.field to output interval
 #'
+<<<<<<< HEAD
 #' @param gr \code{GRanges} with some meta-data field to find peaks on 
+=======
+#' @param gr \code{GRanges} with some meta-data field to find peaks on
+>>>>>>> 3b75e0b0d8c2973534f85a2acab998187fb45110
 #' @param field character field specifying metadata to find peaks on, default "score, can be NULL in which case the count is computed
 #' @param minima logical flag whether to find minima or maxima
 #' @param id.field character denoting field whose values specifyx individual tracks (e.g. samples)
@@ -2281,6 +2340,7 @@ gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE,
 #' ## can quickly find out what genes lie in the top peaks by agggregating back with
 #' ## original example_genes
 #' pk[1:10] %$% example_genes[, 'name']
+<<<<<<< HEAD
 #'
 #' 
 gr.peaks = function(gr, field = 'score',
@@ -2297,6 +2357,23 @@ gr.peaks = function(gr, field = 'score',
                     score.only = FALSE,
                           verbose = peel>0)
 {
+=======
+gr.peaks = function(gr, field = 'score', 
+                    minima = FALSE, 
+                    peel = 0, 
+                    id.field = NULL, 
+                    bootstrap = TRUE, 
+                    na.rm = TRUE, 
+                    pbootstrap = 0.95, 
+                    nbootstrap = 1e4, 
+                    FUN = NULL, 
+                    AGG.FUN = sum,
+      peel.gr = NULL, ## when peeling will use these segs instead of gr (which can just be a standard granges of scores)
+      score.only = FALSE,
+      verbose = peel>0)
+
+    {
+>>>>>>> 3b75e0b0d8c2973534f85a2acab998187fb45110
 
 
         if (!is(gr, 'GRanges'))
@@ -2779,7 +2856,6 @@ ra.overlaps = function(ra1, ra2, pad = 0, arr.ind = TRUE, ignore.strand=FALSE, .
         bp2 = grl.unlist(ra2) + pad
         ix = gr.findoverlaps(bp1, bp2, ignore.strand = ignore.strand, ...)
 
-
         .make_matches = function(ix, bp1, bp2)
             {
                 if (length(ix) == 0)
@@ -3047,9 +3123,9 @@ setMethod("%Q%", signature(x = "GRanges"), function(x, y) {
 #' @rdname gr.in-shortcut
 #' @param x \code{GRanges} object
 #' @param ... additional arguments to gr.in
-#' @exportMethod %^%
 #' @export
-#' @author Marcin Imielinski
+#' @docType methods
+#' @aliases %^%,GRanges-method
 setGeneric('%^%', function(x, ...) standardGeneric('%^%'))
 setMethod("%^%", signature(x = "GRanges"), function(x, y) {
     if (is.character(y))
@@ -3065,12 +3141,10 @@ setMethod("%^%", signature(x = "GRanges"), function(x, y) {
 #'
 #' gr1 %$% gr2
 #'
-#'
 #' @return gr1 with extra meta data fields populated from gr2
 #' @rdname gr.val-shortcut
 #' @param x \code{GRanges} object
 #' @exportMethod %$%
-#' @export
 #' @author Marcin Imielinski
 setGeneric('%$%', function(x, ...) standardGeneric('%$%'))
 setMethod("%$%", signature(x = "GRanges"), function(x, y) {
