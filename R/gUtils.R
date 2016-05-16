@@ -1836,7 +1836,7 @@ rrbind = function(..., union = TRUE, as.data.table = FALSE)
 #' @export
 gr.sub = function(gr, a = c('(^chr)(\\.1$)', 'MT'), b= c('', 'M'))
 {
-  tmp = mapply(function(x, y) seqlevels(gr) <<- gsub(x, y, seqlevels(gr)), a, b)
+  tmp = mapply(function(x, y) seqlevels(gr) <- gsub(x, y, seqlevels(gr)), a, b)
   return(gr)
 }
 
