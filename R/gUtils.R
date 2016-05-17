@@ -773,7 +773,7 @@ grbind = function(x, ...)
 #' mcols(grl.hiC2)$test = 1
 #' grlbind(grl.hiC2, grl.hiC[1:30])
 #' @export
-#' @importFrom GenomicRanges mcols<- mcols split
+#' @importFrom GenomicRanges mcols<- mcols 
 grlbind = function(...)
 {
   ## TODO: make this work for when underlying grs do not have matching features
@@ -875,7 +875,6 @@ streduce = function(gr, pad = 0, sort = TRUE)
   suppressWarnings(start(out) <-pmax(1, start(out)))
   #    out <- gr.tfix(out)
   end(out) = pmin(end(out), seqlengths(out)[as.character(seqnames(out))])
-
 
   return(out)
 }
@@ -1825,7 +1824,7 @@ grl.unlist = function(grl)
 #' Assumes all grs in "x" are of equal length
 #' @name grl.pivot
 #' @param x \code{GRangesList} object to pivot
-#' @importFrom GenomicRanges GRanges GRangesList split unlist
+#' @importFrom GenomicRanges GRanges GRangesList 
 #' @examples
 #' grl.pivot(grl.hiC)
 #' @export
