@@ -1722,7 +1722,7 @@ rle.query = function(subject.rle, query.gr, verbose = FALSE, mc.cores = 1, chunk
 #' @param ... Additional parameters to be passed on to \code{GenomicRanges::findOverlaps}
 #' @name grl.in
 #' @export
-grl.in <- function(grl, windows, some = FALSE, only = FALSE, logical = FALSE, ...)
+grl.in <- function(grl, windows, some = FALSE, only = FALSE, logical = TRUE, ...)
 {
   grl.iid = grl.id = NULL ## for getting past NOTE
 
@@ -1733,13 +1733,23 @@ grl.in <- function(grl, windows, some = FALSE, only = FALSE, logical = FALSE, ..
     return(rep(TRUE, length(grl)))
 
   numwin = length(windows);
-  gr = grl.unlist(grl)
-  h = tryCatch(GenomicRanges::findOverlaps(gr, windows, ...), error = function(e) NULL)
-  if (!is.null(h))
-      m = data.table(query.id = queryHits(h), subject.id = subjectHits(h))
-  else
-      m = gr2dt(gr.findoverlaps(gr, windows, ...))
 
+  gr = grl.unlist(grl)
+  if (logical)
+      {
+          h = tryCatch(GenomicRanges::findOverlaps(gr, windows, ...), error = function(e) NULL)
+          if (!is.null(h))
+              m = data.table(query.id = queryHits(h), subject.id = subjectHits(h))
+          else
+              m = gr2dt(gr.findoverlaps(gr, windows, ...))
+      }
+  else
+      {
+          some = FALSE
+          only = FALSE
+          m = gr2dt(gr.findoverlaps(gr, windows, ...))
+      }
+          
   out = rep(FALSE, length(grl))
   if (nrow(m)==0)
     return(out)
@@ -1753,8 +1763,8 @@ grl.in <- function(grl, windows, some = FALSE, only = FALSE, logical = FALSE, ..
     return(base::mapply(function(x, y) length(setdiff(x, y))==0,
                         split(1:length(gr), factor(gr$grl.ix, 1:length(grl))),
                         split(m$query.id, factor(m$grl.id, 1:length(grl)))))
-  else
-    tmp = stats::aggregate(formula = subject.id ~ grl.id, data = m, FUN = function(x) length(setdiff(1:numwin, x))==0)
+  else      
+      tmp = stats::aggregate(formula = subject.id ~ grl.id, data = m, FUN = function(x) numwin-length(setdiff(1:numwin, x)))
 
   out = rep(FALSE, length(grl))
   out[tmp[,1]] = tmp[,2]
