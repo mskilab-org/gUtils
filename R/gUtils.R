@@ -62,8 +62,7 @@ hg_seqlengths = function(genome = NULL, chr = FALSE, include.junk = FALSE)
             }
         else
             {
-                tmp = tryCatch(read.delim(dbs, header = FALSE), error= function(e) NULL)
-                                                    
+                tmp = suppressWarnings(tryCatch(read.delim(dbs, header = FALSE), error= function(e) NULL))
                 if (is.null(tmp))
                     {
                         genome = tryCatch(eval(parse(text=dbs)), error = function(e) NULL)
@@ -74,17 +73,16 @@ hg_seqlengths = function(genome = NULL, chr = FALSE, include.junk = FALSE)
                     sl = structure(tmp[,2], names = as.character(tmp[,1]))
                                         #            warning(paste("using default genome:", dbs))
             }}                
-    
+
     if (is.null(sl))
         sl = seqlengths(genome)
+
+    if (!chr)
+        names(sl) = gsub('chr', '', names(sl))    
   
   if (!include.junk)
-      sl = sl[nchar(names(sl))<=2]
-#    sl = sl[c(paste('chr', 1:22, sep = ''), 'chrX', 'chrY', 'chrM')]
-  
-  if (!chr)
-    names(sl) = gsub('chr', '', names(sl))
-  
+      sl = sl[nchar(names(sl))<=8]
+                                        #    sl = sl[c(paste('chr', 1:22, sep = ''), 'chrX', 'chrY', 'chrM')]    
   return(sl)          
 }
 
@@ -773,7 +771,7 @@ grbind = function(x, ...)
 #' mcols(grl.hiC2)$test = 1
 #' grlbind(grl.hiC2, grl.hiC[1:30])
 #' @export
-#' @importFrom GenomicRanges mcols<- mcols 
+#' @importFrom GenomicRanges mcols<- mcols split
 grlbind = function(...)
 {
   ## TODO: make this work for when underlying grs do not have matching features
@@ -875,6 +873,7 @@ streduce = function(gr, pad = 0, sort = TRUE)
   suppressWarnings(start(out) <-pmax(1, start(out)))
   #    out <- gr.tfix(out)
   end(out) = pmin(end(out), seqlengths(out)[as.character(seqnames(out))])
+
 
   return(out)
 }
@@ -1824,7 +1823,7 @@ grl.unlist = function(grl)
 #' Assumes all grs in "x" are of equal length
 #' @name grl.pivot
 #' @param x \code{GRangesList} object to pivot
-#' @importFrom GenomicRanges GRanges GRangesList 
+#' @importFrom GenomicRanges GRanges GRangesList split
 #' @examples
 #' grl.pivot(grl.hiC)
 #' @export
@@ -3071,7 +3070,7 @@ gr.simplify = function(gr, field = NULL, val = NULL, include.val = TRUE, split =
         
     if (split)
       if (!is.null(field))
-        out = split(out, values(gr)[ix, field])
+        out = GenomicRanges::split(out, values(gr)[ix, field])
       else
         out = GRangesList(out)
             
