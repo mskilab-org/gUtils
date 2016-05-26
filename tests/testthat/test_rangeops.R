@@ -419,12 +419,12 @@ test_that("gr.tile.map", {
 
 })
 
-test_that('ra.overlaps throws error', {
+#test_that('ra.overlaps throws error', {
 
- ss<- split(example_genes, example_genes$name)
- expect_error(ra.overlaps(ss,ss))
+ #ss<- split(example_genes, example_genes$name)
+ #expect_error(ra.overlaps(ss,ss))
 
-})
+#})
 
 #test_that("ra.overlaps handles empty",{
 
