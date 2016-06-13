@@ -66,7 +66,7 @@ hg_seqlengths = function(genome = NULL, chr = FALSE, include.junk = FALSE)
                 if (is.null(tmp))
                     {
                         genome = tryCatch(eval(parse(text=dbs)), error = function(e) NULL)
-                        if (is.null(genome))
+                        if (is.null(genome)) 
                             stop(sprintf("Error loading %s as BSGenome library ...\nPlease check DEFAULT_BSGENOME setting and set to either an R library BSGenome object or a valid http URL or filepath pointing to a chrom.sizes tab delimited text file.", dbs))
                     }
                 else
@@ -97,35 +97,20 @@ NULL
 
 #' Converts \code{GRanges} to \code{data.table}
 #'
-#' @importFrom data.table
-#'    as.data.table
-#' @importFrom GenomicRanges as.data.frame
-#' @name gr2dt
-#' @param gr \code{GRanges} pile to convert to \code{data.table}
-#' @return \code{data.table} with seqnames, start, end, width, strand and all of the meta data. Width is end-inclusive (e.g. [6,7] width = 2)
-#' @examples
-#' gr2dt(example_genes)
-#' @export
-gr2dt <- function(gr)
-{
-  ## as.data.frame gives error if duplicated rownames
-  if (any(duplicated(names(gr))))
-    names(gr) <- NULL
-  out <- as.data.table(GenomicRanges::as.data.frame(gr))
-  return(out)
-}
-#' Converts \code{GRanges} to \code{data.table}
-#'
 #' and a field grl.iix which saves the (local) index that that gr was in its corresponding grl item
 #' @param x \code{GRanges} to convert
 #' @name grdt
 #' @export
-grdt = function(x)
+gr2dt <- grdt <- function(x)
 {
     ## new approach just directly instantiating data table
     cmd = 'data.frame(';
     if (is(x, 'GRanges'))
     {
+        ## as.data.table complains if duplicated row names
+        if (any(duplicated(names(gr))))
+          names(x) <- NULL
+      
         was.gr = TRUE
         f = c('seqnames', 'start', 'end', 'strand', 'width')
         f2 = c('as.character(seqnames', 'c(start', 'c(end', 'as.character(strand', 'as.numeric(width')
@@ -167,62 +152,6 @@ grdt = function(x)
 
                                         #      browser()
     return(as.data.table(eval(parse(text =cmd))))
-}
-
-
-#' Converts \code{GRanges} to \code{data.table}
-#'
-#' and a field grl.iix which saves the (local) index that that gr was in its corresponding grl item
-#' @param x \code{GRanges} to convert
-#' @name grdt
-#' @export
-grdt = function(x)
-{
-  ## new approach just directly instantiating data table
-  cmd = 'data.frame(';
-  if (is(x, 'GRanges'))
-  {
-    was.gr = TRUE
-    f = c('seqnames', 'start', 'end', 'strand', 'width')
-    f2 = c('as.character(seqnames', 'c(start', 'c(end', 'as.character(strand', 'as.numeric(width')
-    cmd = paste(cmd, paste(f, '=', f2, '(x))', sep = '', collapse = ','), sep = '')
-    value.f = names(values(x))
-  }
-  else
-  {
-    was.gr = FALSE
-    value.f = names(x)
-  }
-  
-  if (length(value.f)>0)
-  {
-    if (was.gr)
-      cmd = paste(cmd, ',', sep = '')
-    class.f = sapply(value.f, function(f) eval(parse(text=sprintf("class(x$'%s')", f))))
-    
-    .StringSetListAsList = function(x) ### why do I need to do this, bioconductor peeps??
-    {
-      tmp1 = as.character(unlist(x))
-      tmp2 = rep(1:length(x), elementLengths(x))
-      return(split(tmp1, tmp2))
-    }
-    
-    ## take care of annoying S4 / DataFrame / data.frame (wish-they-were-non-)issues
-    as.statement = ifelse(grepl('Integer', class.f), 'as.integer',
-                          ifelse(grepl('Character', class.f), 'as.character',
-                                 ifelse(grepl('StringSetList', class.f), '.StringSetListAsList',
-                                        ifelse(grepl('StringSet$', class.f), 'as.character',
-                                               ifelse(grepl('factor$', class.f), 'as.character',
-                                                      ifelse(grepl('List', class.f), 'as.list',
-                                                             ifelse(grepl('factor', class.f), 'as.character',
-                                                                    ifelse(grepl('List', class.f), 'as.list', 'c'))))))))
-    cmd = paste(cmd, paste(value.f, '=', as.statement, "(x$'", value.f, "')", sep = '', collapse = ','), sep = '')
-  }
-  
-  cmd = paste(cmd, ')', sep = '')
-  
-  #      browser()
-  return(as.data.table(eval(parse(text =cmd))))
 }
 
 #' Get GRanges corresponding to beginning of range
