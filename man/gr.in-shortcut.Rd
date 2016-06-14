@@ -20,6 +20,10 @@ x \%^\% ...
 \item{x}{\code{GRanges} object}
 
 \item{...}{additional arguments to gr.in}
+
+\item{x}{See \link{gr.in}}
+
+\item{...}{See \link{gr.in}}
 }
 \value{
 logical vector of length gr1 which is TRUE at entry i only if gr1[i] intersects at least one interval in gr2
