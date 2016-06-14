@@ -1,4 +1,4 @@
-#' DNAaseI hypersensitivity sites for hg19
+#' DNAaseI hypersensitivity sites for hg19A
 #'
 #' DNAaseI hypersensitivity sites from UCSC Table Browser hg19,
 #' subsampled to 10,000 sites
@@ -99,9 +99,10 @@ NULL
 #'
 #' and a field grl.iix which saves the (local) index that that gr was in its corresponding grl item
 #' @param x \code{GRanges} to convert
-#' @name grdt
+#' @name gr2dt
 #' @export
-gr2dt <- grdt <- function(x)
+#'  
+gr2dt  <- function(x)
 {
     ## new approach just directly instantiating data table
     cmd = 'data.frame(';
@@ -2373,7 +2374,7 @@ gr.peaks = function(gr, field = 'score',
 
                                 if (!is.null(id.field))
                                     {
-                                        peak.gr = seg2gr(grdt(peak.gr)[, list(seqnames = seqnames[1], start = min(start),
+                                        peak.gr = seg2gr(gr2dt(peak.gr)[, list(seqnames = seqnames[1], start = min(start),
                                             eval(parse(text = paste(field, '= sum(', field, '*(end-start))/sum(end-start)'))),end = max(end)),
                                             by = eval(id.field)])
                                         names(values(peak.gr))[3] = field ## not sure why I need to do this line, should be done above
@@ -2567,7 +2568,7 @@ setMethod("%WW%", signature(x = "GRanges"), function(x, y) {
 setGeneric('%O%', function(x, ...) standardGeneric('%O%'))
 setMethod("%O%", signature(x = "GRanges"), function(x, y) {
     query.id = NULL; ## NOTE fix
-    ov = grdt(gr.findoverlaps(x, reduce(y)))[ , sum(width), keyby = query.id]
+    ov = gr2dt(gr.findoverlaps(x, reduce(y)))[ , sum(width), keyby = query.id]
     x$width.ov = 0
     x$width.ov[ov$query.id] = ov$V1
     return(x$width.ov/width(x))
@@ -2591,7 +2592,7 @@ setMethod("%O%", signature(x = "GRanges"), function(x, y) {
 setGeneric('%OO%', function(x, ...) standardGeneric('%OO%'))
 setMethod("%OO%", signature(x = "GRanges"), function(x, y) {
     query.id = NULL; ## NOTE fix
-    ov = grdt(gr.findoverlaps(x, reduce(y), ignore.strand = FALSE))[ , sum(width), keyby = query.id]
+    ov = gr2dt(gr.findoverlaps(x, reduce(y), ignore.strand = FALSE))[ , sum(width), keyby = query.id]
     x$width.ov = 0
     x$width.ov[ov$query.id] = ov$V1
     return(x$width.ov/width(x))
@@ -2614,7 +2615,7 @@ setMethod("%OO%", signature(x = "GRanges"), function(x, y) {
 setGeneric('%o%', function(x, ...) standardGeneric('%o%'))
 setMethod("%o%", signature(x = "GRanges"), function(x, y) {
     query.id = NULL; ## NOTE fix
-    ov = grdt(gr.findoverlaps(x, reduce(y)))[ , sum(width), keyby = query.id]
+    ov = gr2dt(gr.findoverlaps(x, reduce(y)))[ , sum(width), keyby = query.id]
     x$width.ov = 0
     x$width.ov[ov$query.id] = ov$V1
     return(x$width.ov)
@@ -2638,7 +2639,7 @@ setMethod("%o%", signature(x = "GRanges"), function(x, y) {
 setGeneric('%oo%', function(x, ...) standardGeneric('%oo%'))
 setMethod("%oo%", signature(x = "GRanges"), function(x, y) {
     query.id = NULL; ## NOTE fix
-    ov = grdt(gr.findoverlaps(x, y, ignore.strand = FALSE))[ , sum(width), keyby = query.id]
+    ov = gr2dt(gr.findoverlaps(x, y, ignore.strand = FALSE))[ , sum(width), keyby = query.id]
     x$width.ov = 0
     x$width.ov[ov$query.id] = ov$V1
     return(x$width.ov)
@@ -2662,7 +2663,7 @@ setMethod("%oo%", signature(x = "GRanges"), function(x, y) {
 setGeneric('%N%', function(x, ...) standardGeneric('%N%'))
 setMethod("%N%", signature(x = "GRanges"), function(x, y) {
     query.id = NULL; ## NOTE fix
-    ov = grdt(gr.findoverlaps(x, reduce(y)))[ , length(width), keyby = query.id]
+    ov = gr2dt(gr.findoverlaps(x, reduce(y)))[ , length(width), keyby = query.id]
     x$width.ov = 0
     x$width.ov[ov$query.id] = ov$V1
     return(x$width.ov)
@@ -2685,7 +2686,7 @@ setMethod("%N%", signature(x = "GRanges"), function(x, y) {
 setGeneric('%NN%', function(x, ...) standardGeneric('%NN%'))
 setMethod("%NN%", signature(x = "GRanges"), function(x, y) {
     query.id = NULL; ## NOTE fix
-    ov = grdt(gr.findoverlaps(x, y, ignore.strand = FALSE))[ , length(width), keyby = query.id]
+    ov = gr2dt(gr.findoverlaps(x, y, ignore.strand = FALSE))[ , length(width), keyby = query.id]
     x$width.ov = 0
     x$width.ov[ov$query.id] = ov$V1
     return(x$width.ov)
