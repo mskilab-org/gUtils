@@ -312,26 +312,32 @@ gr.start <- function(x, width = 1, force = FALSE, ignore.strand = TRUE, clip = F
 #' @examples
 #' gr <- dt2gr(data.table(start=c(1,2), seqnames=c("X", "1"), end=c(10,20), strand = c('+', '-')))
 #' @export
-dt2gr <- function(dt) {
+dt2gr <- function(dt, key = NULL, seqlengths = hg_seqlengths(), seqinfo = Seqinfo()) {
+  library(data.table)
 
-  if (any(!c("seqnames","start","end") %in% colnames(dt)))
-    stop("gUtils::dt2gr data.table must have seqnames, start, and end")
-
-  rr <- IRanges(dt$start, dt$end)
-  if (!'strand' %in% colnames(dt))
-    dt$strand <- '*'
-  sf <- factor(dt$strand, levels=c('+', '-', '*'))
-  ff <- factor(dt$seqnames, levels=sort(unique(dt$seqnames)))
-  out <- GRanges(seqnames=ff, ranges=rr, strand=sf)
-  NOT_ALLOWED <- c("seqnames", "ranges", "strand", "seqlevels", "seqlengths", "isCircular", "start", "end", "width", "element")
-  if (inherits(dt, 'data.table'))
-    mc <- as.data.frame(dt[, setdiff(colnames(dt), NOT_ALLOWED), with=FALSE])
-  else if (inherits(dt, 'data.frame'))
-    mc <- as.data.frame(dt[, setdiff(colnames(dt), NOT_ALLOWED)])
-  else
-    warning("Needs to be data.table or data.frame")
-  if (nrow(mc))
-    mcols(out) <- mc
+  out = tryCatch({
+        rr <- IRanges(dt$start, dt$end)
+      if (!'strand' %in% colnames(dt))
+          dt$strand <- '*'
+      sf <- factor(dt$strand, levels=c('+', '-', '*'))
+      ff <- factor(dt$seqnames, levels=unique(dt$seqnames))
+      out <- GRanges(seqnames=ff, ranges=rr, strand=sf)
+      if (inherits(dt, 'data.table'))
+          mc <- as.data.frame(dt[, setdiff(colnames(dt), c('start', 'end', 'seqnames', 'strand')), with=FALSE])
+      else if (inherits(dt, 'data.frame'))
+          mc <- as.data.frame(dt[, setdiff(colnames(dt), c('start', 'end', 'seqnames', 'strand'))])
+      else
+          warning("Needs to be data.table or data.frame")
+      if (nrow(mc))
+          mcols(out) <- mc
+      out
+  }, error = function(e) NULL)
+  
+  if (is.null(out))
+      {
+          warning('coercing to GRanges via non-standard columns')
+          out = seg2gr(dt, seqlengths, seqinfo)          
+      }
   return(out)
 }
 
@@ -1929,7 +1935,7 @@ seg2gr = function(segs, seqlengths = NULL, seqinfo = Seqinfo())
 
   if (is.null(seqlengths))
     seqlengths = seqlengths(seqinfo)
-
+  
   if (!inherits(segs, 'GRanges'))
   {
     if (nrow(segs)==0)
@@ -1965,10 +1971,10 @@ seg2gr = function(segs, seqlengths = NULL, seqinfo = Seqinfo())
     segs$pos1 <- as.numeric(segs$pos1)
     segs$pos2 <- as.numeric(segs$pos2)
     
-    out = GRanges(seqnames = segs$chr, ranges = IRanges(segs$pos1, segs$pos2), names = levels(levels), strand = segs$strand, seqlengths = seqlengths)
+    out = GRanges(seqnames = segs$chr, ranges = IRanges(segs$pos1, segs$pos2),strand = segs$strand, seqlengths = seqlengths)
   }
   else
-    out = GRanges(seqnames = as.character(segs$chr), ranges = IRanges(segs$pos1, segs$pos2), names = levels(levels), strand = segs$strand)
+    out = GRanges(seqnames = as.character(segs$chr), ranges = IRanges(segs$pos1, segs$pos2), strand = segs$strand)
 
   if (length(seqinfo)>0)
     out = gr.fix(out, seqinfo)
@@ -2597,6 +2603,80 @@ subset2 <- function(x, condition) {
     browser()
     x[r, ]
 }
+
+
+#' @name %+%
+#' @title Nudge GRanges right
+#' @description
+#' Operator to shift GRanges right "sh" bases
+#'
+#' @return shifted granges
+#' @rdname gr.nudge
+#' @export
+#' @author Marcin Imielinski
+setGeneric('%+%', function(gr, ...) standardGeneric('%+%'))
+setMethod("%+%", signature(gr = "GRanges"), function(gr, sh) {
+    end(gr) = end(gr)+sh
+    start(gr) = start(gr)+sh
+    return(gr)
+})
+
+#' @name %-%
+#' @title Shift GRanges left
+#' @description
+#' Operator to shift GRanges left "sh" bases
+#'
+#' df %!% c('string.*to.*match', 'another.string.to.match')
+#'
+#' @return shifted granges
+#' @rdname gr.nudge
+#' @export
+#' @author Marcin Imielinski
+setGeneric('%-%', function(gr, ...) standardGeneric('%-%'))
+setMethod("%-%", signature(gr = "GRanges"), function(gr, sh) {
+    start(gr) = start(gr)-sh
+    end(gr) = end(gr)-sh
+    return(gr)
+})
+
+#' @name %&%
+#' @title subset x on y ranges wise ignoring strand
+#' @description
+#' shortcut for x[gr.in(x,y)]
+#'
+#' gr1 %&% gr2 returns the subsets of gr1 that overlaps gr2
+#'
+#' @return subset of gr1 that overlaps gr2
+#' @rdname gr.in
+#' @exportMethod %&%
+#' @export
+#' @author Marcin Imielinski
+setGeneric('%&%', function(x, ...) standardGeneric('%&%'))
+setMethod("%&%", signature(x = "GRanges"), function(x, y) {
+    if (is.character(y))
+        y = parse.gr(y)
+    return(x[gr.in(x, y)])
+})
+
+#' @name %&&%
+#' @title subset x on y ranges wise respectingstrand
+#' @description
+#' shortcut for x[gr.in(x,y)]
+#'
+#' gr1 %&&% gr2 returns the subsets of gr1 that overlaps gr2
+#'
+#' @return subset of gr1 that overlaps gr2
+#' @rdname gr.in
+#' @exportMethod %&%
+#' @export
+#' @author Marcin Imielinski
+setGeneric('%&&%', function(x, ...) standardGeneric('%&&%'))
+setMethod("%&&%", signature(x = "GRanges"), function(x, y) {
+    if (is.character(y))
+        y = parse.gr(y)
+    return(x[gr.in(x, y, ignore.strand = FALSE)])
+})
+
 
 #' @name %WW%
 #' @title subset x on y ranges wise obeying strand
