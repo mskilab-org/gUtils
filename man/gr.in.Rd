@@ -3,8 +3,6 @@
 \name{gr.in}
 \alias{\%&&\%}
 \alias{\%&\%}
-\alias{\%WW\%}
-\alias{\%^^\%}
 \alias{gr.in}
 \title{Versatile implementation of \code{GenomicRanges::over}}
 \usage{
@@ -13,10 +11,6 @@ gr.in(query, subject, ...)
 x \%&\% ...
 
 x \%&&\% ...
-
-x \%WW\% ...
-
-x \%^^\% ...
 }
 \arguments{
 \item{query}{\code{GRanges}}
@@ -29,10 +23,6 @@ x \%^^\% ...
 subset of gr1 that overlaps gr2
 
 subset of gr1 that overlaps gr2
-
-subset of gr1 that overlaps gr2
-
-logical vector of length gr1 which is TRUE at entry i only if gr1[i] intersects at least one interval in gr2
 }
 \description{
 returns T / F vector if query range i is found in any range in subject
@@ -44,20 +34,8 @@ gr1 %&% gr2 returns the subsets of gr1 that overlaps gr2
 shortcut for x[gr.in(x,y)]
 
 gr1 %&&% gr2 returns the subsets of gr1 that overlaps gr2
-
-shortcut for x[gr.in(x,y, ignore.strand = FALSE)]
-
-gr1 %WW% gr2 returns the subsets of gr that overlaps gr2 not ignoring strand
-
-Shortcut for gr.in
-
-gr1 %^^% gr2
 }
 \author{
-Marcin Imielinski
-
-Marcin Imielinski
-
 Marcin Imielinski
 
 Marcin Imielinski

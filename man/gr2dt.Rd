@@ -4,18 +4,12 @@
 \alias{gr2dt}
 \title{Converts \code{GRanges} to \code{data.table}}
 \usage{
-gr2dt(gr)
+gr2dt(x)
 }
 \arguments{
-\item{gr}{\code{GRanges} pile to convert to \code{data.table}}
-}
-\value{
-\code{data.table} with seqnames, start, end, width, strand and all of the meta data. Width is end-inclusive (e.g. [6,7] width = 2)
+\item{x}{\code{GRanges} to convert}
 }
 \description{
-Converts \code{GRanges} to \code{data.table}
-}
-\examples{
-gr2dt(example_genes)
+and a field grl.iix which saves the (local) index that that gr was in its corresponding grl item
 }
 

@@ -27,8 +27,10 @@ of the input junctions it was "seen in" using logical flag  meta data fields pre
 \examples{
 
 # generate some junctions
-ra1 = split(GRanges(1, IRanges(1:10, width = 1), strand = rep(c('+', '-'), 5)), rep(1:5, each = 2)) 
-ra2 = split(GRanges(1, IRanges(4 + 1:10, width = 1), strand = rep(c('+', '-'), 5)), rep(1:5, each = 2))
+gr1 <- GRanges(1, IRanges(1:10, width = 1), strand = rep(c('+', '-'), 5))
+gr2 <- GRanges(1, IRanges(4 + 1:10, width = 1), strand = rep(c('+', '-'), 5))
+ra1 = split(gr1, rep(1:5, each = 2)) 
+ra2 = split(gr2, rep(1:5, each = 2))
 
 ram = ra.merge(ra1, ra2)
 values(ram) # shows the metadata with TRUE / FALSE flags

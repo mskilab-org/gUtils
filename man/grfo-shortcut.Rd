@@ -2,9 +2,15 @@
 % Please edit documentation in R/gUtils.R
 \name{\%**\%}
 \alias{\%**\%}
+\alias{\%**\%,GRanges-method}
 \title{gr.findoverlaps (respects strand)}
 \usage{
 x \%**\% ...
+}
+\arguments{
+\item{x}{See \link{gr.findoverlaps}}
+
+\item{...}{See \link{gr.findoverlaps}}
 }
 \value{
 new granges containing every pairwise intersection of ranges in gr1 and gr2 with a join of the corresponding metadata

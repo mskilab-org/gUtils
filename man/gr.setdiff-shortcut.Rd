@@ -2,19 +2,40 @@
 % Please edit documentation in R/gUtils.R
 \name{\%_\%}
 \alias{\%_\%}
+\alias{\%_\%,GRanges-method}
+\alias{\%__\%}
 \title{setdiff shortcut (strand agnostic)}
 \usage{
 x \%_\% ...
+
+x \%_\% ...
+}
+\arguments{
+\item{x}{See \link{gr.setdiff}}
+
+\item{...}{See \link{gr.setdiff}}
+
+\item{x}{See \link{gr.setdiff}}
+
+\item{...}{See \link{gr.setdiff}}
 }
 \value{
+granges representing setdiff of input interval
+
 granges representing setdiff of input interval
 }
 \description{
 Shortcut for setdiff
 
 gr1 %_% gr2
+
+Shortcut for setdiff
+
+gr1 %__% gr2
 }
 \author{
+Marcin Imielinski
+
 Marcin Imielinski
 }
 
