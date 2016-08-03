@@ -82,35 +82,35 @@ Return the subset of ranges in `a` that intersect with `b'
 ```
 
 ### `%o%`
-Returns a `length(a)` numeric vector whose value `i` is the fraction of `a[i]` that overlaps at least one range in `b' 
+Returns a `length(a)` numeric vector whose item `i` is the fraction of `a[i]` that overlaps at least one range in `b' 
 ```{r}
   a %o% b # strand agnostic
   a %oo% b # strand specific
 ```
 
 ### `%O%`
-Returns a `length(a)` numeric vector whose value `i` is the fraction of `a[i]` that overlaps at least one range in `b' 
+Returns a `length(a)` numeric vector whose item `i` is the fraction of `a[i]` that overlaps at least one range in `b' 
 ```{r}
   a %O% b # strand agnostic
   a %OO% b # strand specific
 ```
 
 ### `%N%`
-Returns a `length(a)` numeric vector whose value `i` is the total number of ranges in `b` that overlap wit  `a[i]` 
+Returns a `length(a)` numeric vector whose item `i` is the total number of ranges in `b` that overlap with `a[i]` 
 ```{r}
   a %N% b # strand agnostic
   a %NN% b # strand specific
 ```
 
 ### `%^%`
-Returns a `length(a)` logical vector whose value `i` TRUE if the  `a[i]` overlaps at least on range in `b' (similar to "%over%" just less fussy)
+Returns a `length(a)` logical vector whose item `i` TRUE if the  `a[i]` overlaps at least on range in `b' (similar to "%over%" just less fussy)
 ```{r}
   a %^% b # strand agnostic
   a %^^% b # strand specific
 ```
 
 ### `gr.match`
-Returns a `length(a)` integer vector whose value `i` contains the first index in `b' overlapping `a[i]` (the match cousin to "%over%" and %^%)
+Returns a `length(a)` integer vector whose item `i` contains the first index in `b' overlapping `a[i]` (the match cousin to "%over%" and %^%)
 ```{r}
   gr.match(a, b) # strand agnostic
   gr.match(a, b, ignore.strand = FALSE) # strand specific	
