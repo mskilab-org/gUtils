@@ -78,8 +78,8 @@ Aggregates the metadata in `b` across the territory of each range in `a`, return
   # and a custom function (e.g. max, mode, median) that takes three values as input,
   # where width refers to the width of the overlaps between a[i] and b[jj]
   gr.val(a, b, val = c('field1', 'field2'),
-               by = 'sample_id',
-	       FUN = function(value, width, is.na) my_cool_fn(value, width, is.na))
+        by = 'sample_id',
+	FUN = function(value, width, is.na) my_cool_fn(value, width, is.na))
 
 ```
 
