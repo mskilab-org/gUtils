@@ -37,7 +37,7 @@ Installation
   install_github('mskilab/gUtils')
   ````
 
-Usage
+Usage / cheat sheet 
 -----
 
 One utility of gUtils is syntactic sugar on top of basic GenomicRangesto do quick piping of interval operations as part of interactive genomic data science exploration. In all these examples `a` and `b` are GRanges (e.g `a` are gene territories and `b` might be copy number segments or Chip-Seq peaks). 
@@ -51,12 +51,17 @@ Performs "natural join" or merge of metadata columns of `a` and `b` using interv
 ```{r}	 	  
   a %*% b # strand agnostic merging
   a %**% b # strand specific merging
+
+  #
+  gr.findoverlaps(a, b, by = 'key_common_to_a_and_b', qcol = c('acolumn1', 'acolumn2'), scol = c('bcolumn1', 'bcolumn2'))
 ```
 
 Aggregates the metadata in `b` across the territory of each range in `a`, returning `a` with additional columns of `b` populated with values. For character or factor-valued metadata columns of `b`, aggregation will return a comma collapsed character value of all `b` values that intersect with `a[i], For numeric columns of `b` it will return the width	-weighted mean value of that column across the `a[i]` and `b` overlap.  For custom aggregations please see `gr.val` function. 
 ```{r}	   
   a %$% b # strand agnostic aggregation
   a %$$% b # strand specific aggregation
+
+  # if you need additional customization
   gr.val(a, b, by = 'sample_id', FUN = function(x, width, is.na) my_cool_aggregation_fn(x, width, is.na)) ## aggregates and casts data using levels of column "sample_id"
 ```
 
