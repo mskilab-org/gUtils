@@ -25,8 +25,6 @@ bases overlap of gr1 with gr2
 gr1 with extra meta data fields populated from gr2
 }
 \description{
-Shortcut for gr.val (using val = names(values(y)))
-
 gr1 %N% gr2
 
 Shortcut for gr.val (using val = names(values(y)))

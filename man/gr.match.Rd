@@ -4,12 +4,16 @@
 \alias{gr.match}
 \title{Alternative \code{GenomicRanges::match} that accepts additional \code{\link{gr.findoverlaps}} options}
 \usage{
-gr.match(query, subject, ...)
+gr.match(query, subject, max.slice = Inf, verbose = FALSE, ...)
 }
 \arguments{
 \item{query}{Query \code{GRanges} pile}
 
 \item{subject}{Subject \code{GRanges} pile}
+
+\item{max.slice}{max slice of query to match at a time}
+
+\item{verbose}{whether to give verbose output}
 
 \item{...}{Additional arguments to be passed along to \code{\link{gr.findoverlaps}}.}
 }
