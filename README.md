@@ -47,6 +47,7 @@ One feature of gUtils is syntactic sugar on top of basic GenomicRangesto do quic
 
 Subsets or re-orders `a` based on the logical or integer valued *expr* that operates GRanges metadata columns of `a` 
 ```{r}
+  a %Q% (*expr*)
   a %Q% (col1  == "value" & col2 > 0 & col3<100)
   a %Q% (order(col1))  
 ```
