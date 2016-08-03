@@ -56,7 +56,7 @@ Performs "natural join" or merge of metadata columns of `a` and `b` using interv
   gr.findoverlaps(a, b, by = 'key_common_to_a_and_b', qcol = c('acolumn1', 'acolumn2'), scol = c('bcolumn1', 'bcolumn2'))
 ```
 
-Aggregates the metadata in `b` across the territory of each range in `a`, returning `a` with additional columns of `b` populated with values. For character or factor-valued metadata columns of `b`, aggregation will return a comma collapsed character value of all `b` values that intersect with `a[i], For numeric columns of `b` it will return the width	-weighted mean value of that column across the `a[i]` and `b` overlap.  For custom aggregations please see `gr.val` function. 
+Aggregates the metadata in `b` across the territory of each range in `a`, returning `a` with additional columns of `b` populated with values. For character or factor-valued metadata columns of `b`, aggregation will return a comma collapsed character value of all `b` values that intersect with `a[i]`, For numeric columns of `b` it will return the width	-weighted mean value of that column across the `a[i]` and `b` overlap.  For custom aggregations please see `gr.val` function. 
 ```{r}	   
   a %$% b # strand agnostic aggregation
   a %$$% b # strand specific aggregation
