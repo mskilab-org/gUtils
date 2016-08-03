@@ -2617,28 +2617,6 @@ setMethod("%&&%", signature(x = "GRanges"), function(x, y) {
 })
 
 
-#' @name %WW%
-#' @title subset x on y ranges wise obeying strand
-#' @description
-#' shortcut for x[gr.in(x,y, ignore.strand = FALSE)]
-#'
-#' gr1 %WW% gr2 returns the subsets of gr that overlaps gr2 not ignoring strand
-#'
-#' @return subset of gr1 that overlaps gr2
-#' @rdname gr.in-strand
-#' @exportMethod %WW%
-#' @aliases %WW%,GRanges-method
-#' @author Marcin Imielinski
-#' @param x See \link{gr.in}
-#' @param ... See \link{gr.in}
-setGeneric('%WW%', function(x, ...) standardGeneric('%WW%'))
-setMethod("%WW%", signature(x = "GRanges"), function(x, y) {
-    if (is.character(y))
-        y = parse.gr(y)
-    return(x[gr.in(x, y, ignore.strand = FALSE)])
-})
-
-
 #' @name %O%
 #' @title gr.val shortcut to get fractional overlap of gr1 by gr2, ignoring strand
 #' @description
