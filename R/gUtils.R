@@ -2692,19 +2692,23 @@ setMethod("%NN%", signature(x = "GRanges"), function(x, y) {
 })
 
 #' @name %_%
-#' @title setdiff shortcut (strand agnostic)
+#' @title \code{BiocGenerics::setdiff} shortcut (strand agnostic)
 #' @description
-#' Shortcut for setdiff
+#' Shortcut for \code{BiocGenerics::setdiff}
 #'
+#' gr1 <- GRanges(1, IRanges(10,20), strand="+")
+#' gr2 <- GRanges(1, IRanges(15,25), strand="-")
+#' gr3 <- "1:1-15"
 #' gr1 %_% gr2
+#' gr1 %_% gr3
 #'
-#' @return granges representing setdiff of input interval
-#' @rdname gr.setdiff-shortcut
+#' @return \code{GRanges} representing setdiff of input interval
+#' @rdname gr.setdiff
 #' @aliases %_%,GRanges-method
 #' @exportMethod %_%
 #' @author Marcin Imielinski
-#' @param x See \link{gr.setdiff}
-#' @param ... See \link{gr.setdiff}
+#' @param x \code{GRanges} object to to 
+#' @param ... A \code{GRanges} or a character to be parsed into a \code{GRanges}
 setGeneric('%_%', function(x, ...) standardGeneric('%_%'))
 setMethod("%_%", signature(x = "GRanges"), function(x, y) {
     if (is.character(y))
@@ -2876,46 +2880,46 @@ ra.overlaps = function(ra1, ra2, pad = 0, arr.ind = TRUE, ignore.strand=FALSE, .
 ra.merge = function(..., pad = 0, ind = FALSE, ignore.strand = FALSE)
     {
         ## hey why not
-        .rrbind2 = function(..., union = T, as.data.table = FALSE)
-            {
-                dfs = list(...);  # gets list of data frames
-                dfs = dfs[!sapply(dfs, is.null)]
-                dfs = dfs[sapply(dfs, ncol)>0]
-                names.list = lapply(dfs, names);
-                cols = unique(unlist(names.list));
-                unshared = lapply(names.list, function(x) setdiff(cols, x));
-                ix = which(sapply(dfs, nrow)>0)
-                ## only call expanded dfs if needed
-                if (any(sapply(unshared, length) != 0))
-                    expanded.dts <- lapply(ix, function(x) {
-                                               tmp = dfs[[x]]
-                                               if (is.data.table(dfs[[x]]))
-                                                   tmp = as.data.frame(tmp)
-                                               tmp[, unshared[[x]]] = NA;
-                                               return(data.table::as.data.table(as.data.frame(tmp[, cols])))
-                                           })
-                else
-                    expanded.dts <- lapply(dfs, function(x) data.table::as.data.table(as.data.frame(x)))
-
-                ## convert data frames (or DataFrame) to data table.
-                ## need to convert DataFrame to data.frmae for data.table(...) call.
-                ## structure call is way faster than data.table(as.data.frame(...))
-                ## and works on data.frame and DataFrame
-                                        #    dts <- lapply(expanded.dfs, function(x) structure(as.list(x), class='data.table'))
-                                        #   rout <- data.frame(rbindlist(dts))
-
-                rout <- rbindlist(expanded.dts)
-                if (!as.data.table)
-                    rout = as.data.frame(rout)
-
-                if (!union)
-                    {
-                        shared = setdiff(cols, unique(unlist(unshared)))
-                        rout = rout[, shared];
-                    }
-
-                return(rout)
-            }
+        # .rrbind2 = function(..., union = T, as.data.table = FALSE)
+        #     {
+        #         dfs = list(...);  # gets list of data frames
+        #         dfs = dfs[!sapply(dfs, is.null)]
+        #         dfs = dfs[sapply(dfs, ncol)>0]
+        #         names.list = lapply(dfs, names);
+        #         cols = unique(unlist(names.list));
+        #         unshared = lapply(names.list, function(x) setdiff(cols, x));
+        #         ix = which(sapply(dfs, nrow)>0)
+        #         ## only call expanded dfs if needed
+        #         if (any(sapply(unshared, length) != 0))
+        #             expanded.dts <- lapply(ix, function(x) {
+        #                                        tmp = dfs[[x]]
+        #                                        if (is.data.table(dfs[[x]]))
+        #                                            tmp = as.data.frame(tmp)
+        #                                        tmp[, unshared[[x]]] = NA;
+        #                                        return(data.table::as.data.table(as.data.frame(tmp[, cols])))
+        #                                    })
+        #         else
+        #             expanded.dts <- lapply(dfs, function(x) data.table::as.data.table(as.data.frame(x)))
+        # 
+        #         ## convert data frames (or DataFrame) to data table.
+        #         ## need to convert DataFrame to data.frmae for data.table(...) call.
+        #         ## structure call is way faster than data.table(as.data.frame(...))
+        #         ## and works on data.frame and DataFrame
+        #                                 #    dts <- lapply(expanded.dfs, function(x) structure(as.list(x), class='data.table'))
+        #                                 #   rout <- data.frame(rbindlist(dts))
+        # 
+        #         rout <- rbindlist(expanded.dts)
+        #         if (!as.data.table)
+        #             rout = as.data.frame(rout)
+        # 
+        #         if (!union)
+        #             {
+        #                 shared = setdiff(cols, unique(unlist(unshared)))
+        #                 rout = rout[, shared];
+        #             }
+        # 
+        #         return(rout)
+        #     }
         
         ra = list(...)
         nm = names(ra)

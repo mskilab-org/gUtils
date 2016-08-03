@@ -471,6 +471,15 @@ test_that("gr.tile.map", {
 
 #})
 
+test_that('%_% works', {
+  
+  gr1 <- GRanges(1, IRanges(10,20), strand="+")
+  gr2 <- GRanges(1, IRanges(15,25), strand="-")
+  gr3 <- "1:1-15"
+  expect_equal(width(gr1 %_% gr2), 5)
+  expect_equal(width(gr1 %_% gr3), 5)
+})
+
 test_that('%Q% works', {
 
   testset <- GRanges(seqnames = Rle(1,c(5)) , ranges = IRanges(1:5 , end = 2000:2004) , strand = Rle(strand(c("+")) , c(5)) , mean = c(1, -2 , -5 , 5 ,6))
