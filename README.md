@@ -51,6 +51,9 @@ Subsets or re-orders `a` based on the logical or integer valued *expr* that oper
   a %Q% (order(col1))  
 ```
 
+
+### `%*%`
+
 Performs "natural join" or merge of metadata columns of `a` and `b` using interval overlap as a "primary key", outputs a new GRanges whose maximum length is `length(a)*length(b)`. (See `gr.findoverlaps` for more complex queries, including `by` argument that merging based on a hybrid primary key combining both metadata and interval territories)
 ```{r}	 	  
   a %*% b # strand agnostic merging
@@ -60,6 +63,8 @@ Performs "natural join" or merge of metadata columns of `a` and `b` using interv
   gr.findoverlaps(a, b, by = 'key_common_to_a_and_b', qcol = c('acolumn1', 'acolumn2'), scol = c('bcolumn1', 'bcolumn2'))
 ```
 
+
+### `%$%`
 Aggregates the metadata in `b` across the territory of each range in `a`, returning `a` with additional columns of `b` populated with values. For character or factor-valued metadata columns of `b`, aggregation will return a comma collapsed character value of all `b` values that intersect with `a[i]`, For numeric columns of `b` it will return the width	-weighted mean value of that column across the `a[i]` and `b` overlap.  For custom aggregations please see `gr.val` function. 
 ```{r}	   
   a %$% b # strand agnostic aggregation
@@ -69,36 +74,42 @@ Aggregates the metadata in `b` across the territory of each range in `a`, return
   gr.val(a, b, by = 'sample_id', FUN = function(x, width, is.na) my_cool_aggregation_fn(x, width, is.na)) ## aggregates and casts data using levels of column "sample_id"
 ```
 
+### `%&%`
 Return the subset of ranges in `a` that intersect with `b'
 ```{r}
   a %&% b # strand agnostic
   a %&&% b # strand specific
 ```
 
+### `%o%`
 Returns a `length(a)` numeric vector whose value `i` is the fraction of `a[i]` that overlaps at least one range in `b' 
 ```{r}
   a %o% b # strand agnostic
   a %oo% b # strand specific
 ```
 
+### `%O%`
 Returns a `length(a)` numeric vector whose value `i` is the fraction of `a[i]` that overlaps at least one range in `b' 
 ```{r}
   a %O% b # strand agnostic
   a %OO% b # strand specific
 ```
 
+### `%N%`
 Returns a `length(a)` numeric vector whose value `i` is the total number of ranges in `b` that overlap wit  `a[i]` 
 ```{r}
   a %N% b # strand agnostic
   a %NN% b # strand specific
 ```
 
+### `%^%`
 Returns a `length(a)` logical vector whose value `i` TRUE if the  `a[i]` overlaps at least on range in `b' (similar to "%over%" just less fussy)
 ```{r}
   a %^% b # strand agnostic
   a %^^% b # strand specific
 ```
 
+### `gr.match`
 Returns a `length(a)` integer vector whose value `i` contains the first index in `b' overlapping `a[i]` (the match cousin to "%over%" and %^%)
 ```{r}
   gr.match(a, b) # strand agnostic
