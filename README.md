@@ -60,7 +60,7 @@ Performs "natural join" or merge of metadata columns of `a` and `b` using interv
   a %**% b # strand specific merging
 
   ## fancier merges
-  gr.findoverlaps(a, b, by = 'key_common_to_a_and_b', qcol = c('acolumn1', 'acolumn2'), scol = c('bcolumn1', 'bcolumn2'))
+  gr.findoverlaps(a, b, val = c('field1', 'field2'), by = 'key_common_to_a_and_b', qcol = c('acolumn1', 'acolumn2'), scol = c('bcolumn1', 'bcolumn2'))
 ```
 
 
