@@ -65,13 +65,17 @@ Performs "natural join" or merge of metadata columns of `a` and `b` using interv
 
 
 ### `%$%`
-Aggregates the metadata in `b` across the territory of each range in `a`, returning `a` with additional columns of `b` populated with values. For character or factor-valued metadata columns of `b`, aggregation will return a comma collapsed character value of all `b` values that intersect with `a[i]`, For numeric columns of `b` it will return the width	-weighted mean value of that column across the `a[i]` and `b` overlap.  For custom aggregations please see `gr.val` function. 
+Aggregates the metadata in `b` across the territory of each range in `a`, returning `a` with additional columns of `b` populated with values. For character or factor-valued metadata columns of `b`, aggregation will return a comma collapsed character value of all `b` values (e.g. gene names) that overlap `a[i]`, For numeric columns of `b` it will return the width-weighted mean value (e.g. peak intensity) of that column across the territory `a[i]` and `b` overlap.  For custom aggregations please see `gr.val` function. 
 ```{r}	   
   a %$% b # strand agnostic aggregation
   a %$$% b # strand specific aggregation
 
-  # if you need additional customization
-  gr.val(a, b, by = 'sample_id', FUN = function(x, width, is.na) my_cool_aggregation_fn(x, width, is.na)) ## aggregates and casts data using levels of column "sample_id"
+  # for additional customization
+  # gr.val aggregates and casts data using levels of column "sample_id"				   
+  # and a custom function (e.g. max, mode, median) that takes three values as input,
+  # where width refers to the width of the overlaps between a[i] and b[jj]
+  gr.val(a, b, by = 'sample_id', FUN = function(value, width, is.na) my_cool_fn(value, width, is.na))
+
 ```
 
 ### `%&%`
