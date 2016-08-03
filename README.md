@@ -60,7 +60,10 @@ Performs "natural join" or merge of metadata columns of `a` and `b` using interv
   a %**% b # strand specific merging
 
   ## fancier merges
-  gr.findoverlaps(a, b, val = c('field1', 'field2'), by = 'key_common_to_a_and_b', qcol = c('acolumn1', 'acolumn2'), scol = c('bcolumn1', 'bcolumn2'))
+  gr.findoverlaps(a, b, 
+             by = 'key_common_to_a_and_b',
+	     qcol = c('acolumn1', 'acolumn2'),
+	     scol = c('bcolumn1', 'bcolumn2'))
 ```
 
 
@@ -74,7 +77,9 @@ Aggregates the metadata in `b` across the territory of each range in `a`, return
   # gr.val aggregates and casts data using levels of column "sample_id"				   
   # and a custom function (e.g. max, mode, median) that takes three values as input,
   # where width refers to the width of the overlaps between a[i] and b[jj]
-  gr.val(a, b, by = 'sample_id', FUN = function(value, width, is.na) my_cool_fn(value, width, is.na))
+  gr.val(a, b, val = c('field1', 'field2'),
+               by = 'sample_id',
+	       FUN = function(value, width, is.na) my_cool_fn(value, width, is.na))
 
 ```
 
