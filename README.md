@@ -40,7 +40,7 @@ Installation
 gUtils cheat sheet 
 -----
 
-One feature of gUtils is syntactic sugar on top of basic GenomicRanges operations, enabling easy piping of interval operations as part of interactive "genomic data science" exploration in R. In all these examples `a` and `b` are GRanges (e.g `a` are gene territories and `b` might be copy number segments or Chip-Seq peaks). 
+One feature of gUtils is syntactic sugar on top of basic GenomicRanges functionality, enabling easy piping of interval operations as part of interactive "genomic data science" exploration in R. In all these examples `a` and `b` are GRanges (e.g `a` are gene territories and `b` might be copy number segments or Chip-Seq peaks). 
 
 ### `%Q%`
 
