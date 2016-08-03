@@ -66,7 +66,7 @@ Performs "natural join" or merge of metadata columns of `a` and `b` using interv
 
 
 ### `%$%`
-Aggregates the metadata in `b` across the territory of each range in `a`.  This returns `a` appended with additional metadata columns of `b`.  The values are aggregated over the `a` and `b` overlap. For character or factor-valued metadata columns of `b`, aggregation will return a comma collapsed character value of all `b` values (e.g. gene names) that overlap `a[i]`, For numeric columns of `b` it will return the width-weighted mean value (e.g. peak intensity) of that column across the territory `a[i]` and `b` overlap.  For custom aggregations please see `gr.val` function. 
+Aggregates the metadata in `b` across the territory of each range in `a`.  This returns `a` appended with additional metadata columns of `b`.  The values are aggregated over the `a` and `b` overlap. For character or factor-valued metadata columns of `b`, aggregation will return a comma collapsed character value of all `b` values (e.g. gene names) that overlap `a[i]`, For numeric columns of `b` it will return the width-weighted mean value (e.g. peak intensity) of that column across the  `a[i]` and `b` overlap.  For custom aggregations please see `gr.val` function. 
 ```{r}	   
   a %$% b # strand agnostic aggregation
   a %$$% b # strand specific aggregation
