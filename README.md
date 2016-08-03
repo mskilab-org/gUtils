@@ -110,7 +110,7 @@ Returns a `length(a)` logical vector whose item `i` TRUE if the  `a[i]` overlaps
 ```
 
 ### `gr.match`
-Returns a `length(a)` integer vector whose item `i` contains the first index in `b' overlapping `a[i]` (the match cousin to "%over%" and %^%)
+Returns a `length(a)` integer vector whose item `i` contains the *first* index in `b` overlapping `a[i]` (the match cousin to "%over%" and %^%)
 ```{r}
   gr.match(a, b) # strand agnostic
   gr.match(a, b, ignore.strand = FALSE) # strand specific	
