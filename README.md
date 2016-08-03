@@ -63,7 +63,7 @@ Aggregates the metadata in `b` across the territory of each range in `a`, return
 Return the subset of ranges in `a` that intersect with `b'
 ```{r}
   a %&% b # strand agnostic
-  a %&%% b # strand specific
+  a %&&% b # strand specific
 ```
 
 Returns a `length(a)` numeric vector whose value `i` is the fraction of `a[i]` that overlaps at least one range in `b' 
