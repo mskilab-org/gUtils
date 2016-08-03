@@ -37,7 +37,7 @@ Installation
   install_github('mskilab/gUtils')
   ````
 
-Usage / cheat sheet 
+gUtils cheat sheet 
 -----
 
 One utility of gUtils is syntactic sugar on top of basic GenomicRangesto do quick piping of interval operations as part of interactive genomic data science exploration. In all these examples `a` and `b` are GRanges (e.g `a` are gene territories and `b` might be copy number segments or Chip-Seq peaks). 
