@@ -61,7 +61,7 @@ Performs "natural join" or merge of metadata columns of `a` and `b` using interv
 
   ## fancier merges
   gr.findoverlaps(a, b, 
-      by = 'key_common_to_a_and_b', qcol = c('acolumn1', 'acolumn2'), scol = c('bcolumn1', 'bcolumn2'))	     
+      by = 'column_in_both_a_and_b', qcol = c('acolumn1', 'acolumn2'), scol = c('bcolumn1', 'bcolumn2'))	     
 ```
 
 
