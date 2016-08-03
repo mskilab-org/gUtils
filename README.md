@@ -42,6 +42,9 @@ Usage / cheat sheet
 
 One utility of gUtils is syntactic sugar on top of basic GenomicRangesto do quick piping of interval operations as part of interactive genomic data science exploration. In all these examples `a` and `b` are GRanges (e.g `a` are gene territories and `b` might be copy number segments or Chip-Seq peaks). 
 
+
+## `%Q%`
+
 Subsets or re-orders `a` based on the logical or integer valued *expr* that operates GRanges metadata columns of `a` 
 ```{r}
   a %Q% (col1  == "value" & col2 > 0 & col3<100)
