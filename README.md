@@ -82,7 +82,7 @@ Aggregates the metadata in `b` across the territory of each range in `a`.  This 
 ```
 
 ### `%&%`
-Return the subset of ranges in `a` that intersect with `b'
+Return the subset of ranges in `a` that overlap with at least one range in `b`
 ```{r}
   a %&% b # strand agnostic
   a %&&% b # strand specific
