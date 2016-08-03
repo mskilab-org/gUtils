@@ -42,9 +42,10 @@ Usage / cheat sheet
 
 One utility of gUtils is syntactic sugar on top of basic GenomicRangesto do quick piping of interval operations as part of interactive genomic data science exploration. In all these examples `a` and `b` are GRanges (e.g `a` are gene territories and `b` might be copy number segments or Chip-Seq peaks). 
 
-Subsets or re-orders `a` based on the logical or integer valued *expr* that operates `a` GRanges metadata
+Subsets or re-orders `a` based on the logical or integer valued *expr* that operates GRanges metadata columns of `a` 
 ```{r}
-  a %Q% (metadata_feature == "value") # strand agnostic
+  a %Q% (col1  == "value" & col2 > 0 & col3<100)
+  a %Q% (order(col1))  
 ```
 
 Performs "natural join" or merge of metadata columns of `a` and `b` using interval overlap as a "primary key", outputs a new GRanges whose maximum length is `length(a)*length(b)`. (See `gr.findoverlaps` for more complex queries, including `by` argument that merging based on a hybrid primary key combining both metadata and interval territories)
