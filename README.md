@@ -88,19 +88,21 @@ Return the subset of ranges in `a` that overlap with at least one range in `b`
   a %&&% b # strand specific
 ```
 
+### `%O%`
+Returns a `length(a)` numeric vector whose item `i` is the number of bases in `a[i]` that overlaps at least one range in `b' 
+```{r}
+  a %O% b # strand agnostic
+  a %OO% b # strand specific
+```
+
+
 ### `%o%`
-Returns a `length(a)` numeric vector whose item `i` is the fraction of `a[i]` that overlaps at least one range in `b' 
+Returns a `length(a)` numeric vector whose item `i` is the fraction of the width `a[i]` that overlaps at least one range in `b' 
 ```{r}
   a %o% b # strand agnostic
   a %oo% b # strand specific
 ```
 
-### `%O%`
-Returns a `length(a)` numeric vector whose item `i` is the fraction of `a[i]` that overlaps at least one range in `b' 
-```{r}
-  a %O% b # strand agnostic
-  a %OO% b # strand specific
-```
 
 ### `%N%`
 Returns a `length(a)` numeric vector whose item `i` is the total number of ranges in `b` that overlap with `a[i]` 
