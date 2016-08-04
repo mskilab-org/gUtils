@@ -106,7 +106,7 @@ Returns a `length(a)` numeric vector whose item `i` is the fraction of the width
 
 ### `%N%`
 Returns a `length(a)` numeric vector whose item `i` is the total number of ranges in `b` that overlap with `a[i]`.
-```{r}e
+```{r}
   a %N% b # strand agnostic
   a %NN% b # strand specific
 ```
