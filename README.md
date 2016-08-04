@@ -112,14 +112,14 @@ Returns a `length(a)` numeric vector whose item `i` is the total number of range
 ```
 
 ### `%^%`
-Returns a `length(a)` logical vector whose item `i` TRUE if the  `a[i]` overlaps at least on range in `b' (similar to "%over%" just less fussy).
+Returns a `length(a)` logical vector whose item `i` TRUE if the  `a[i]` overlaps at least on range in `b' (similar to `%over%` just less fussy about Seqinfos).
 ```{r}
   a %^% b # strand agnostic
   a %^^% b # strand specific
 ```
 
 ### `gr.match`
-Returns a `length(a)` integer vector whose item `i` contains the *first* index in `b` overlapping `a[i]` (this function is the match cousin to "%over%" and %^%).
+Returns a `length(a)` integer vector whose item `i` contains the *first* index in `b` overlapping `a[i]` (this function is the match cousin to `%over%` and %^%).
 ```{r}
   gr.match(a, b) # strand agnostic
   gr.match(a, b, ignore.strand = FALSE) # strand specific	
