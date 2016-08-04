@@ -141,9 +141,9 @@ Shifts intervals left by `k` bases
 ### `gr.tile`
 Tiles `a` or the genome in which `a` resides (as defined by `seqlengths(a)`) with non-overlapping bins of width `w`
 ```{r}	  
-  gr.tile(a, w) ## outputs width w non-overlapping tiles of a
-  gr.tile(seqlengths(a), w) ## outputs width w non-overlapping tiles of a's genome
-  gr.tile(seqlengths(a), 100)+450 # tiles a's genome with  1kbp bins having 900bp overlap
+  gr.tile(a, w) ## outputs non-overlapping tiles of a
+  gr.tile(seqlengths(a), w) ## outputs non-overlapping tiles of a's genome
+  gr.tile(seqlengths(a), 100)+450 # tiles a's genome with 1kbp bins having 900bp overlap
 ```
 
 
