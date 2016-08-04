@@ -112,7 +112,7 @@ Returns a `length(a)` numeric vector whose item `i` is the total number of range
 ```
 
 ### `%^%`
-Returns a `length(a)` logical vector whose item `i` TRUE if the  `a[i]` overlaps at least on range in `b' (similar to `%over%` just less fussy about Seqinfos).
+Returns a `length(a)` logical vector whose item `i` TRUE if the  `a[i]` overlaps at least on range in `b` (similar to `%over%` just less fussy about Seqinfos).
 ```{r}
   a %^% b # strand agnostic
   a %^^% b # strand specific
