@@ -97,7 +97,7 @@ Returns a `length(a)` numeric vector whose item `i` is the number of bases in `a
 
 
 ### `%o%`
-Returns a `length(a)` numeric vector whose item `i` is the fraction of the width `a[i]` that overlaps at least one range in `b`.
+Returns a `length(a)` numeric vector whose item `i` is the fraction of the width of `a[i]` that overlaps at least one range in `b`.
 ```{r}
   a %o% b # strand agnostic
   a %oo% b # strand specific
