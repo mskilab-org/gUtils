@@ -6,7 +6,7 @@
 gUtils
 =======
 
-Set of utility functions for use with GenomicRanges
+Set of utility functions for use with `GenomicRanges`
 
 
 
@@ -16,7 +16,7 @@ Installation
 1. Install dependent packages and latest Bioconductor (if you haven't already)
   ```source("http://bioconductor.org/biocLite.R") 
      bioclite()
-     biocLite(c("GenomicRanges"))
+     biocLite(c("`GenomicRanges`"))
   ```
 
 2. Install devtools from CRAN (if you don't have it already)
@@ -40,11 +40,11 @@ Installation
 gUtils cheat sheet 
 -----
 
-One feature of gUtils is syntactic sugar on top of basic GenomicRanges functionality, enabling easy piping of interval operations as part of interactive "genomic data science" exploration in R. In all these examples `a` and `b` are GRanges (e.g `a` are gene territories and `b` might be copy number segments or Chip-Seq peaks). 
+One feature of gUtils is syntactic sugar on top of basic `GenomicRanges` functionality, enabling easy piping of interval operations as part of interactive "genomic data science" exploration in R. In all these examples `a` and `b` are `GRanges` (e.g `a` are gene territories and `b` might be copy number segments or Chip-Seq peaks). 
 
 ### `%Q%`
 
-Subsets or re-orders `a` based on a logical or integer valued expression that operates on the GRanges metadata columns of `a`.  
+Subsets or re-orders `a` based on a logical or integer valued expression that operates on the `GRanges` metadata columns of `a`.  
 ```{r}
   a %Q% (expr)
   a %Q% (col1  == "value" & col2 > 0 & col3 < 100)
@@ -54,7 +54,7 @@ Subsets or re-orders `a` based on a logical or integer valued expression that op
 
 ### `%*%`
 
-Performs "natural join" or merge of metadata columns of `a` and `b` using interval overlap as a "primary key", outputs a new GRanges whose maximum length is `length(a)*length(b)`. (See `gr.findoverlaps` for more complex queries, including `by` argument that merging based on a hybrid primary key combining both metadata and interval territories).
+Performs "natural join" or merge of metadata columns of `a` and `b` using interval overlap as a "primary key", outputs a new `GRanges` whose maximum length is `length(a)*length(b)`. (See `gr.findoverlaps` for more complex queries, including `by` argument that merging based on a hybrid primary key combining both metadata and interval territories).
 ```{r}	 	  
   a %*% b # strand agnostic merging
   a %**% b # strand specific merging
