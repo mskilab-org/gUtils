@@ -126,6 +126,26 @@ Returns a `length(a)` integer vector whose item `i` contains the *first* index i
   gr.match(a, b, by = 'sample_id') # match on metadata column "sample_id" as well as interval
 ```
 
+### `%+%`
+Shifts intervals right by `k` bases
+```{r}
+  a %+% k
+```
+
+### `%-%`
+Shifts intervals left by `k` bases
+```{r}
+  a %-% k 
+```
+
+### `gr.tile`
+Tiles the `a` or the genome in which `a` resides (as defined by `seqlengths(a)`) with evenly spaced non-overlapping bins of width `w`
+```{r}	  
+  gr.tile(a, w) ## outputs width w non-overlapping tiles of a
+  gr.tile(seqlengths(a), w) ## outputs width w non-overlapping tiles of a's genome
+  gr.tile(seqlengths(a), 100)+450 # tiles a's genome with  1kbp bins having 900bp overlap
+```
+
 
 Full documentation with examples is available here: [Documentation][docs]
 
