@@ -44,7 +44,7 @@ One feature of gUtils is syntactic sugar on top of basic GenomicRanges functiona
 
 ### `%Q%`
 
-Subsets or re-orders `a` based on a logical or integer valued expression that operates on the GRanges metadata columns of `a` 
+Subsets or re-orders `a` based on a logical or integer valued expression that operates on the GRanges metadata columns of `a`.  
 ```{r}
   a %Q% (expr)
   a %Q% (col1  == "value" & col2 > 0 & col3 < 100)
@@ -54,7 +54,7 @@ Subsets or re-orders `a` based on a logical or integer valued expression that op
 
 ### `%*%`
 
-Performs "natural join" or merge of metadata columns of `a` and `b` using interval overlap as a "primary key", outputs a new GRanges whose maximum length is `length(a)*length(b)`. (See `gr.findoverlaps` for more complex queries, including `by` argument that merging based on a hybrid primary key combining both metadata and interval territories)
+Performs "natural join" or merge of metadata columns of `a` and `b` using interval overlap as a "primary key", outputs a new GRanges whose maximum length is `length(a)*length(b)`. (See `gr.findoverlaps` for more complex queries, including `by` argument that merging based on a hybrid primary key combining both metadata and interval territories).
 ```{r}	 	  
   a %*% b # strand agnostic merging
   a %**% b # strand specific merging
@@ -82,14 +82,14 @@ Aggregates the metadata in `b` across the territory of each range in `a`.  This 
 ```
 
 ### `%&%`
-Return the subset of ranges in `a` that overlap with at least one range in `b`
+Return the subset of ranges in `a` that overlap with at least one range in `b`.
 ```{r}
   a %&% b # strand agnostic
   a %&&% b # strand specific
 ```
 
 ### `%O%`
-Returns a `length(a)` numeric vector whose item `i` is the number of bases in `a[i]` that overlaps at least one range in `b`
+Returns a `length(a)` numeric vector whose item `i` is the number of bases in `a[i]` that overlaps at least one range in `b`.
 ```{r}
   a %O% b # strand agnostic
   a %OO% b # strand specific
@@ -97,7 +97,7 @@ Returns a `length(a)` numeric vector whose item `i` is the number of bases in `a
 
 
 ### `%o%`
-Returns a `length(a)` numeric vector whose item `i` is the fraction of the width `a[i]` that overlaps at least one range in `b`
+Returns a `length(a)` numeric vector whose item `i` is the fraction of the width `a[i]` that overlaps at least one range in `b`.
 ```{r}
   a %o% b # strand agnostic
   a %oo% b # strand specific
@@ -105,21 +105,21 @@ Returns a `length(a)` numeric vector whose item `i` is the fraction of the width
 
 
 ### `%N%`
-Returns a `length(a)` numeric vector whose item `i` is the total number of ranges in `b` that overlap with `a[i]` 
-```{r}
+Returns a `length(a)` numeric vector whose item `i` is the total number of ranges in `b` that overlap with `a[i]`.
+```{r}e
   a %N% b # strand agnostic
   a %NN% b # strand specific
 ```
 
 ### `%^%`
-Returns a `length(a)` logical vector whose item `i` TRUE if the  `a[i]` overlaps at least on range in `b' (similar to "%over%" just less fussy)
+Returns a `length(a)` logical vector whose item `i` TRUE if the  `a[i]` overlaps at least on range in `b' (similar to "%over%" just less fussy).
 ```{r}
   a %^% b # strand agnostic
   a %^^% b # strand specific
 ```
 
 ### `gr.match`
-Returns a `length(a)` integer vector whose item `i` contains the *first* index in `b` overlapping `a[i]` (this function is the match cousin to "%over%" and %^%)
+Returns a `length(a)` integer vector whose item `i` contains the *first* index in `b` overlapping `a[i]` (this function is the match cousin to "%over%" and %^%).
 ```{r}
   gr.match(a, b) # strand agnostic
   gr.match(a, b, ignore.strand = FALSE) # strand specific	
@@ -127,22 +127,22 @@ Returns a `length(a)` integer vector whose item `i` contains the *first* index i
 ```
 
 ### `%+%`
-Shifts intervals right by `k` bases
+Shifts intervals right by `k` bases.
 ```{r}
   a %+% k
 ```
 
 ### `%-%`
-Shifts intervals left by `k` bases
+Shifts intervals left by `k` bases.
 ```{r}
   a %-% k 
 ```
 
 ### `gr.tile`
-Tiles `a` or the genome in which `a` resides (as defined by `seqlengths(a)`) with non-overlapping bins of width `w`
+Tiles `a` or the genome in which `a` resides (as defined by `seqlengths(a)`) with non-overlapping bins of width `w`.
 ```{r}	  
   gr.tile(a, w) ## outputs non-overlapping tiles of a
-  gr.tile(seqlengths(a), w) ## outputs non-overlapping tiles of a's genome
+  gr.tilexs(seqlengths(a), w) ## outputs non-overlapping tiles of a's genome
   gr.tile(seqlengths(a), 100)+450 # tiles a's genome with 1kbp bins having 900bp overlap
 ```
 
