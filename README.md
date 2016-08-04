@@ -151,6 +151,7 @@ Returns a `GRanges` of the first coordinate (or first k coordinates) in each int
 ```{r}	  
   gr.start(a) # returns the an interval corresponding to the left coordinate
   gr.start(a, k) # returns the first k bases on the left end of a
+  
   # returns an interval corresponding to the left coordinate in '+' and '*' ranges and the right coordinate in '-' ranges
   gr.start(a, ignore.strand = FALSE) 
 ```
@@ -161,7 +162,7 @@ Returns a `GRanges` of the last coordinate (or last k coordinates) in each inter
   gr.end(a) # returns the an interval corresponding to the right coordinate
   gr.end(a, k) # returns the last k bases on the right end of a
 
-# returns an interval corresponding to the right coordinate in '+' and '*' ranges and the left coordinate in '-' ranges
+  # returns an interval corresponding to the right coordinate in '+' and '*' ranges and the left coordinate in '-' ranges
   gr.end(a, ignore.strand = FALSE) 
 ```
 
