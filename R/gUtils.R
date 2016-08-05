@@ -237,13 +237,13 @@ gr.start <- function(x, width = 1, force = FALSE, ignore.strand = TRUE, clip = F
 #' @importFrom data.table data.table
 #' @importFrom GenomicRanges GRanges mcols
 #' @importFrom IRanges IRanges
+#' @param dt data.table to convert
 #' @name dt2gr
 #' @examples
 #' gr <- dt2gr(data.table(start=c(1,2), seqnames=c("X", "1"), end=c(10,20), strand = c('+', '-')))
 #' @export
-dt2gr <- function(dt, key = NULL, seqlengths = hg_seqlengths(), seqinfo = Seqinfo()) {
-  library(data.table)
-
+dt2gr <- function(dt, seqlengths = hg_seqlengths(), seqinfo = Seqinfo()) {
+  
   out = tryCatch({
         rr <- IRanges(dt$start, dt$end)
       if (!'strand' %in% colnames(dt))
@@ -2521,7 +2521,7 @@ gr.match = function(query, subject, max.slice = Inf, verbose = FALSE, ...)
           {
               verbose = TRUE
               ix.l = split(1:length(query), ceiling(as.numeric((1:length(query)/max.slice))))
-              return(do.call('c', mclapply(ix.l, function(ix) {
+              return(do.call('c', parallel::mclapply(ix.l, function(ix) {
                                                if (verbose)
                       cat(sprintf('Processing %s to %s\n', min(ix), max(ix)))                
                   gr.match(query[ix, ], subject, verbose = TRUE, ...)
@@ -2550,8 +2550,9 @@ subset2 <- function(x, condition) {
 #' Operator to shift GRanges right "sh" bases
 #'
 #' @return shifted granges
-#' @rdname gr.nudge
-#' @export
+#' @rdname gr.nudge-shortcut
+#' @exportMethod %+%
+#' @aliases %+%,GRanges-method
 #' @author Marcin Imielinski
 setGeneric('%+%', function(gr, ...) standardGeneric('%+%'))
 setMethod("%+%", signature(gr = "GRanges"), function(gr, sh) {
@@ -2585,10 +2586,10 @@ setMethod("%-%", signature(gr = "GRanges"), function(gr, sh) {
 #'
 #' gr1 %&% gr2 returns the subsets of gr1 that overlaps gr2
 #'
-#' @return subset of gr1 that overlaps gr2
-#' @rdname gr.in
+#' @return subset of gr1 that overlaps gr2f
+#' @rdname gr.in-shortcut
 #' @exportMethod %&%
-#' @export
+#' @aliases %&%,GRanges-method
 #' @author Marcin Imielinski
 setGeneric('%&%', function(x, ...) standardGeneric('%&%'))
 setMethod("%&%", signature(x = "GRanges"), function(x, y) {
@@ -2598,16 +2599,16 @@ setMethod("%&%", signature(x = "GRanges"), function(x, y) {
 })
 
 #' @name %&&%
-#' @title subset x on y ranges wise respectingstrand
+#' @title Subset x on y ranges wise respecting strand
 #' @description
 #' shortcut for x[gr.in(x,y)]
 #'
 #' gr1 %&&% gr2 returns the subsets of gr1 that overlaps gr2
 #'
 #' @return subset of gr1 that overlaps gr2
-#' @rdname gr.in
+#' @rdname gr.in-strand-shortcut
 #' @exportMethod %&%
-#' @export
+#' @aliases %&&%,GRanges-method
 #' @author Marcin Imielinski
 setGeneric('%&&%', function(x, ...) standardGeneric('%&&%'))
 setMethod("%&&%", signature(x = "GRanges"), function(x, y) {
@@ -2837,28 +2838,6 @@ setMethod("%_%", signature(x = "GRanges"), function(x, y) {
     if (is.character(y))
         y = parse.gr(y)
     setdiff(gr.stripstrand(x[, c()]), gr.stripstrand(y[, c()]))
-})
-
-
-#' @name %__%
-#' @title setdiff shortcut (strand sensitive)
-#' @description
-#' Shortcut for setdiff
-#'
-#' gr1 %__% gr2
-#'
-#' @return granges representing setdiff of input interval
-#' @rdname gr.setdiff-shortcut
-#' @aliases %_%,GRanges-method
-#' @exportMethod %_%
-#' @author Marcin Imielinski
-#' @param x See \link{gr.setdiff}
-#' @param ... See \link{gr.setdiff}
-setGeneric('%_%', function(x, ...) standardGeneric('%_%'))
-setMethod("%_%", signature(x = "GRanges"), function(x, y) {
-    if (is.character(y))
-        y = parse.gr(y)
-    setdiff(x[, c()], y[, c()])
 })
 
 #' @name %**%

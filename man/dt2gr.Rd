@@ -4,10 +4,12 @@
 \alias{dt2gr}
 \title{Convert data.table to GRanges}
 \usage{
-dt2gr(dt, key = NULL, seqlengths = hg_seqlengths(), seqinfo = Seqinfo())
+dt2gr(dt, seqlengths = hg_seqlengths(), seqinfo = Seqinfo())
 }
 \arguments{
 \item{dt}{\code{data.table} to convert to \code{GRanges}}
+
+\item{dt}{data.table to convert}
 }
 \value{
 \code{GRanges} object of \code{length = nrow(dt)}
