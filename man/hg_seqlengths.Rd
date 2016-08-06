@@ -17,7 +17,7 @@ hg_seqlengths(genome = NULL, chr = FALSE, include.junk = FALSE)
 Named integer vector with elements corresponding to the genome seqlengths
 }
 \description{
-Outputs a standard seqlengths for human genome +/- "chr".
+Outputs a standard \code{seqlengths} for human genome.
 }
 \note{
 A default genome can be set with the environment variable DEFAULT_BSGENOME. This

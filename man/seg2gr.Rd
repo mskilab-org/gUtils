@@ -23,11 +23,11 @@ standardize_segs(seg, chr = FALSE)
 \item{seqinfo}{seqinfo of output GRanges object}
 }
 \description{
-Take data frame of ranges "segs" and converts into granges object porting over additional value columns
+Take data frame of ranges "segs" and converts into \code{GRanges} object porting over additional value columns
 "segs" data frame can obey any number of conventions to specify chrom, start, and end of ranges
 (eg $pos1, $pos2, $Start_position, $End_position) --> see "standardize_segs" for more info
 
-Take data frame of ranges "segs" and converts into granges object porting over additional value columns
+Take data frame of ranges "segs" and converts into \code{GRanges} object porting over additional value columns
 "segs" data frame can obey any number of conventions to specify chrom, start, and end of ranges
 (eg $pos1, $pos2, $Start_position, $End_position) --> see "standardize_segs" for more info
 }

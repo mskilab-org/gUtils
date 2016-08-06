@@ -9,6 +9,9 @@ gr2dt(x)
 \arguments{
 \item{x}{\code{GRanges} to convert}
 }
+\value{
+A \code{data.table} object of the same data as \code{x}
+}
 \description{
 and a field grl.iix which saves the (local) index that that gr was in its corresponding grl item
 }

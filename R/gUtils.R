@@ -41,51 +41,6 @@ NULL
 #' @format \code{Seqinfo}
 NULL
 
-#' Output standard human genome seqlengths
-#'
-#' Outputs a standard seqlengths for human genome +/- "chr". 
-#' @note A default genome can be set with the environment variable DEFAULT_BSGENOME. This
-#' can be the full namespace of the genome  e.g.: \code{DEFAULT_BSGENOME=BSgenome.Hsapiens.UCSC.hg19::Hsapiens} OR  a URL / file path pointing to a chrom.sizes text file (e.g. http://genome.ucsc.edu/goldenpath/help/hg19.chrom.sizes) specifying a genome definition
-#' @param genome A \code{BSgenome} or object with a \code{seqlengths} accessor. Default is hg19, but loads with warning unless explicitly provided
-#' @param chr Flag for whether to keep "chr". Default FALSE
-#' @param include.junk Flag for whether to not trim to only 1-22, X, Y, M. Default FALSE
-#' @return Named integer vector with elements corresponding to the genome seqlengths
-#' @export
-hg_seqlengths = function(genome = NULL, chr = FALSE, include.junk = FALSE)
-{
-    sl = NULL
-    if (is.null(genome)) {
-        if (nchar(dbs <- Sys.getenv("DEFAULT_BSGENOME")) == 0)
-            {
-                warning('hg_seqlengths: supply genome seqlengths or set default with env variable DEFAULT_BSGENOME (e.g. Sys.setenv(DEFAULT_BSGENOME = "BSgenome.Hsapiens.UCSC.hg19::Hsapiens").  DEFAULT_BSGENOME can also be set to a path or URL of a tab delimited text *.chrom.sizes file')
-                return(NULL)
-            }
-        else
-            {
-                tmp = suppressWarnings(tryCatch(read.delim(dbs, header = FALSE), error= function(e) NULL))
-                if (is.null(tmp))
-                    {
-                        genome = tryCatch(eval(parse(text=dbs)), error = function(e) NULL)
-                        if (is.null(genome)) 
-                            stop(sprintf("Error loading %s as BSGenome library ...\nPlease check DEFAULT_BSGENOME setting and set to either an R library BSGenome object or a valid http URL or filepath pointing to a chrom.sizes tab delimited text file.", dbs))
-                    }
-                else
-                    sl = structure(tmp[,2], names = as.character(tmp[,1]))
-                                        #            warning(paste("using default genome:", dbs))
-            }}                
-
-    if (is.null(sl))
-        sl = seqlengths(genome)
-
-    if (!chr)
-        names(sl) = gsub('chr', '', names(sl))    
-  
-  if (!include.junk)
-      sl = sl[nchar(names(sl))<=8]
-                                        #    sl = sl[c(paste('chr', 1:22, sep = ''), 'chrX', 'chrY', 'chrM')]    
-  return(sl)          
-}
-
 #' HiC data for chr14 from Lieberman-Aiden 2009 (in hg19), subsampled
 #' to 10,000 interactions
 #'
@@ -95,11 +50,57 @@ hg_seqlengths = function(genome = NULL, chr = FALSE, include.junk = FALSE)
 #' @format \code{GRangesList}
 NULL
 
+#' Output standard human genome seqlengths
+#'
+#' Outputs a standard \code{seqlengths} for human genome.
+#' @note A default genome can be set with the environment variable DEFAULT_BSGENOME. This
+#' can be the full namespace of the genome  e.g.: \code{DEFAULT_BSGENOME=BSgenome.Hsapiens.UCSC.hg19::Hsapiens} OR  a URL / file path pointing to a chrom.sizes text file (e.g. http://genome.ucsc.edu/goldenpath/help/hg19.chrom.sizes) specifying a genome definition
+#' @param genome A \code{BSgenome} or object with a \code{seqlengths} accessor. Default is hg19, but loads with warning unless explicitly provided
+#' @param chr Flag for whether to keep "chr". Default FALSE
+#' @param include.junk Flag for whether to not trim to only 1-22, X, Y, M. Default FALSE
+#' @return Named integer vector with elements corresponding to the genome seqlengths
+#' @export
+hg_seqlengths = function(genome = NULL, chr = FALSE, include.junk = FALSE)
+{
+  sl = NULL
+  if (is.null(genome)) {
+    if (nchar(dbs <- Sys.getenv("DEFAULT_BSGENOME")) == 0)
+    {
+      warning('hg_seqlengths: supply genome seqlengths or set default with env variable DEFAULT_BSGENOME (e.g. Sys.setenv(DEFAULT_BSGENOME = "BSgenome.Hsapiens.UCSC.hg19::Hsapiens").  DEFAULT_BSGENOME can also be set to a path or URL of a tab delimited text *.chrom.sizes file')
+      return(NULL)
+    }
+    else
+    {
+      tmp = suppressWarnings(tryCatch(read.delim(dbs, header = FALSE), error= function(e) NULL))
+      if (is.null(tmp))
+      {
+        genome = tryCatch(eval(parse(text=dbs)), error = function(e) NULL)
+        if (is.null(genome)) 
+          stop(sprintf("Error loading %s as BSGenome library ...\nPlease check DEFAULT_BSGENOME setting and set to either an R library BSGenome object or a valid http URL or filepath pointing to a chrom.sizes tab delimited text file.", dbs))
+      }
+      else
+        sl = structure(tmp[,2], names = as.character(tmp[,1]))
+      #            warning(paste("using default genome:", dbs))
+    }}                
+  
+  if (is.null(sl))
+    sl = seqlengths(genome)
+  
+  if (!chr)
+    names(sl) = gsub('chr', '', names(sl))    
+  
+  if (!include.junk)
+    sl = sl[nchar(names(sl))<=8]
+  #    sl = sl[c(paste('chr', 1:22, sep = ''), 'chrX', 'chrY', 'chrM')]    
+  return(sl)          
+}
+
 #' Converts \code{GRanges} to \code{data.table}
 #'
 #' and a field grl.iix which saves the (local) index that that gr was in its corresponding grl item
 #' @param x \code{GRanges} to convert
 #' @name gr2dt
+#' @return A \code{data.table} object of the same data as \code{x}
 #' @export
 #'  
 gr2dt  <- function(x)
@@ -154,7 +155,7 @@ gr2dt  <- function(x)
     return(data.table::as.data.table(eval(parse(text =cmd))))
 }
 
-#' Get GRanges corresponding to beginning of range
+#' Get \code{GRanges} corresponding to beginning of range
 #'
 #' @param x \code{GRanges} object to operate on
 #' @param width [default = 1] Specify subranges of greater width including the start of the range.
@@ -227,17 +228,18 @@ gr.start <- function(x, width = 1, force = FALSE, ignore.strand = TRUE, clip = F
   return(out)
 }
 
-#' Convert data.table to GRanges
+#' Convert \code{data.table} to \code{GRanges}
 #'
-#' Takes as input a data.table which must have the following fields: \code{start}, \code{end}, \code{strand}, \code{seqnames}. Will throw
-#' an error if any one of these is not present.
+#' Takes as input a \code{data.table} which must have the following fields: \code{start}, \code{end}, \code{strand}, \code{seqnames}. 
+#' Will throw an error if any one of these is not present.
 #' All of the remaining fields are added as metadata to the \code{GRanges}.
 #' @param dt \code{data.table} to convert to \code{GRanges}
+#' @param seqlengths A \code{seqlengths} object specifying genome. Default is \code{hg_seqlengths}.
+#' @param seqinfo A \code{Seqinfo} object specifying the genome. Default is \code{Seqinfo()}.
 #' @return \code{GRanges} object of \code{length = nrow(dt)}
 #' @importFrom data.table data.table
 #' @importFrom GenomicRanges GRanges mcols
 #' @importFrom IRanges IRanges
-#' @param dt data.table to convert
 #' @name dt2gr
 #' @examples
 #' gr <- dt2gr(data.table(start=c(1,2), seqnames=c("X", "1"), end=c(10,20), strand = c('+', '-')))
@@ -245,7 +247,7 @@ gr.start <- function(x, width = 1, force = FALSE, ignore.strand = TRUE, clip = F
 dt2gr <- function(dt, seqlengths = hg_seqlengths(), seqinfo = Seqinfo()) {
   
   out = tryCatch({
-        rr <- IRanges(dt$start, dt$end)
+      rr <- IRanges(dt$start, dt$end)
       if (!'strand' %in% colnames(dt))
           dt$strand <- '*'
       sf <- factor(dt$strand, levels=c('+', '-', '*'))
@@ -759,9 +761,13 @@ grlbind = function(...)
   #       out = grls.new[[1]]
   #   }
 
-  out.val = do.call('rrbind', grls.vals)
+  if (length(grls.vals) > 1) 
+    out.val = do.call('rrbind', grls.vals)
+  else
+    out.val = grls.vals[[1]]
   out.val$dummy241421 = NULL
-  GenomicRanges::mcols(out) <- out.val
+  if (nrow(out.val))
+    GenomicRanges::mcols(out) <- out.val
 
   return(out)
 }
@@ -820,6 +826,7 @@ streduce = function(gr, pad = 0, sort = TRUE)
 #' @param mb Round to the nearest megabase \code{[FALSE]}
 #' @param round If \code{mb} supplied, how many digits to round to. \code{[3]}
 #' @param other.cols Names of additional \code{mcols} fields to add to the string (seperated by ";")
+#' @param pretty Add commas to large numbers.
 #' @name gr.string
 #' @examples
 #' gr.string(example_genes, other.cols = c("name", "name2"))
@@ -1446,15 +1453,15 @@ gr.val = function(query, target,
   return(query)
 }
 
-# gr.duplicated
-#
-# More flexible version of gr.duplicated that allows to restrict duplicates
-# using "by" columns and allows in exact matching
-#
-gr.duplicated = function(query, by = NULL, type = 'any')
-{
-  return(duplicated(gr.match(query, query, by = by , type = type)))
-}
+# # gr.duplicated
+# #
+# # More flexible version of gr.duplicated that allows to restrict duplicates
+# # using "by" columns and allows in exact matching
+# #
+# gr.duplicated = function(query, by = NULL, type = 'any')
+# {
+#   return(duplicated(gr.match(query, query, by = by , type = type)))
+# }
 
 #' Dice up \code{GRanges} into \code{width = 1} \code{GRanges} spanning the input (warning can produce a very large object)
 #'
@@ -1642,8 +1649,6 @@ rle.query = function(subject.rle, query.gr, verbose = FALSE, mc.cores = 1, chunk
   
   return(out)        
 }
-
-
 
 #' Check intersection of \code{GRangesList} with windows on genome
 #'
@@ -1839,14 +1844,13 @@ gr.sub = function(gr, a = c('(^chr)(\\.1$)', 'MT'), b= c('', 'M'))
 #' @title Convert GRange like data.frames into GRanges
 #' @description
 #'
-#' Take data frame of ranges "segs" and converts into granges object porting over additional value columns
+#' Take data frame of ranges "segs" and converts into \code{GRanges} object porting over additional value columns
 #' "segs" data frame can obey any number of conventions to specify chrom, start, and end of ranges
 #' (eg $pos1, $pos2, $Start_position, $End_position) --> see "standardize_segs" for more info
 #' 
 #' @param segs data frame of segments with fields denoting chromosome, start, end, and other metadata (see standardized segs for seg data frame input formats)
 #' @param seqlengths seqlengths of output GRanges object
 #' @param seqinfo seqinfo of output GRanges object
-#' @export
 seg2gr = function(segs, seqlengths = NULL, seqinfo = Seqinfo())
 {
   if (is(segs, 'data.table'))
@@ -1922,13 +1926,11 @@ seg2gr = function(segs, seqlengths = NULL, seqinfo = Seqinfo())
 #'
 #' if chr = TRUE will ensure "chr" prefix is added to chromossome(if does not exist)
 #'
-#' @export
-#'
 #' @name seg2gr
 #' @title Convert GRange like data.frames into GRanges
 #' @description
 #'
-#' Take data frame of ranges "segs" and converts into granges object porting over additional value columns
+#' Take data frame of ranges "segs" and converts into \code{GRanges} object porting over additional value columns
 #' "segs" data frame can obey any number of conventions to specify chrom, start, and end of ranges
 #' (eg $pos1, $pos2, $Start_position, $End_position) --> see "standardize_segs" for more info
 #'
@@ -1937,7 +1939,6 @@ seg2gr = function(segs, seqlengths = NULL, seqinfo = Seqinfo())
 #' @param segs data frame of segments with fields denoting chromosome, start, end, and other metadata (see standardized segs for seg data frame input formats)
 #' @param seqlengths seqlengths of output GRanges object
 #' @param seqinfo seqinfo of output GRanges object
-#' @export
 standardize_segs = function(seg, chr = FALSE)
 {
   #if (inherits(seg, 'IRangesList'))
@@ -2290,7 +2291,7 @@ gr.peaks = function(gr, field = 'score',
                     nbootstrap = 1e4,
                     FUN = NULL,
                     AGG.FUN = sum,
-                    peel.gr = NULL, ## when peeling will use these segs instead of gr (which can just be a standard granges of scores)
+                    peel.gr = NULL, ## when peeling will use these segs instead of gr (which can just be a standard \code{GRanges} of scores)
                     score.only = FALSE,
                           verbose = peel>0)
 {
@@ -2549,8 +2550,10 @@ subset2 <- function(x, condition) {
 #' @description
 #' Operator to shift GRanges right "sh" bases
 #'
-#' @return shifted granges
-#' @rdname gr.nudge-shortcut
+#' @param gr \code{GRanges} to be shifted
+#' @param ... Amount to shift by
+#' @return shifted \code{GRanges}
+#' @rdname gr.right-shortcut
 #' @exportMethod %+%
 #' @aliases %+%,GRanges-method
 #' @author Marcin Imielinski
@@ -2567,9 +2570,11 @@ setMethod("%+%", signature(gr = "GRanges"), function(gr, sh) {
 #' Operator to shift GRanges left "sh" bases
 #'
 #' df %!% c('string.*to.*match', 'another.string.to.match')
-#'
-#' @return shifted granges
-#' @rdname gr.nudge
+#' @param gr \code{GRanges} to be shifted
+#' @param ... Amount to shift by
+#' @return Shifted \code{GRanges}
+#' @aliases %-%,GRanges-method
+#' @rdname gr.left-shortcut
 #' @export
 #' @author Marcin Imielinski
 setGeneric('%-%', function(gr, ...) standardGeneric('%-%'))
@@ -2582,12 +2587,13 @@ setMethod("%-%", signature(gr = "GRanges"), function(gr, sh) {
 #' @name %&%
 #' @title subset x on y ranges wise ignoring strand
 #' @description
-#' shortcut for x[gr.in(x,y)]
+#' Shortcut for x[gr.in(x,y)]
 #'
 #' gr1 %&% gr2 returns the subsets of gr1 that overlaps gr2
 #'
-#' @return subset of gr1 that overlaps gr2f
+#' @return subset of gr1 that overlaps gr2
 #' @rdname gr.in-shortcut
+#' @param x \code{GRanges} to subset
 #' @exportMethod %&%
 #' @aliases %&%,GRanges-method
 #' @author Marcin Imielinski
@@ -2607,7 +2613,8 @@ setMethod("%&%", signature(x = "GRanges"), function(x, y) {
 #'
 #' @return subset of gr1 that overlaps gr2
 #' @rdname gr.in-strand-shortcut
-#' @exportMethod %&%
+#' @exportMethod %&&%
+#' @param x \code{GRanges} to subset
 #' @aliases %&&%,GRanges-method
 #' @author Marcin Imielinski
 setGeneric('%&&%', function(x, ...) standardGeneric('%&&%'))
@@ -2825,7 +2832,7 @@ setMethod("%_%", signature(x = "GRanges"), function(x, y) {
 #'
 #' gr1 %**% gr2
 #'
-#' @return new granges containing every pairwise intersection of ranges in gr1 and gr2 with a join of the corresponding metadata
+#' @return new \code{GRanges} containing every pairwise intersection of ranges in gr1 and gr2 with a join of the corresponding metadata
 #' @rdname grfo-shortcut
 #' @exportMethod %**%
 #' @aliases %**%,GRanges-method
@@ -3090,10 +3097,10 @@ ra.merge = function(..., pad = 0, ind = FALSE, ignore.strand = FALSE)
         return(out)
     }
 
-#' Simplify granges by collapsing all non-overlapping adjacent ranges that share a given "field" value
+#' Simplify \code{GRanges} by collapsing all non-overlapping adjacent ranges that share a given "field" value
 #' (adjacent == adjacent in the input GRanges object)
 #'
-#' @param gr takes in gr or grl
+#' @param gr takes in \code{GRanges} or \code{GRangesList}
 #' @param field character scalar, corresponding to value field of gr. \code{[NULL]}
 #' @param val \code{[NULL]}
 #' @param include.val scalar logical, will include in out gr values field of first matching record in input gr. \code{[TRUE]}
@@ -3207,13 +3214,14 @@ setMethod("%$%", signature(x = "GRanges"), function(x, y) {
     return(gr.val(x, y, val = names(values(y))))
 })
 
-#' parse.grl
+#' Parse a string into a single \code{GRangesList}
 #'
-#' quick function to parse \code{GRangesList} from character vector IGV / UCSC style strings of format gr1;gr2;gr3 where each gr is of format chr:start-end[+/-]
+#' Parse character vector in IGV / UCSC style strings of format gr1;gr2;gr3 where each gr is of format chr:start-end[+/-]
 #'
 #' @name parse.grl
-#' @param x  character vector representing a GRangesList with UCSC style coordinates (chr:start-end[+-]) representing a [signed] Granges and  ";" separators within each item of x separating individaul each GRAnges
-#' @param seqlengths   named integer vector representing genome (hg_seqlengths() by default)
+#' @param x Character vector representing a \code{GRangesList} with UCSC style coordinates (chr:start-end[+-]) representing a [signed] Granges and  ";" separators within each item of x separating individaul each GRAnges
+#' @param seqlengths named integer vector representing genome (\code{hg_seqlengths} by default)
+#' @return A single \code{GRangesList} parsed from the strings
 #' @export
 parse.grl = function(x, seqlengths = hg_seqlengths())
 {
@@ -3240,18 +3248,20 @@ parse.grl = function(x, seqlengths = hg_seqlengths())
   df$end = as.numeric(df$end)
   rownames(df) = NULL
 
-  gr = gUtils::seg2gr(df, seqlengths = seqlengths)[, c()]
+  gr = seg2gr(df, seqlengths = seqlengths)[, c()]
   grl = GenomicRanges::split(gr, tmp.id)
   names(grl) = nm
   return(grl)
 }
 
-#' parse.gr
+#' Parse a string into \code{GRanges}
 #'
-#' quick function to parse gr from character vector IGV / UCSC style strings of format gr1;gr2;gr3 wohere each gr is of format chr:start-end[+/-]
+#' Parses character vector with IGV / UCSC style strings of format gr1;gr2;gr3,
+#' where each \code{GRanges} is of format \code{chr:start-end[+/-]}
 #'
 #' @name parse.gr
-#' @param ... arguments to parse.grl i.e. character strings in UCSC style chr:start-end[+-]
+#' @param ... arguments to \link{parse.grl} i.e. character strings in UCSC style chr:start-end[+-]
+#' @return \code{GRanges} objects parsed from input
 #' @export
 parse.gr = function(...)
 {

@@ -2,14 +2,18 @@
 % Please edit documentation in R/gUtils.R
 \name{parse.gr}
 \alias{parse.gr}
-\title{parse.gr}
+\title{Parse a string into \code{GRanges}}
 \usage{
 parse.gr(...)
 }
 \arguments{
-\item{...}{arguments to parse.grl i.e. character strings in UCSC style chr:start-end[+-]}
+\item{...}{arguments to \link{parse.grl} i.e. character strings in UCSC style chr:start-end[+-]}
+}
+\value{
+\code{GRanges} objects parsed from input
 }
 \description{
-quick function to parse gr from character vector IGV / UCSC style strings of format gr1;gr2;gr3 wohere each gr is of format chr:start-end[+/-]
+Parses character vector with IGV / UCSC style strings of format gr1;gr2;gr3,
+where each \code{GRanges} is of format \code{chr:start-end[+/-]}
 }
 

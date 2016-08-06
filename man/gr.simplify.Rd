@@ -2,14 +2,14 @@
 % Please edit documentation in R/gUtils.R
 \name{gr.simplify}
 \alias{gr.simplify}
-\title{Simplify granges by collapsing all non-overlapping adjacent ranges that share a given "field" value
+\title{Simplify \code{GRanges} by collapsing all non-overlapping adjacent ranges that share a given "field" value
 (adjacent == adjacent in the input GRanges object)}
 \usage{
 gr.simplify(gr, field = NULL, val = NULL, include.val = TRUE,
   split = FALSE, pad = 1)
 }
 \arguments{
-\item{gr}{takes in gr or grl}
+\item{gr}{takes in \code{GRanges} or \code{GRangesList}}
 
 \item{field}{character scalar, corresponding to value field of gr. \code{[NULL]}}
 
@@ -25,7 +25,7 @@ gr.simplify(gr, field = NULL, val = NULL, include.val = TRUE,
 Simplified GRanges with "field" populated with uniquely contiguous values
 }
 \description{
-Simplify granges by collapsing all non-overlapping adjacent ranges that share a given "field" value
+Simplify \code{GRanges} by collapsing all non-overlapping adjacent ranges that share a given "field" value
 (adjacent == adjacent in the input GRanges object)
 }
 

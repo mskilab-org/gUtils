@@ -2,7 +2,7 @@
 % Please edit documentation in R/gUtils.R
 \name{dt2gr}
 \alias{dt2gr}
-\title{Convert data.table to GRanges}
+\title{Convert \code{data.table} to \code{GRanges}}
 \usage{
 dt2gr(dt, seqlengths = hg_seqlengths(), seqinfo = Seqinfo())
 }
@@ -15,8 +15,8 @@ dt2gr(dt, seqlengths = hg_seqlengths(), seqinfo = Seqinfo())
 \code{GRanges} object of \code{length = nrow(dt)}
 }
 \description{
-Takes as input a data.table which must have the following fields: \code{start}, \code{end}, \code{strand}, \code{seqnames}. Will throw
-an error if any one of these is not present.
+Takes as input a \code{data.table} which must have the following fields: \code{start}, \code{end}, \code{strand}, \code{seqnames}. 
+Will throw an error if any one of these is not present.
 All of the remaining fields are added as metadata to the \code{GRanges}.
 }
 \examples{

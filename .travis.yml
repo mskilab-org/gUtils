@@ -29,6 +29,10 @@ notifications:
     on_success: change
     on_failure: change
 
+branches:
+  only:
+  - cran
+
 #env:
 #  matrix:
 #    - RVERSION=oldrel

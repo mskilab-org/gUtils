@@ -2,7 +2,7 @@
 % Please edit documentation in R/gUtils.R
 \name{gr.start}
 \alias{gr.start}
-\title{Get GRanges corresponding to beginning of range}
+\title{Get \code{GRanges} corresponding to beginning of range}
 \usage{
 gr.start(x, width = 1, force = FALSE, ignore.strand = TRUE,
   clip = FALSE)
@@ -22,7 +22,7 @@ gr.start(x, width = 1, force = FALSE, ignore.strand = TRUE,
 \code{GRanges} object of width 1 ranges representing start of each genomic range in the input.
 }
 \description{
-Get GRanges corresponding to beginning of range
+Get \code{GRanges} corresponding to beginning of range
 }
 \examples{
 gr.start(example_dnase, width=200)

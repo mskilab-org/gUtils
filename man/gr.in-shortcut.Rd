@@ -17,9 +17,11 @@ x \%^^\% ...
 x \%^\% ...
 }
 \arguments{
-\item{x}{See \link{gr.in}}
+\item{x}{\code{GRanges} to subset}
 
 \item{...}{See \link{gr.in}}
+
+\item{x}{See \link{gr.in}}
 
 \item{x}{\code{GRanges} object}
 
@@ -30,14 +32,14 @@ x \%^\% ...
 \item{...}{See \link{gr.in}}
 }
 \value{
-subset of gr1 that overlaps gr2f
+subset of gr1 that overlaps gr2
 
 logical vector of length gr1 which is TRUE at entry i only if gr1[i] intersects at least one interval in gr2
 
 logical vector of length gr1 which is TRUE at entry i only if gr1[i] intersects at least one interval in gr2 (strand agnostic)
 }
 \description{
-shortcut for x[gr.in(x,y)]
+Shortcut for x[gr.in(x,y)]
 
 gr1 %&% gr2 returns the subsets of gr1 that overlaps gr2
 

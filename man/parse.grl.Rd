@@ -2,16 +2,19 @@
 % Please edit documentation in R/gUtils.R
 \name{parse.grl}
 \alias{parse.grl}
-\title{parse.grl}
+\title{Parse a string into a single \code{GRangesList}}
 \usage{
 parse.grl(x, seqlengths = hg_seqlengths())
 }
 \arguments{
-\item{x}{character vector representing a GRangesList with UCSC style coordinates (chr:start-end[+-]) representing a [signed] Granges and  ";" separators within each item of x separating individaul each GRAnges}
+\item{x}{Character vector representing a \code{GRangesList} with UCSC style coordinates (chr:start-end[+-]) representing a [signed] Granges and  ";" separators within each item of x separating individaul each GRAnges}
 
-\item{seqlengths}{named integer vector representing genome (hg_seqlengths() by default)}
+\item{seqlengths}{named integer vector representing genome (\link{hg_seqlengths()} by default)}
+}
+\value{
+A single \code{GRangesList} parsed from the strings
 }
 \description{
-quick function to parse \code{GRangesList} from character vector IGV / UCSC style strings of format gr1;gr2;gr3 where each gr is of format chr:start-end[+/-]
+Parse character vector in IGV / UCSC style strings of format gr1;gr2;gr3 where each gr is of format chr:start-end[+/-]
 }
 

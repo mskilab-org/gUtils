@@ -220,7 +220,7 @@ test_that("dt2gr", {
   expect_error(suppressWarnings(dt2gr(1)))
   
   dt <- data.table(sdf=1, start=1, end=10, strand='+', name="A")
-  expect_error(dt2gr(dt))
+  expect_error(suppressWarnings(dt2gr(dt)))
 })
 
 test_that("gr.val", {
@@ -231,12 +231,12 @@ test_that("gr.val", {
     
 })
 
-test_that("gr.duplicated", {
-  gr <- GRanges(c(1,1,1), IRanges(c(2,5,5), width=1), val=c(1,2,3))
-  
-  expect_identical(gr.duplicated(gr), c(FALSE, FALSE, TRUE))
-  expect_identical(gr.duplicated(gr, by="val"), c(FALSE, FALSE, FALSE))
-})
+# test_that("gr.duplicated", {
+#   gr <- GRanges(c(1,1,1), IRanges(c(2,5,5), width=1), val=c(1,2,3))
+#   
+#   expect_identical(gr.duplicated(gr), c(FALSE, FALSE, TRUE))
+#   expect_identical(gr.duplicated(gr, by="val"), c(FALSE, FALSE, FALSE))
+# })
 
 test_that("gr.sample", {
 
@@ -321,10 +321,10 @@ test_that("grlbind", {
   expect_equal(length(gg), 50)
   expect_equal(colnames(mcols(gg)), "test")
 
-  # names(grl.hiC) <- NULL
-  # out <- grlbind(grl.hiC)
-  # names(out) <- NULL
-  # expect_identical(out, grl.hiC)
+  names(grl.hiC) <- NULL
+  out <- grlbind(grl.hiC)
+  names(out) <- NULL
+  expect_identical(out, grl.hiC)
 
   ## expect error
   expect_error(grlbind('d'))
