@@ -2554,6 +2554,7 @@ subset2 <- function(x, condition) {
 #' @exportMethod %+%
 #' @aliases %+%,GRanges-method
 #' @author Marcin Imielinski
+#' @export
 setGeneric('%+%', function(gr, ...) standardGeneric('%+%'))
 setMethod("%+%", signature(gr = "GRanges"), function(gr, sh) {
     end(gr) = end(gr)+sh
