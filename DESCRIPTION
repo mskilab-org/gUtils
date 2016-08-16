@@ -19,7 +19,6 @@ Imports:
     parallel,
     BiocGenerics(>= 0.12),
     methods,
-    igraph,
     Matrix,
     stringr
 Suggests:
