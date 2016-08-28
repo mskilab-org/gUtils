@@ -1311,136 +1311,141 @@ gr.val = function(query, target,
   val.vecs = val.vec
 
   for (vix in 1:length(vals))
-  {
-    val = vals[[vix]]
-    val.vec = val.vecs[[vix]]
-    is.char = is.character(values(target)[, val]);
-    if (is.null(by) | merge == TRUE)
-    {
-      if (nrow(hits)>0)
       {
-        values(query)[, val] = NA;
-        hits[, width := as.numeric(end - start)+1]
-        data.table::setkey(hits,  query.id)
-        if (is.char)
-        {
-          values(query)[, val] = '';
-          hits$id = 1:nrow(hits);
-          if (!is.null(FUN))
-              tmp = hits[, list(val = do.call(FUN, list(val.vec[subject.id], width, na.rm = na.rm))), by = query.id]
-          else
-              tmp = hits[, list(val = paste(setdiff(val.vec[subject.id], NA), collapse = sep)), by = query.id]
-          if (!is.na(default.val))
-            tmp[is.na(tmp)] = default.val
-          values(query)[tmp[,query.id], val] = tmp[,val]
-        }
-        else
-        {
-
-          #            val.vec = as.numeric(values(target)[, val]);
-          val.vec = as.numeric(val.vec)
-          if (weighted)
-          {
-            if (!is.null(FUN))
-              tmp = hits[, list(val = do.call(FUN, list(val.vec[subject.id], width, na.rm = na.rm))), by = query.id]
-            else if (mean)
-              tmp = hits[, list(val = sum(width * val.vec[subject.id], na.rm = na.rm)/sum(width)), by = query.id]
-            else
-              tmp = hits[, list(val = sum(width * val.vec[subject.id], na.rm = na.rm)), by = query.id]
-          }
-          else
-          {
-            if (!is.null(FUN))
-              tmp = hits[, list(val = do.call(FUN, list(val.vec[subject.id], na.rm = na.rm))), by = query.id]
-            else if (mean)
-              tmp = hits[, list(val =  mean(val.vec[subject.id], na.rm = na.rm)), by = query.id]
-            else
-              tmp = hits[, list(val = sum(val.vec[subject.id], na.rm = na.rm)), by = query.id]
-          }
-
-          if (!is.na(default.val))
-            tmp[is.na(tmp)] = default.val
-
-          values(query)[tmp[,query.id], val] = tmp[,val]
-        }
-      }
-    }
-    else ## by is not null
-    {
-
-      if (!is.null(by.prefix))
-        if (is.na(by.prefix))
-          by.prefix = NULL
-        else if (nchar(by.prefix)==0)
-          by.prefix = NULL
-
-        if (nrow(hits)>0)
-        {
-          hits[, width := as.numeric(end - start)+1]
-          if (is.char)
-          {
-            hits$id = 1:nrow(hits);
-            tmp = hits[, list(val = paste(setdiff(val.vec[subject.id], NA), collapse = sep)), keyby = list(query.id, bykey = eval(parse(text=by)))]
-
-            tmp2 = data.table::dcast.data.table(tmp, query.id ~ bykey, value.var = 'val')
-            data.table::setkey(tmp2, query.id)
-            new.df = as.data.frame(tmp2[list(1:length(query)), ])[ ,-1]
-
-            if (!is.na(default.val))
-              new.df[is.na(new.df)] = default.val
-
-            if (!is.null(by.prefix))
-              colnames(new.df) =  paste(by.prefix, names(tmp2)[-1], sep = '.')
-            else
-              colnames(new.df) =  names(tmp2)[-1]
-            new.names = c(colnames(values(query)), colnames(new.df))
-            values(query) = cbind(values(query), new.df)
-            colnames(values(query)) = new.names
-          }
-          else
-          {
-
-            #            val.vec = as.numeric(values(target)[, val]);
-            val.vec = as.numeric(val.vec)
-            if (weighted)
-            {
-              if (!is.null(FUN))
+          val = vals[[vix]]
+          val.vec = val.vecs[[vix]]
+          is.char = is.character(values(target)[, val]);
+          if (is.null(by) | merge == TRUE)
               {
-                tmp = hits[, list(val = do.call(FUN, list(val.vec[subject.id], width, na.rm = na.rm))), keyby = list(query.id, bykey = eval(parse(text=by)))]
+                  if (nrow(hits)>0)
+                      {
+                          values(query)[, val] = NA;
+                          hits[, width := as.numeric(end - start)+1]
+                          data.table::setkey(hits,  query.id)
+                          if (is.char)
+                              {
+                                  values(query)[, val] = '';
+                                  hits$id = 1:nrow(hits);
+                                  if (!is.null(FUN))
+                                      tmp = hits[, list(val = do.call(FUN, list(val.vec[subject.id], width, na.rm = na.rm))), by = query.id]
+                                  else
+                                      tmp = hits[, list(val = paste(setdiff(val.vec[subject.id], NA), collapse = sep)), by = query.id]
+                                  if (!is.na(default.val))
+                                      tmp[is.na(tmp)] = default.val
+                                  values(query)[tmp[,query.id], val] = tmp[,val]
+                              }
+                          else
+                              {
+
+                                        #            val.vec = as.numeric(values(target)[, val]);
+                                  val.vec = as.numeric(val.vec)
+                                  if (weighted)
+                                      {
+                                          if (!is.null(FUN))
+                                              tmp = hits[, list(val = do.call(FUN, list(val.vec[subject.id], width, na.rm = na.rm))), by = query.id]
+                                          else if (mean)
+                                              tmp = hits[, list(val = sum(width * val.vec[subject.id], na.rm = na.rm)/sum(width)), by = query.id]
+                                          else
+                                              tmp = hits[, list(val = sum(width * val.vec[subject.id], na.rm = na.rm)), by = query.id]
+                                      }
+                                  else
+                                      {
+                                          if (!is.null(FUN))
+                                              tmp = hits[, list(val = do.call(FUN, list(val.vec[subject.id], na.rm = na.rm))), by = query.id]
+                                          else if (mean)
+                                              tmp = hits[, list(val =  mean(val.vec[subject.id], na.rm = na.rm)), by = query.id]
+                                          else
+                                              tmp = hits[, list(val = sum(val.vec[subject.id], na.rm = na.rm)), by = query.id]
+                                      }
+
+                                  if (!is.na(default.val))
+                                      tmp[is.na(tmp)] = default.val
+
+                                  values(query)[tmp[,query.id], val] = tmp[,val]
+                              }
+                      }
+                  else
+                      values(query)[, val] = NA                  
               }
-              else if (mean)
-                tmp = hits[, list(val = sum(width * val.vec[subject.id], na.rm = na.rm)/sum(width)), keyby = list(query.id, bykey = eval(parse(text=by)))]
-              else
-                tmp = hits[, list(val = sum(width * val.vec[subject.id], na.rm = na.rm)), keyby = list(query.id, bykey = eval(parse(text=by)))]
-            }
-            else
-            {
-              if (!is.null(FUN))
-                tmp = hits[, list(val = do.call(FUN, list(val.vec[subject.id], na.rm = na.rm))), keyby = list(query.id, bykey = eval(parse(text=by)))]
-              else if (mean)
-                tmp = hits[, list(val =  mean(val.vec[subject.id], na.rm = na.rm)), keyby = list(query.id, bykey = eval(parse(text=by)))]
-              else
-                tmp = hits[, list(val = sum(val.vec[subject.id], na.rm = na.rm)), keyby = list(query.id, bykey = eval(parse(text=by)))]
-            }
+          else ## by is not null
+              {
 
-            tmp2 = data.table::dcast.data.table(tmp, query.id ~ bykey, value.var = 'val')
-            data.table::setkey(tmp2, query.id)
-            new.df = as.data.frame(tmp2[list(1:length(query)), ])[ ,-1, drop = FALSE]
+                  if (!is.null(by.prefix))
+                      if (is.na(by.prefix))
+                          by.prefix = NULL
+                      else if (nchar(by.prefix)==0)
+                          by.prefix = NULL
 
-            if (!is.na(default.val))
-              new.df[is.na(new.df)] = default.val
+                  if (nrow(hits)>0)
+                      {
+                          hits[, width := as.numeric(end - start)+1]
+                          if (is.char)
+                              {
+                                  hits$id = 1:nrow(hits);
+                                  tmp = hits[, list(val = paste(setdiff(val.vec[subject.id], NA), collapse = sep)), keyby = list(query.id, bykey = eval(parse(text=by)))]
 
-            if (!is.null(by.prefix))
-              colnames(new.df) =  paste(by.prefix, names(tmp2)[-1], sep = '.')
-            else
-              colnames(new.df) =  names(tmp2)[-1]
+                                  tmp2 = data.table::dcast.data.table(tmp, query.id ~ bykey, value.var = 'val')
+                                  data.table::setkey(tmp2, query.id)
+                                  new.df = as.data.frame(tmp2[list(1:length(query)), ])[ ,-1]
 
-            new.names = c(colnames(values(query)), colnames(new.df))
-            values(query) = cbind(values(query), new.df)
-            colnames(values(query)) = new.names
-          }
-        }
-    }
+                                  if (!is.na(default.val))
+                                      new.df[is.na(new.df)] = default.val
+
+                                  if (!is.null(by.prefix))
+                                      colnames(new.df) =  paste(by.prefix, names(tmp2)[-1], sep = '.')
+                                  else
+                                      colnames(new.df) =  names(tmp2)[-1]
+                                  new.names = c(colnames(values(query)), colnames(new.df))
+                                  values(query) = cbind(values(query), new.df)
+                                  colnames(values(query)) = new.names
+                              }
+                          else
+                              {
+
+                                        #            val.vec = as.numeric(values(target)[, val]);
+                                  val.vec = as.numeric(val.vec)
+                                  if (weighted)
+                                      {
+                                          if (!is.null(FUN))
+                                              {
+                                                  tmp = hits[, list(val = do.call(FUN, list(val.vec[subject.id], width, na.rm = na.rm))), keyby = list(query.id, bykey = eval(parse(text=by)))]
+                                              }
+                                          else if (mean)
+                                              tmp = hits[, list(val = sum(width * val.vec[subject.id], na.rm = na.rm)/sum(width)), keyby = list(query.id, bykey = eval(parse(text=by)))]
+                                          else
+                                              tmp = hits[, list(val = sum(width * val.vec[subject.id], na.rm = na.rm)), keyby = list(query.id, bykey = eval(parse(text=by)))]
+                                      }
+                                  else
+                                      {
+                                          if (!is.null(FUN))
+                                              tmp = hits[, list(val = do.call(FUN, list(val.vec[subject.id], na.rm = na.rm))), keyby = list(query.id, bykey = eval(parse(text=by)))]
+                                          else if (mean)
+                                              tmp = hits[, list(val =  mean(val.vec[subject.id], na.rm = na.rm)), keyby = list(query.id, bykey = eval(parse(text=by)))]
+                                          else
+                                              tmp = hits[, list(val = sum(val.vec[subject.id], na.rm = na.rm)), keyby = list(query.id, bykey = eval(parse(text=by)))]
+                                      }
+
+                                  tmp2 = data.table::dcast.data.table(tmp, query.id ~ bykey, value.var = 'val')
+                                  data.table::setkey(tmp2, query.id)
+                                  new.df = as.data.frame(tmp2[list(1:length(query)), ])[ ,-1, drop = FALSE]
+
+                                  if (!is.na(default.val))
+                                      new.df[is.na(new.df)] = default.val
+
+                                  if (!is.null(by.prefix))
+                                      colnames(new.df) =  paste(by.prefix, names(tmp2)[-1], sep = '.')
+                                  else
+                                      colnames(new.df) =  names(tmp2)[-1]
+
+                                  new.names = c(colnames(values(query)), colnames(new.df))
+                                  values(query) = cbind(values(query), new.df)
+                                  colnames(values(query)) = new.names
+                              }
+                      }
+                  else
+                      for (val in levels(factor(subject$by)))
+                          values(query)[, val] = NA
+              }
   }
 
   if (query.was.grl)
@@ -1832,11 +1837,17 @@ rrbind = function (..., union = TRUE, as.data.table = FALSE)
 #' @param b Vector of values to sub in
 #' @name gr.sub
 #' @export
-gr.sub = function(gr, a = c('(^chr)(\\.1$)', 'MT'), b= c('', 'M'))
+gr.sub = function (gr, a = c("(^chr)(\\.1$)", "MT"), b = c("", "M")) 
 {
-  tmp = mapply(function(x, y) seqlevels(gr) <<- gsub(x, y, seqlevels(gr)), a, b)
-  return(gr)
+    unique(gsub(a[1], b[1], seqlevels(gr)))
+
+    subs = cbind(a, b)
+    for (i in 1:nrow(subs))
+        seqlevels(gr) = unique(gsub(subs[i,1], subs[i,2], seqlevels(gr)))
+
+    return(gr)
 }
+
 
 #' @name seg2gr
 #' @title Convert GRange like data.frames into GRanges
@@ -2619,6 +2630,35 @@ setMethod("%_%", signature(x = "GRanges"), function(x, y) {
         y = parse.gr(y)
     setdiff(gr.stripstrand(x[, c()]), gr.stripstrand(y[, c()]))
 })
+
+
+#' @name %*%
+#' @title Metadata join with coordinates as keys (wrapper to \code{\link{gr.findoverlaps}})
+#' @description
+#' Shortcut for gr.findoverlaps with \code{qcol} and \code{scol} filled in with all the query and subject metadata names.
+#' This function is useful for piping \code{GRanges} operations together. Another way to think of %*% is as a
+#' join of the metadata, with genomic coordinates as the keys. \cr
+#' Example usage: \cr
+#' x %*% y
+#' @param x \code{GRanges}
+#' @param y \code{GRanges}
+#' @return \code{GRanges} containing every pairwise intersection of ranges in \code{x} and \code{y} with a join of the corresponding  metadata
+#' @rdname grfo
+#' @exportMethod %*%
+#' @export
+#' @importFrom methods setMethod
+#' @author Marcin Imielinski
+#' @docType methods
+#' @aliases %*%,GRanges-method
+#' @examples
+#' example_genes %*% example_dnase
+#setGeneric('%*%', function(gr, ...) standardGeneric('%*%'))
+setMethod("%*%", signature(x = "GRanges"), function(x, y) {
+  gr = gr.findoverlaps(x, y, qcol = names(values(x)), scol = names(values(y)))
+  return(gr)
+})
+
+
 
 #' @name %**%
 #' @title gr.findoverlaps (respects strand)
