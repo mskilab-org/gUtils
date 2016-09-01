@@ -2255,6 +2255,99 @@ gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE,
   }
 }
 
+
+#' @name gr.merge
+#' @title merge GRanges using coordinates as primary key
+#'
+#' @description
+#' Uses gr.findoverlaps to enable internal and external joins of GRanges using
+#' syntax similar to "merge" where merging is done using coordinates +/- "by" fields
+#'
+#' Uses gr.findoverlaps / findOverlaps for heavy lifting, but returns outputs with
+#' metadata populated as well as query and subject ids.  For external joins,
+#' overlaps x with gaps(y) and gaps(x) with y. 
+#'
+#' @param subject subject
+#' @param query  query ranges
+#' @param all whether to include left and right joins
+#' @param all.query whether to do a left join
+#' @param all.subject whether to do a right join
+#' @param by additional metadata fields to join on 
+#' @export
+#' 
+gr.merge = function(query, subject, by = NULL, all = FALSE, all.query = all, all.subject = all, ... )
+{
+    qcol = names(values(query))
+    scol = names(values(subject))
+
+    if (!is.null(by))
+    {
+        qcol = setdiff(qcol, by)
+#        scol = setdiff(scol, by)
+    }
+    
+    ov = gr.findoverlaps(query, subject, qcol = qcol, scol = scol, by = by, ...)
+
+
+    if (all.query)
+    {
+        if (is.null(by))
+            sgaps = gaps(subject)        
+        else ## if by not null then we want to define gaps in a group wise manner .. 
+        {
+            sgaps = unlist(do.call('GRangesList', lapply(split(subject, apply(as.matrix(values(subject)[, by]), 1, paste, collapse = ' ')), function(group)
+            {
+                this.gap = gaps(group)
+                values(this.gap)[, by] = values(group)[1, by]
+                return(this.gap)
+            })))
+        }
+                
+        ov.left = gr.findoverlaps(query, sgaps, qcol = qcol, scol = NULL, ...)
+        ov.left$subject.id = NA
+        ov = grbind(ov, ov.left)
+    }
+    
+    if (all.subject)
+    {
+        if (is.null(by))
+            qgaps = gaps(query)
+        else ## if by not null then we want to define gaps in a group wise manner .. 
+        {
+            qgaps = unlist(do.call('GRangesList', lapply(split(subject, apply(as.matrix(values(subject)[, by]), 1, paste, collapse = ' ')), function(group)
+            {
+                this.gap = gaps(group)
+                values(this.gap)[, by] = values(group)[1, by]
+                return(this.gap)
+            })))
+        }
+        ov.right = gr.findoverlaps(qgaps, subject, qcol = NULL, scol = scol, ...)
+        ov.right$query.id = NA
+        ov = grbind(ov, ov.right)
+    }
+
+    return(ov)
+}
+
+
+#' @name gr.disjoin
+#' @title GenomicRanges disjoin with some spice
+#'
+#' Identical to GRanges disjoin, except outputs inherit metadata from first overlapping parent instance on input
+#'
+#' @param x GRanges to disjoin
+#' @param ... arguments to disjoin
+#' @param ignore.strand logical scalar, default TRUE
+#' @export
+gr.disjoin = function(x, ..., ignore.strand = TRUE)
+{
+    y = disjoin(x, ...)
+    ix = gr.match(y, x, ignore.strand = ignore.strand)
+    values(y) = values(x)[ix, , drop = FALSE]
+    return(y)
+}
+
+
 #' Versatile implementation of \code{GenomicRanges::over}
 #'
 #' returns T / F vector if query range i is found in any range in subject
