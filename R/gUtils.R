@@ -3110,7 +3110,7 @@ gr.simplify = function(gr, field = NULL, val = NULL, include.val = TRUE, split =
             
     return(out)
   }  
-'
+
 setGeneric('%Q%', function(x, ...) standardGeneric('%Q%'))
 
 #' @name %Q%
