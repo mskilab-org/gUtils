@@ -2275,7 +2275,7 @@ gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE,
 #' @param by additional metadata fields to join on 
 #' @export
 #' 
-gr.merge = function(query, subject, by = NULL, all = FALSE, all.query = all, all.subject = all, ... )
+gr.merge = function(query, subject, by = NULL, all = FALSE, all.query = all, all.subject = all, verbose = FALSE, ignore.strand = TRUE, ... )
 {
     qcol = names(values(query))
     scol = names(values(subject))
@@ -2288,43 +2288,77 @@ gr.merge = function(query, subject, by = NULL, all = FALSE, all.query = all, all
     
     ov = gr.findoverlaps(query, subject, qcol = qcol, scol = scol, by = by, ...)
 
+    if (verbose)
+        message('inner join yields ', length(ov), ' overlaps')
+
 
     if (all.query)
     {
         if (is.null(by))
-            sgaps = gaps(subject)        
+        {
+            if (ignore.strand)
+                sgaps = gaps(gr.stripstrand(subject)) %Q% (strand == '*')
+            else
+                sgaps = gaps(subject)
+        }
         else ## if by not null then we want to define gaps in a group wise manner .. 
         {
             sgaps = unlist(do.call('GRangesList', lapply(split(subject, apply(as.matrix(values(subject)[, by]), 1, paste, collapse = ' ')), function(group)
             {
-                this.gap = gaps(group)
+                if (ignore.strand)
+                    this.gap = gaps(gr.stripstrand(group)) %Q% (strand == '*')
+                else
+                    this.gap = gaps(group)
+                
                 values(this.gap)[, by] = values(group)[1, by]
                 return(this.gap)
             })))
         }
-                
-        ov.left = gr.findoverlaps(query, sgaps, qcol = qcol, scol = NULL, ...)
-        ov.left$subject.id = NA
+        
+        ov.left = gr.findoverlaps(query, sgaps, qcol = qcol, scol = NULL, by = by, ignore.strand = ignore.strand, ...)
+        if (length(ov.left)>0)
+            ov.left$subject.id = NA
+            
+        if (verbose)
+            message('left join yields ', length(ov.left), ' overlaps')
+
         ov = grbind(ov, ov.left)
     }
     
     if (all.subject)
     {
         if (is.null(by))
-            qgaps = gaps(query)
+        {
+            if (ignore.strand)
+                qgaps = gaps(gr.stripstrand(query)) %Q% (strand == '*')
+            else
+                qgaps = gaps(query)
+        }
         else ## if by not null then we want to define gaps in a group wise manner .. 
         {
-            qgaps = unlist(do.call('GRangesList', lapply(split(subject, apply(as.matrix(values(subject)[, by]), 1, paste, collapse = ' ')), function(group)
+            qgaps = unlist(do.call('GRangesList', lapply(split(query, apply(as.matrix(values(query)[, by]), 1, paste, collapse = ' ')), function(group)
             {
-                this.gap = gaps(group)
+                if (ignore.strand)
+                    this.gap = gaps(gr.stripstrand(group)) %Q% (strand == '*')
+                else
+                    this.gap = gaps(group)
+                
                 values(this.gap)[, by] = values(group)[1, by]
                 return(this.gap)
             })))
         }
-        ov.right = gr.findoverlaps(qgaps, subject, qcol = NULL, scol = scol, ...)
-        ov.right$query.id = NA
-        ov = grbind(ov, ov.right)
+        
+        ov.right = gr.findoverlaps(qgaps, subject, qcol = NULL, scol = scol, by = by, ignore.strand = ignore.strand, ...)
+        if (length(ov.right)>0)
+            ov.right$query.id = NA
+        
+        strand(ov.right) = strand(subject)[ov.right$subject.id]
+        
+        if (verbose)
+            message('right join yields ', length(ov.right), ' overlaps')
+        ov = grbind(ov, ov.right)        
     }
+
 
     return(ov)
 }
@@ -3076,7 +3110,7 @@ gr.simplify = function(gr, field = NULL, val = NULL, include.val = TRUE, split =
             
     return(out)
   }  
-
+'
 setGeneric('%Q%', function(x, ...) standardGeneric('%Q%'))
 
 #' @name %Q%
@@ -3094,10 +3128,16 @@ setGeneric('%Q%', function(x, ...) standardGeneric('%Q%'))
 #' @export
 #' @author Marcin Imielinski
 setMethod("%Q%", signature(x = "GRanges"), function(x, y) {
-              condition_call  = substitute(y)
-#              ix = with(GenomicRanges::as.data.frame(x), eval(condition_call))
-              ix = eval(condition_call, GenomicRanges::as.data.frame(x))
-              return(x[ix])
+    condition_call  = substitute(y)
+    ## serious R voodoo gymnastics .. but I think finally hacked it to remove ghosts
+    env = as( ## create environment that combines the calling env with the granges env
+        c(
+            as.list(as.data.frame(x)),
+            as.list(parent.frame(2))
+        ), 'environment')
+    parent.env(env) = parent.frame()
+    ix = eval(condition_call, env)
+    return(x[ix])
 })
 
 #' @name %^%
