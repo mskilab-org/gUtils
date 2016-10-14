@@ -1,4 +1,4 @@
-#' DNAaseI hypersensitivity sites for hg19
+#' DNAaseI hypersensitivity sites for hg19A
 #'
 #' DNAaseI hypersensitivity sites from UCSC Table Browser hg19,
 #' subsampled to 10,000 sites
@@ -50,6 +50,7 @@ NULL
 #' @param chr Flag for whether to keep "chr". Default FALSE
 #' @param include.junk Flag for whether to not trim to only 1-22, X, Y, M. Default FALSE
 #' @return Named integer vector with elements corresponding to the genome seqlengths
+#' @importFrom utils read.delim
 #' @export
 hg_seqlengths = function(genome = NULL, chr = FALSE, include.junk = FALSE)
 {
@@ -66,7 +67,7 @@ hg_seqlengths = function(genome = NULL, chr = FALSE, include.junk = FALSE)
                 if (is.null(tmp))
                     {
                         genome = tryCatch(eval(parse(text=dbs)), error = function(e) NULL)
-                        if (is.null(genome))
+                        if (is.null(genome)) 
                             stop(sprintf("Error loading %s as BSGenome library ...\nPlease check DEFAULT_BSGENOME setting and set to either an R library BSGenome object or a valid http URL or filepath pointing to a chrom.sizes tab delimited text file.", dbs))
                     }
                 else
@@ -97,35 +98,21 @@ NULL
 
 #' Converts \code{GRanges} to \code{data.table}
 #'
-#' @importFrom data.table
-#'    as.data.table
-#' @importFrom GenomicRanges as.data.frame
-#' @name gr2dt
-#' @param gr \code{GRanges} pile to convert to \code{data.table}
-#' @return \code{data.table} with seqnames, start, end, width, strand and all of the meta data. Width is end-inclusive (e.g. [6,7] width = 2)
-#' @examples
-#' gr2dt(example_genes)
-#' @export
-gr2dt <- function(gr)
-{
-  ## as.data.frame gives error if duplicated rownames
-  if (any(duplicated(names(gr))))
-    names(gr) <- NULL
-  out <- as.data.table(GenomicRanges::as.data.frame(gr))
-  return(out)
-}
-#' Converts \code{GRanges} to \code{data.table}
-#'
 #' and a field grl.iix which saves the (local) index that that gr was in its corresponding grl item
 #' @param x \code{GRanges} to convert
-#' @name grdt
+#' @name gr2dt
 #' @export
-grdt = function(x)
+#'  
+gr2dt  <- function(x)
 {
     ## new approach just directly instantiating data table
     cmd = 'data.frame(';
     if (is(x, 'GRanges'))
     {
+        ## as.data.table complains if duplicated row names
+        if (any(duplicated(names(x))))
+          names(x) <- NULL
+      
         was.gr = TRUE
         f = c('seqnames', 'start', 'end', 'strand', 'width')
         f2 = c('as.character(seqnames', 'c(start', 'c(end', 'as.character(strand', 'as.numeric(width')
@@ -147,7 +134,7 @@ grdt = function(x)
         .StringSetListAsList = function(x) ### why do I need to do this, bioconductor peeps??
         {
             tmp1 = as.character(unlist(x))
-            tmp2 = rep(1:length(x), elementLengths(x))
+            tmp2 = rep(1:length(x), S4Vectors::elementLengths(x))
             return(split(tmp1, tmp2))
         }
 
@@ -165,64 +152,7 @@ grdt = function(x)
 
     cmd = paste(cmd, ')', sep = '')
 
-                                        #      browser()
-    return(as.data.table(eval(parse(text =cmd))))
-}
-
-
-#' Converts \code{GRanges} to \code{data.table}
-#'
-#' and a field grl.iix which saves the (local) index that that gr was in its corresponding grl item
-#' @param x \code{GRanges} to convert
-#' @name grdt
-#' @export
-grdt = function(x)
-{
-  ## new approach just directly instantiating data table
-  cmd = 'data.frame(';
-  if (is(x, 'GRanges'))
-  {
-    was.gr = TRUE
-    f = c('seqnames', 'start', 'end', 'strand', 'width')
-    f2 = c('as.character(seqnames', 'c(start', 'c(end', 'as.character(strand', 'as.numeric(width')
-    cmd = paste(cmd, paste(f, '=', f2, '(x))', sep = '', collapse = ','), sep = '')
-    value.f = names(values(x))
-  }
-  else
-  {
-    was.gr = FALSE
-    value.f = names(x)
-  }
-  
-  if (length(value.f)>0)
-  {
-    if (was.gr)
-      cmd = paste(cmd, ',', sep = '')
-    class.f = sapply(value.f, function(f) eval(parse(text=sprintf("class(x$'%s')", f))))
-    
-    .StringSetListAsList = function(x) ### why do I need to do this, bioconductor peeps??
-    {
-      tmp1 = as.character(unlist(x))
-      tmp2 = rep(1:length(x), elementLengths(x))
-      return(split(tmp1, tmp2))
-    }
-    
-    ## take care of annoying S4 / DataFrame / data.frame (wish-they-were-non-)issues
-    as.statement = ifelse(grepl('Integer', class.f), 'as.integer',
-                          ifelse(grepl('Character', class.f), 'as.character',
-                                 ifelse(grepl('StringSetList', class.f), '.StringSetListAsList',
-                                        ifelse(grepl('StringSet$', class.f), 'as.character',
-                                               ifelse(grepl('factor$', class.f), 'as.character',
-                                                      ifelse(grepl('List', class.f), 'as.list',
-                                                             ifelse(grepl('factor', class.f), 'as.character',
-                                                                    ifelse(grepl('List', class.f), 'as.list', 'c'))))))))
-    cmd = paste(cmd, paste(value.f, '=', as.statement, "(x$'", value.f, "')", sep = '', collapse = ','), sep = '')
-  }
-  
-  cmd = paste(cmd, ')', sep = '')
-  
-  #      browser()
-  return(as.data.table(eval(parse(text =cmd))))
+    return(data.table::as.data.table(eval(parse(text =cmd))))
 }
 
 #' Get GRanges corresponding to beginning of range
@@ -308,30 +238,35 @@ gr.start <- function(x, width = 1, force = FALSE, ignore.strand = TRUE, clip = F
 #' @importFrom data.table data.table
 #' @importFrom GenomicRanges GRanges mcols
 #' @importFrom IRanges IRanges
+#' @param dt data.table to convert
 #' @name dt2gr
 #' @examples
 #' gr <- dt2gr(data.table(start=c(1,2), seqnames=c("X", "1"), end=c(10,20), strand = c('+', '-')))
 #' @export
-dt2gr <- function(dt) {
-
-  if (any(!c("seqnames","start","end") %in% colnames(dt)))
-    stop("gUtils::dt2gr data.table must have seqnames, start, and end")
-
-  rr <- IRanges(dt$start, dt$end)
-  if (!'strand' %in% colnames(dt))
-    dt$strand <- '*'
-  sf <- factor(dt$strand, levels=c('+', '-', '*'))
-  ff <- factor(dt$seqnames, levels=sort(unique(dt$seqnames)))
-  out <- GRanges(seqnames=ff, ranges=rr, strand=sf)
-  NOT_ALLOWED <- c("seqnames", "ranges", "strand", "seqlevels", "seqlengths", "isCircular", "start", "end", "width", "element")
-  if (inherits(dt, 'data.table'))
-    mc <- as.data.frame(dt[, setdiff(colnames(dt), NOT_ALLOWED), with=FALSE])
-  else if (inherits(dt, 'data.frame'))
-    mc <- as.data.frame(dt[, setdiff(colnames(dt), NOT_ALLOWED)])
-  else
-    warning("Needs to be data.table or data.frame")
-  if (nrow(mc))
-    mcols(out) <- mc
+dt2gr <- function(dt, key = NULL, seqlengths = hg_seqlengths(), seqinfo = Seqinfo()) {
+  out = tryCatch({
+        rr <- IRanges(dt$start, dt$end)
+      if (!'strand' %in% colnames(dt))
+          dt$strand <- '*'
+      sf <- factor(dt$strand, levels=c('+', '-', '*'))
+      ff <- factor(dt$seqnames, levels=unique(dt$seqnames))
+      out <- GRanges(seqnames=ff, ranges=rr, strand=sf)
+      if (inherits(dt, 'data.table'))
+          mc <- as.data.frame(dt[, setdiff(colnames(dt), c('start', 'end', 'seqnames', 'strand')), with=FALSE])
+      else if (inherits(dt, 'data.frame'))
+          mc <- as.data.frame(dt[, setdiff(colnames(dt), c('start', 'end', 'seqnames', 'strand'))])
+      else
+          warning("Needs to be data.table or data.frame")
+      if (nrow(mc))
+          mcols(out) <- mc
+      out
+  }, error = function(e) NULL)
+  
+  if (is.null(out))
+      {
+          warning('coercing to GRanges via non-standard columns')
+          out = seg2gr(dt, seqlengths, seqinfo)          
+      }
   return(out)
 }
 
@@ -571,6 +506,9 @@ gr.sample = function(gr, k, len = 100, replace = TRUE)
     terr = sum(gr.f$end-gr.f$start)
     st = gr.f$start;
 
+    if (terr==0)
+        stop('Input territory has zero width')
+    
     if (!replace)
     {
       if (!is.na(k))
@@ -1293,6 +1231,7 @@ gr.val = function(query, target,
   if (is.null(val))
     val = 'value'
 
+
   if (!(all(ix <- val %in% names(values(target)))))
     values(target)[, val[!ix]] = 1
 
@@ -1302,7 +1241,7 @@ gr.val = function(query, target,
     ix.l = split(1:length(query), ceiling(as.numeric((1:length(query)/max.slice))))
     return(do.call('grbind', parallel::mclapply(ix.l, function(ix) {
       if (verbose)
-        cat(sprintf('Processing %s to %s of %s\n', min(ix), max(ix), length(query)))
+          cat(sprintf('Processing %s to %s of %s\n', min(ix), max(ix), length(query)))
       gr.val(query[ix, ], target = target, val= val, mean = mean, weighted = weighted, na.rm = na.rm, verbose = TRUE, by = by, FUN = FUN, merge = merge, ...)
     }, mc.cores = mc.cores)))
   }
@@ -1372,133 +1311,141 @@ gr.val = function(query, target,
   val.vecs = val.vec
 
   for (vix in 1:length(vals))
-  {
-    val = vals[[vix]]
-    val.vec = val.vecs[[vix]]
-    is.char = is.character(values(target)[, val]);
-    if (is.null(by) | merge == TRUE)
-    {
-      if (nrow(hits)>0)
       {
-        values(query)[, val] = NA;
-        hits[, width := as.numeric(end - start)+1]
-        data.table::setkey(hits,  query.id)
-        if (is.char)
-        {
-          values(query)[, val] = '';
-          hits$id = 1:nrow(hits);
-          tmp = hits[, list(val = paste(setdiff(val.vec[subject.id], NA), collapse = sep)), by = query.id]
-          if (!is.na(default.val))
-            tmp[is.na(tmp)] = default.val
-          values(query)[tmp[,query.id], val] = tmp[,val]
-        }
-        else
-        {
-
-          #            val.vec = as.numeric(values(target)[, val]);
-          val.vec = as.numeric(val.vec)
-          if (weighted)
-          {
-            if (!is.null(FUN))
-              tmp = hits[, list(val = do.call(FUN, list(val.vec[subject.id], width, na.rm = na.rm))), by = query.id]
-            else if (mean)
-              tmp = hits[, list(val = sum(width * val.vec[subject.id], na.rm = na.rm)/sum(width)), by = query.id]
-            else
-              tmp = hits[, list(val = sum(width * val.vec[subject.id], na.rm = na.rm)), by = query.id]
-          }
-          else
-          {
-            if (!is.null(FUN))
-              tmp = hits[, list(val = do.call(FUN, list(val.vec[subject.id], na.rm = na.rm))), by = query.id]
-            else if (mean)
-              tmp = hits[, list(val =  mean(val.vec[subject.id], na.rm = na.rm)), by = query.id]
-            else
-              tmp = hits[, list(val = sum(val.vec[subject.id], na.rm = na.rm)), by = query.id]
-          }
-
-          if (!is.na(default.val))
-            tmp[is.na(tmp)] = default.val
-
-          values(query)[tmp[,query.id], val] = tmp[,val]
-        }
-      }
-    }
-    else ## by is not null
-    {
-
-      if (!is.null(by.prefix))
-        if (is.na(by.prefix))
-          by.prefix = NULL
-        else if (nchar(by.prefix)==0)
-          by.prefix = NULL
-
-        if (nrow(hits)>0)
-        {
-          hits[, width := as.numeric(end - start)+1]
-          if (is.char)
-          {
-            hits$id = 1:nrow(hits);
-            tmp = hits[, list(val = paste(setdiff(val.vec[subject.id], NA), collapse = sep)), keyby = list(query.id, bykey = eval(parse(text=by)))]
-
-            tmp2 = data.table::dcast.data.table(tmp, query.id ~ bykey, value.var = 'val')
-            data.table::setkey(tmp2, query.id)
-            new.df = as.data.frame(tmp2[list(1:length(query)), ])[ ,-1]
-
-            if (!is.na(default.val))
-              new.df[is.na(new.df)] = default.val
-
-            if (!is.null(by.prefix))
-              colnames(new.df) =  paste(by.prefix, names(tmp2)[-1], sep = '.')
-            else
-              colnames(new.df) =  names(tmp2)[-1]
-            new.names = c(colnames(values(query)), colnames(new.df))
-            values(query) = cbind(values(query), new.df)
-            colnames(values(query)) = new.names
-          }
-          else
-          {
-
-            #            val.vec = as.numeric(values(target)[, val]);
-            val.vec = as.numeric(val.vec)
-            if (weighted)
-            {
-              if (!is.null(FUN))
+          val = vals[[vix]]
+          val.vec = val.vecs[[vix]]
+          is.char = is.character(values(target)[, val]);
+          if (is.null(by) | merge == TRUE)
               {
-                tmp = hits[, list(val = do.call(FUN, list(val.vec[subject.id], width, na.rm = na.rm))), keyby = list(query.id, bykey = eval(parse(text=by)))]
+                  if (nrow(hits)>0)
+                      {
+                          values(query)[, val] = NA;
+                          hits[, width := as.numeric(end - start)+1]
+                          data.table::setkey(hits,  query.id)
+                          if (is.char)
+                              {
+                                  values(query)[, val] = '';
+                                  hits$id = 1:nrow(hits);
+                                  if (!is.null(FUN))
+                                      tmp = hits[, list(val = do.call(FUN, list(val.vec[subject.id], width, na.rm = na.rm))), by = query.id]
+                                  else
+                                      tmp = hits[, list(val = paste(setdiff(val.vec[subject.id], NA), collapse = sep)), by = query.id]
+                                  if (!is.na(default.val))
+                                      tmp[is.na(tmp)] = default.val
+                                  values(query)[tmp[,query.id], val] = tmp[,val]
+                              }
+                          else
+                              {
+
+                                        #            val.vec = as.numeric(values(target)[, val]);
+                                  val.vec = as.numeric(val.vec)
+                                  if (weighted)
+                                      {
+                                          if (!is.null(FUN))
+                                              tmp = hits[, list(val = do.call(FUN, list(val.vec[subject.id], width, na.rm = na.rm))), by = query.id]
+                                          else if (mean)
+                                              tmp = hits[, list(val = sum(width * val.vec[subject.id], na.rm = na.rm)/sum(width)), by = query.id]
+                                          else
+                                              tmp = hits[, list(val = sum(width * val.vec[subject.id], na.rm = na.rm)), by = query.id]
+                                      }
+                                  else
+                                      {
+                                          if (!is.null(FUN))
+                                              tmp = hits[, list(val = do.call(FUN, list(val.vec[subject.id], na.rm = na.rm))), by = query.id]
+                                          else if (mean)
+                                              tmp = hits[, list(val =  mean(val.vec[subject.id], na.rm = na.rm)), by = query.id]
+                                          else
+                                              tmp = hits[, list(val = sum(val.vec[subject.id], na.rm = na.rm)), by = query.id]
+                                      }
+
+                                  if (!is.na(default.val))
+                                      tmp[is.na(tmp)] = default.val
+
+                                  values(query)[tmp[,query.id], val] = tmp[,val]
+                              }
+                      }
+                  else
+                      values(query)[, val] = NA                  
               }
-              else if (mean)
-                tmp = hits[, list(val = sum(width * val.vec[subject.id], na.rm = na.rm)/sum(width)), keyby = list(query.id, bykey = eval(parse(text=by)))]
-              else
-                tmp = hits[, list(val = sum(width * val.vec[subject.id], na.rm = na.rm)), keyby = list(query.id, bykey = eval(parse(text=by)))]
-            }
-            else
-            {
-              if (!is.null(FUN))
-                tmp = hits[, list(val = do.call(FUN, list(val.vec[subject.id], na.rm = na.rm))), keyby = list(query.id, bykey = eval(parse(text=by)))]
-              else if (mean)
-                tmp = hits[, list(val =  mean(val.vec[subject.id], na.rm = na.rm)), keyby = list(query.id, bykey = eval(parse(text=by)))]
-              else
-                tmp = hits[, list(val = sum(val.vec[subject.id], na.rm = na.rm)), keyby = list(query.id, bykey = eval(parse(text=by)))]
-            }
+          else ## by is not null
+              {
 
-            tmp2 = data.table::dcast.data.table(tmp, query.id ~ bykey, value.var = 'val')
-            data.table::setkey(tmp2, query.id)
-            new.df = as.data.frame(tmp2[list(1:length(query)), ])[ ,-1, drop = FALSE]
+                  if (!is.null(by.prefix))
+                      if (is.na(by.prefix))
+                          by.prefix = NULL
+                      else if (nchar(by.prefix)==0)
+                          by.prefix = NULL
 
-            if (!is.na(default.val))
-              new.df[is.na(new.df)] = default.val
+                  if (nrow(hits)>0)
+                      {
+                          hits[, width := as.numeric(end - start)+1]
+                          if (is.char)
+                              {
+                                  hits$id = 1:nrow(hits);
+                                  tmp = hits[, list(val = paste(setdiff(val.vec[subject.id], NA), collapse = sep)), keyby = list(query.id, bykey = eval(parse(text=by)))]
 
-            if (!is.null(by.prefix))
-              colnames(new.df) =  paste(by.prefix, names(tmp2)[-1], sep = '.')
-            else
-              colnames(new.df) =  names(tmp2)[-1]
+                                  tmp2 = data.table::dcast.data.table(tmp, query.id ~ bykey, value.var = 'val')
+                                  data.table::setkey(tmp2, query.id)
+                                  new.df = as.data.frame(tmp2[list(1:length(query)), ])[ ,-1]
 
-            new.names = c(colnames(values(query)), colnames(new.df))
-            values(query) = cbind(values(query), new.df)
-            colnames(values(query)) = new.names
-          }
-        }
-    }
+                                  if (!is.na(default.val))
+                                      new.df[is.na(new.df)] = default.val
+
+                                  if (!is.null(by.prefix))
+                                      colnames(new.df) =  paste(by.prefix, names(tmp2)[-1], sep = '.')
+                                  else
+                                      colnames(new.df) =  names(tmp2)[-1]
+                                  new.names = c(colnames(values(query)), colnames(new.df))
+                                  values(query) = cbind(values(query), new.df)
+                                  colnames(values(query)) = new.names
+                              }
+                          else
+                              {
+
+                                        #            val.vec = as.numeric(values(target)[, val]);
+                                  val.vec = as.numeric(val.vec)
+                                  if (weighted)
+                                      {
+                                          if (!is.null(FUN))
+                                              {
+                                                  tmp = hits[, list(val = do.call(FUN, list(val.vec[subject.id], width, na.rm = na.rm))), keyby = list(query.id, bykey = eval(parse(text=by)))]
+                                              }
+                                          else if (mean)
+                                              tmp = hits[, list(val = sum(width * val.vec[subject.id], na.rm = na.rm)/sum(width)), keyby = list(query.id, bykey = eval(parse(text=by)))]
+                                          else
+                                              tmp = hits[, list(val = sum(width * val.vec[subject.id], na.rm = na.rm)), keyby = list(query.id, bykey = eval(parse(text=by)))]
+                                      }
+                                  else
+                                      {
+                                          if (!is.null(FUN))
+                                              tmp = hits[, list(val = do.call(FUN, list(val.vec[subject.id], na.rm = na.rm))), keyby = list(query.id, bykey = eval(parse(text=by)))]
+                                          else if (mean)
+                                              tmp = hits[, list(val =  mean(val.vec[subject.id], na.rm = na.rm)), keyby = list(query.id, bykey = eval(parse(text=by)))]
+                                          else
+                                              tmp = hits[, list(val = sum(val.vec[subject.id], na.rm = na.rm)), keyby = list(query.id, bykey = eval(parse(text=by)))]
+                                      }
+
+                                  tmp2 = data.table::dcast.data.table(tmp, query.id ~ bykey, value.var = 'val')
+                                  data.table::setkey(tmp2, query.id)
+                                  new.df = as.data.frame(tmp2[list(1:length(query)), ])[ ,-1, drop = FALSE]
+
+                                  if (!is.na(default.val))
+                                      new.df[is.na(new.df)] = default.val
+
+                                  if (!is.null(by.prefix))
+                                      colnames(new.df) =  paste(by.prefix, names(tmp2)[-1], sep = '.')
+                                  else
+                                      colnames(new.df) =  names(tmp2)[-1]
+
+                                  new.names = c(colnames(values(query)), colnames(new.df))
+                                  values(query) = cbind(values(query), new.df)
+                                  colnames(values(query)) = new.names
+                              }
+                      }
+                  else
+                      for (val in levels(factor(subject$by)))
+                          values(query)[, val] = NA
+              }
   }
 
   if (query.was.grl)
@@ -1845,50 +1792,41 @@ grl.pivot = function(x)
 #' @return \code{data.frame} or \code{data.table} of the \code{rbind} operation
 #' @export
 #' @importFrom data.table data.table rbindlist
-rrbind = function(..., union = TRUE, as.data.table = FALSE)
+rrbind = function (..., union = TRUE, as.data.table = FALSE) 
 {
-  dfs = list(...);  # gets list of data frames
-  dfs = dfs[!sapply(dfs, is.null)]
-  dfs = dfs[sapply(dfs, ncol)>0]
-  names.list = lapply(dfs, names);
-  cols = unique(unlist(names.list));
-  unshared = lapply(names.list, function(x) setdiff(cols, x));
-  ix = which(sapply(dfs, nrow)>0)
+    dfs = list(...)
+    dfs = dfs[!sapply(dfs, is.null)]
+    dfs = dfs[sapply(dfs, ncol) > 0]
 
-  ## only call expanded dfs if needed
-  if (any(sapply(unshared, length) != 0))
-    expanded.dts <- lapply(ix, function(x) {
-      tmp = dfs[[x]]
-      if (is.data.table(dfs[[x]]))
-        tmp = as.data.frame(tmp)
-      tmp[, unshared[[x]]] = NA;
-      return(as.data.table(as.data.frame(tmp[, cols])))
-    })
-  else
-    expanded.dts <- lapply(dfs, as.data.table)
+    if (any(mix <- sapply(dfs, class) == 'matrix'))
+        dfs[mix] = lapply(dfs, as.data.frame)
+    
+    names.list = lapply(dfs, names)
+    cols = unique(unlist(names.list))
+    unshared = lapply(names.list, function(x) setdiff(cols, x))
+    ix = which(sapply(dfs, nrow) > 0)
+    if (any(sapply(unshared, length) != 0)) 
+        expanded.dts <- lapply(ix, function(x) {
+            tmp = dfs[[x]]
+            if (is.data.table(dfs[[x]])) 
+                tmp = as.data.frame(tmp)
+            tmp[, unshared[[x]]] = NA
+            return(data.table::as.data.table(as.data.frame(tmp[, 
+                cols])))
+        })
+    else expanded.dts <- lapply(dfs, function(x) as.data.table(as.data.frame(x)[, cols]))                                                                                
 
-  ## convert data frames (or DataFrame) to data table.
-  ## need to convert DataFrame to data.frmae for data.table(...) call.
-  ## structure call is way faster than data.table(as.data.frame(...))
-  ## and works on data.frame and DataFrame
-  #    dts <- lapply(expanded.dfs, function(x) structure(as.list(x), class='data.table'))
-  #   rout <- data.frame(rbindlist(dts))
-
-  rout <- tryCatch(rbindlist(expanded.dts), error = function(e) NULL)
-
-  if (is.null(rout))
-      rout = as.data.table(do.call('rbind', lapply(expanded.dts, as.data.frame)))
-  
-  if (!as.data.table)
-    rout = as.data.frame(rout)
-
-  if (!union)
-  {
-    shared = setdiff(cols, unique(unlist(unshared)))
-    rout = rout[, shared];
-  }
-
-  return(rout)
+    rout <- tryCatch(rbindlist(expanded.dts), error = function(e) NULL)
+    if (is.null(rout)) 
+        rout = data.table::as.data.table(do.call("rbind", lapply(expanded.dts, 
+            as.data.frame)))
+    if (!as.data.table) 
+        rout = as.data.frame(rout)
+    if (!union) {
+        shared = setdiff(cols, unique(unlist(unshared)))
+        rout = rout[, shared]
+    }
+    return(rout)
 }
 
 #' Apply \code{gsub} to seqlevels of a \code{GRanges}
@@ -1899,11 +1837,17 @@ rrbind = function(..., union = TRUE, as.data.table = FALSE)
 #' @param b Vector of values to sub in
 #' @name gr.sub
 #' @export
-gr.sub = function(gr, a = c('(^chr)(\\.1$)', 'MT'), b= c('', 'M'))
+gr.sub = function (gr, a = c("(^chr)(\\.1$)", "MT"), b = c("", "M")) 
 {
-  tmp = mapply(function(x, y) seqlevels(gr) <<- gsub(x, y, seqlevels(gr)), a, b)
-  return(gr)
+    unique(gsub(a[1], b[1], seqlevels(gr)))
+
+    subs = cbind(a, b)
+    for (i in 1:nrow(subs))
+        seqlevels(gr) = unique(gsub(subs[i,1], subs[i,2], seqlevels(gr)))
+
+    return(gr)
 }
+
 
 #' @name seg2gr
 #' @title Convert GRange like data.frames into GRanges
@@ -1912,9 +1856,7 @@ gr.sub = function(gr, a = c('(^chr)(\\.1$)', 'MT'), b= c('', 'M'))
 #' Take data frame of ranges "segs" and converts into granges object porting over additional value columns
 #' "segs" data frame can obey any number of conventions to specify chrom, start, and end of ranges
 #' (eg $pos1, $pos2, $Start_position, $End_position) --> see "standardize_segs" for more info
-#'
-#' @importFrom GenomicRanges
-#'    GRanges
+#' 
 #' @param segs data frame of segments with fields denoting chromosome, start, end, and other metadata (see standardized segs for seg data frame input formats)
 #' @param seqlengths seqlengths of output GRanges object
 #' @param seqinfo seqinfo of output GRanges object
@@ -1922,6 +1864,9 @@ gr.sub = function(gr, a = c('(^chr)(\\.1$)', 'MT'), b= c('', 'M'))
 seg2gr = function(segs, seqlengths = NULL, seqinfo = Seqinfo())
 {
   if (is(segs, 'data.table'))
+      segs = as.data.frame(segs)
+
+  if (!is(segs, 'data.frame'))
     segs = as.data.frame(segs)
 
   if (!inherits(seqinfo, 'Seqinfo'))
@@ -1929,7 +1874,7 @@ seg2gr = function(segs, seqlengths = NULL, seqinfo = Seqinfo())
 
   if (is.null(seqlengths))
     seqlengths = seqlengths(seqinfo)
-
+  
   if (!inherits(segs, 'GRanges'))
   {
     if (nrow(segs)==0)
@@ -1939,7 +1884,7 @@ seg2gr = function(segs, seqlengths = NULL, seqinfo = Seqinfo())
     return(GRanges(seqlengths = seqlengths(seqinfo)))
 
   segs = standardize_segs(segs);
-
+  
   # if (any(bix <- (is.na(segs$chr) | is.na(segs$pos1) | is.na(segs$pos2))))
   # {
   #   warning('Segments with NA values for chromosome, start, and end position detected .. removing')
@@ -1965,10 +1910,10 @@ seg2gr = function(segs, seqlengths = NULL, seqinfo = Seqinfo())
     segs$pos1 <- as.numeric(segs$pos1)
     segs$pos2 <- as.numeric(segs$pos2)
     
-    out = GRanges(seqnames = segs$chr, ranges = IRanges(segs$pos1, segs$pos2), names = levels(levels), strand = segs$strand, seqlengths = seqlengths)
+    out = GRanges(seqnames = segs$chr, ranges = IRanges(segs$pos1, segs$pos2),strand = segs$strand, seqlengths = seqlengths)
   }
   else
-    out = GRanges(seqnames = as.character(segs$chr), ranges = IRanges(segs$pos1, segs$pos2), names = levels(levels), strand = segs$strand)
+    out = GRanges(seqnames = as.character(segs$chr), ranges = IRanges(segs$pos1, segs$pos2), strand = segs$strand)
 
   if (length(seqinfo)>0)
     out = gr.fix(out, seqinfo)
@@ -2028,8 +1973,8 @@ standardize_segs = function(seg, chr = FALSE)
   field.aliases = list(
     ID = c('id', 'patient', 'Sample'),
     chr = c('seqnames', 'chrom', 'Chromosome', "contig", "seqnames", "seqname", "space", 'chr', 'Seqnames'),
-    pos1 = c('start', 'loc.start', 'begin', 'Start', 'start', 'Start.bp', 'Start_position', 'pos', 'pos1', 'left', 's1'),
-    pos2 =  c('end', 'loc.end', 'End', 'end', "stop", 'End.bp', 'End_position', 'pos2', 'right', 'e1'),
+    pos1 = c('start', 'loc.start', 'begin', 'Start', 'start', 'Start.bp', 'Start_position', 'Start_Position', 'pos', 'pos1', 'left', 's1'),
+    pos2 =  c('end', 'loc.end', 'End', 'end', "stop", 'End.bp', 'End_position', 'End_Position', 'pos2', 'right', 'e1'),
     strand = c('strand', 'str', 'strand', 'Strand', 'Str')
   );
 
@@ -2235,7 +2180,7 @@ gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE,
           subject = gr.fix(subject, query)
           h <- GenomicRanges::findOverlaps(query, subject, type = type, ignore.strand = ignore.strand, ...)
       }
-  
+
   r <- ranges(h, ranges(query), ranges(subject))
   h.df <- data.table(start = start(r), end = end(r), query.id = queryHits(h),
                      subject.id = subjectHits(h), seqnames = as.character(seqnames(query)[queryHits(h)]))
@@ -2280,6 +2225,7 @@ gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE,
 
     #out.gr = GRanges(h.df$seqnames, IRanges(h.df$start, h.df$end), query.id = h.df$query.id, subject.id = h.df$subject.id, seqlengths = seqlengths(query),
     #                 strand = h.df$strand)
+
     out.gr <- dt2gr(h.df)
 
     if (!is.null(qcol))
@@ -2294,10 +2240,10 @@ gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE,
   } else { ## return data.table
 
     if (!is.null(qcol))
-      h.df = cbind(h.df, as.data.table(as.data.frame(values(query))[h.df$query.id, qcol, drop = FALSE]))
+      h.df = cbind(h.df, data.table::as.data.table(as.data.frame(values(query))[h.df$query.id, qcol, drop = FALSE]))
 
     if (!is.null(scol))
-      h.df = cbind(h.df, as.data.table(as.data.frame(values(subject))[h.df$subject.id, scol, drop = FALSE]))
+      h.df = cbind(h.df, data.table::as.data.table(as.data.frame(values(subject))[h.df$subject.id, scol, drop = FALSE]))
 
     if ('i.start' %in% colnames(h.df))
       h.df[, i.start := NULL]
@@ -2310,206 +2256,130 @@ gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE,
 }
 
 
-#' Find peaks in a \code{GRanges} over a given meta-data field
+#' @name gr.merge
+#' @title merge GRanges using coordinates as primary key
 #'
-#' Finds "peaks" in an input GRanges with value field y.
-#' first piles up ranges according to field score (default = 1 for each range)
-#' then finds peaks.  If peel > 0, then recursively peels segments
-#' contributing to top peak, and recomputes nextpeak "peel" times
-#' if peel>0, bootstrap controls whether to bootstrap peak interval nbootstrap times
-#' if id.field is not NULL will peel off with respect to unique (sample) id of segment and not purely according to width
-#' if FUN preovided then will complex aggregating function of piled up values in dijoint intervals prior to computing "coverage"
-#' (FUN must take in a single argument and return a scalar)
-#' if id.field is not NULL, AGG.FUN is a second fun to aggregate values from id.field to output interval
+#' @description
+#' Uses gr.findoverlaps to enable internal and external joins of GRanges using
+#' syntax similar to "merge" where merging is done using coordinates +/- "by" fields
 #'
-#' @param gr \code{GRanges} with some meta-data field to find peaks on 
-#' @param field character field specifying metadata to find peaks on, default "score, can be NULL in which case the count is computed
-#' @param minima logical flag whether to find minima or maxima
-#' @param id.field character denoting field whose values specifyx individual tracks (e.g. samples)
-#' @param bootstrap logical flag specifying whether to bootstrap "peel off" to statistically determine peak boundaries
-#' @param na.rm remove NA from data
-#' @param pbootstrap  quantile of bootstrap boundaries to include in the robust peak boundary estimate (i.e. essentially specifies confidence interval)
-#' @param nboostrap   number of bootstraps to run
-#' @param FUN  function to apply to compute score for a single individual
-#' @param AGG.FUN function to aggregate scores across individuals
+#' Uses gr.findoverlaps / findOverlaps for heavy lifting, but returns outputs with
+#' metadata populated as well as query and subject ids.  For external joins,
+#' overlaps x with gaps(y) and gaps(x) with y. 
+#'
+#' @param subject subject
+#' @param query  query ranges
+#' @param all whether to include left and right joins
+#' @param all.query whether to do a left join
+#' @param all.subject whether to do a right join
+#' @param by additional metadata fields to join on 
 #' @export
-#' @examples
-#'
-#' ## outputs example gene rich hotspots from example_genes GRanges
-#' pk = gr.peaks(example_genes)
-#'
-#' ## now add a numeric quantity to example_genes and compute
-#' ## peaks with respect to a numeric scores, e.g. "exon_density"
-#' example_genes$exon_density = example_genes$exonCount / width(example_genes)
-#' pk = gr.peaks(example_genes, field = 'exon_density')
-#'
-#' ## can quickly find out what genes lie in the top peaks by agggregating back with
-#' ## original example_genes
-#' pk[1:10] %$% example_genes[, 'name']
-#'
 #' 
-gr.peaks = function(gr, field = 'score',
-                    minima = FALSE,
-                    peel = 0,
-                    id.field = NULL,
-                    bootstrap = TRUE,
-                    na.rm = TRUE,
-                    pbootstrap = 0.95,
-                    nbootstrap = 1e4,
-                    FUN = NULL,
-                    AGG.FUN = sum,
-                    peel.gr = NULL, ## when peeling will use these segs instead of gr (which can just be a standard granges of scores)
-                    score.only = FALSE,
-                          verbose = peel>0)
+gr.merge = function(query, subject, by = NULL, all = FALSE, all.query = all, all.subject = all, verbose = FALSE, ignore.strand = TRUE, ... )
 {
+    qcol = names(values(query))
+    scol = names(values(subject))
 
-        if (!is(gr, 'GRanges'))
-            gr = seg2gr(gr)
-
-        if (is.null(field))
-            field = 'score'
-
-        if (!(field %in% names(values(gr))))
-            values(gr)[, field] = 1
-
-        if (is.logical(values(gr)[, field]))
-            values(gr)[, field] = as.numeric(values(gr)[, field])
-
-        if (peel>0 & !score.only)
-            {
-                if (verbose)
-                    cat('Peeling\n')
-                out = GRanges()
-
-                if (bootstrap)
-                    pbootstrap = pmax(0, pmin(1, pmax(pbootstrap, 1-pbootstrap)))
-
-                ## peel.gr are an over-ride if we have pre-computed the score and only want to match peaks to their supporting segments
-                if (is.null(peel.gr))
-                    peel.gr = gr
-
-                for (p in 1:peel)
-                    {
-                        if (verbose)
-                            cat('Peel', p, '\n')
-                        if (p == 1)
-                            last = gr.peaks(gr, field, minima, peel = 0, FUN = FUN, AGG.FUN = AGG.FUN, id.field = id.field)
-                        else
-                            {
-                                ## only need to recompute peak in region containing any in.peak intervals
-                                tmp = gr.peaks(gr[gr.in(gr, peak.hood), ], field, minima, peel = 0, FUN = FUN, AGG.FUN = AGG.FUN, id.field = id.field)
-                                last = c(last[!gr.in(last, peak.hood)], tmp)
-                            }
-
-                        ## these are the regions with the maximum peak value
-                        mix = which(values(last)[, field] == max(values(last)[, field]))
-
-                        ## there can be more than one peaks with the same value
-                        ## and some are related since they are supported by the same gr
-                        ## we group these peaks and define a tmp.peak to span all the peaks that are related
-                        ## to the top peak
-                        ## the peak is the span beteween the first and last interval with the maximum
-                        ## peak value that are connected through at least one segment to the peak value
-
-                        ##
-                        tmp.peak = last[mix]
-
-                        if (length(tmp.peak)>1)
-                            {
-                                tmp.peak.gr = gr[gr.in(gr, tmp.peak)]
-                                ov = gr.findoverlaps(tmp.peak, tmp.peak.gr)
-                                ed = rbind(ov$query.id, ov$subject.id+length(tmp.peak))[1:(length(ov)*2)]
-                                cl = igraph::clusters(igraph::graph(ed), 'weak')$membership
-                                tmp = tmp.peak[cl[1:length(tmp.peak)] %in% cl[1]]
-                                peak = GRanges(seqnames(tmp)[1], IRanges(min(start(tmp)), max(end(tmp))))
-                                values(peak)[, field] = values(tmp.peak)[, field][1]
-                            }
-                        else
-                            peak = tmp.peak
-                        ## tmp.peak is the interval spanning all the top values in this region
-
-                        in.peak1 =  gr.in(peel.gr, gr.start(peak))
-                        in.peak2 = gr.in(peel.gr, gr.end(peak))
-                        in.peak = in.peak1 | in.peak2
-
-                        ## peak.gr are the gr supporting the peak
-                        peak.gr = peel.gr[in.peak1 & in.peak2] ## want to be more strict with segments used for peeling
-                        peak.hood = reduce(peak.gr) ## actual peak will be a subset of this, and we can this in further iterations to limit peak revision
-
-                        if (bootstrap)
-                            {
-                                ## asking across bootstrap smaples how does the intersection fluctuate
-                                ## among segments contributing to the peak
-
-                                if (!is.null(id.field))
-                                    {
-                                        peak.gr = seg2gr(grdt(peak.gr)[, list(seqnames = seqnames[1], start = min(start),
-                                            eval(parse(text = paste(field, '= sum(', field, '*(end-start))/sum(end-start)'))),end = max(end)),
-                                            by = eval(id.field)])
-                                        names(values(peak.gr))[3] = field ## not sure why I need to do this line, should be done above
-                                    }
-
-                                B = matrix(sample(1:length(peak.gr), nbootstrap * length(peak.gr), prob = abs(values(peak.gr)[, field]), replace = TRUE), ncol = length(peak.gr))
-                                ## bootstrap segment samples
-                                ## the intersection is tha max start and min end among the segments in each
-                                st = apply(matrix(start(peak.gr)[B], ncol = length(peak.gr)), 1, max)
-                                en = apply(matrix(end(peak.gr)[B], ncol = length(peak.gr)), 1, min)
-
-                                ## take the left tail of the start position as the left peak boundary
-                                start(peak) = quantile(st, (1-pbootstrap)/2)
-
-                                ## and the right tail of the end position as the right peak boundary
-                                end(peak) = quantile(en, pbootstrap + (1-pbootstrap)/2)
-
-                                in.peak =  gr.in(gr, peak)
-                            }
-                        gr = gr[!in.peak]
-                        peak$peeled = TRUE
-                        out = c(out, peak)
-                        if (length(gr)==0)
-                            return(out)
-                    }
-                last$peeled = FALSE
-                return(c(out, last[-mix]))
-            }
-
-        if (na.rm)
-            if (any(na <- is.na(values(gr)[, field])))
-                gr = gr[!na]
-
-        if (!is.null(FUN))
-            {
-                agr = GenomicRanges::disjoin(gr)
-                values(agr)[, field] = NA
-                tmp.mat = cbind(as.matrix(values(gr.val(agr[, c()], gr, field, weighted = FALSE, verbose = verbose, by = id.field, FUN = FUN, default.val = 0))))
-                values(agr)[, field] = apply(tmp.mat, 1, AGG.FUN)
-                gr = agr
-            }
-
-        cov = as(GenomicRanges::coverage(gr, weight = values(gr)[, field]), 'GRanges')
-
-        if (score.only)
-            return(cov)
-
-        dcov = diff(cov$score)
-        dchrom = diff(as.integer(seqnames(cov)))
-
-        if (minima)
-            peak.ix = (c(0, dcov) < 0 & c(0, dchrom)==0) & (c(dcov, 0) > 0 & c(dchrom, 0)==0)
-        else
-            peak.ix = (c(0, dcov) > 0 & c(0, dchrom)==0) & (c(dcov, 0) < 0 & c(dchrom, 0)==0)
-
-        out = cov[which(peak.ix)]
-
-        if (minima)
-            out = out[order(out$score)]
-        else
-            out = out[order(-out$score)]
-
-        names(values(out)) = field
-
-        return(out)
+    if (!is.null(by))
+    {
+        qcol = setdiff(qcol, by)
+#        scol = setdiff(scol, by)
     }
+    
+    ov = gr.findoverlaps(query, subject, qcol = qcol, scol = scol, by = by, ...)
+
+    if (verbose)
+        message('inner join yields ', length(ov), ' overlaps')
+
+
+    if (all.query)
+    {
+        if (is.null(by))
+        {
+            if (ignore.strand)
+                sgaps = gaps(gr.stripstrand(subject)) %Q% (strand == '*')
+            else
+                sgaps = gaps(subject)
+        }
+        else ## if by not null then we want to define gaps in a group wise manner .. 
+        {
+            sgaps = unlist(do.call('GRangesList', lapply(split(subject, apply(as.matrix(values(subject)[, by]), 1, paste, collapse = ' ')), function(group)
+            {
+                if (ignore.strand)
+                    this.gap = gaps(gr.stripstrand(group)) %Q% (strand == '*')
+                else
+                    this.gap = gaps(group)
+                
+                values(this.gap)[, by] = values(group)[1, by]
+                return(this.gap)
+            })))
+        }
+        
+        ov.left = gr.findoverlaps(query, sgaps, qcol = qcol, scol = NULL, by = by, ignore.strand = ignore.strand, ...)
+        if (length(ov.left)>0)
+            ov.left$subject.id = NA
+            
+        if (verbose)
+            message('left join yields ', length(ov.left), ' overlaps')
+
+        ov = grbind(ov, ov.left)
+    }
+    
+    if (all.subject)
+    {
+        if (is.null(by))
+        {
+            if (ignore.strand)
+                qgaps = gaps(gr.stripstrand(query)) %Q% (strand == '*')
+            else
+                qgaps = gaps(query)
+        }
+        else ## if by not null then we want to define gaps in a group wise manner .. 
+        {
+            qgaps = unlist(do.call('GRangesList', lapply(split(query, apply(as.matrix(values(query)[, by]), 1, paste, collapse = ' ')), function(group)
+            {
+                if (ignore.strand)
+                    this.gap = gaps(gr.stripstrand(group)) %Q% (strand == '*')
+                else
+                    this.gap = gaps(group)
+                
+                values(this.gap)[, by] = values(group)[1, by]
+                return(this.gap)
+            })))
+        }
+        
+        ov.right = gr.findoverlaps(qgaps, subject, qcol = NULL, scol = scol, by = by, ignore.strand = ignore.strand, ...)
+        if (length(ov.right)>0)
+            ov.right$query.id = NA
+        
+        strand(ov.right) = strand(subject)[ov.right$subject.id]
+        
+        if (verbose)
+            message('right join yields ', length(ov.right), ' overlaps')
+        ov = grbind(ov, ov.right)        
+    }
+
+
+    return(ov)
+}
+
+
+#' @name gr.disjoin
+#' @title GenomicRanges disjoin with some spice
+#'
+#' Identical to GRanges disjoin, except outputs inherit metadata from first overlapping parent instance on input
+#'
+#' @param x GRanges to disjoin
+#' @param ... arguments to disjoin
+#' @param ignore.strand logical scalar, default TRUE
+#' @export
+gr.disjoin = function(x, ..., ignore.strand = TRUE)
+{
+    y = disjoin(x, ...)
+    ix = gr.match(y, x, ignore.strand = ignore.strand)
+    values(y) = values(x)[ix, , drop = FALSE]
+    return(y)
+}
 
 
 #' Versatile implementation of \code{GenomicRanges::over}
@@ -2573,45 +2443,115 @@ gr.collapse = function(gr, pad = 1)
 #' @name gr.match
 #' @param query Query \code{GRanges} pile
 #' @param subject Subject \code{GRanges} pile
+#' @param max.slice max slice of query to match at a time
+#' @param verbose whether to give verbose output
+#' @importFrom parallel mclapply
 #' @param ... Additional arguments to be passed along to \code{\link{gr.findoverlaps}}.
 #' @export
-gr.match = function(query, subject, ...)
-{
+gr.match = function(query, subject, max.slice = Inf, verbose = FALSE, ...)
+    {
+        ## if no need to call gr.findoverlaps, go to findOverlaps directly
+                                        # if (!is.data.table(query) && !is.data.table(subject) && length(list(...)) == 0) {
+                                        #   h = findOverlaps(query, subject)
+                                        #   tmp = data.table(subject.id = subjectHits(h), query.id = queryHits(h))
+                                        # } else {
+        
+        if (length(query)>max.slice)
+          {
+              verbose = TRUE
+              ix.l = split(1:length(query), ceiling(as.numeric((1:length(query)/max.slice))))
+              return(do.call('c', parallel::mclapply(ix.l, function(ix) {
+                                               if (verbose)
+                      cat(sprintf('Processing %s to %s\n', min(ix), max(ix)))                
+                  gr.match(query[ix, ], subject, verbose = TRUE, ...)
+              })))
+          }
+      
+    tmp = gr.findoverlaps(query, subject, ...)
+    tmp = tmp[!duplicated(tmp$query.id)]
+    out = rep(NA, length(query))
+    out[tmp$query.id] = tmp$subject.id
+    return(out)    
+   }
+    
 
-  ## if no need to call gr.findoverlaps, go to findOverlaps directly
-  # if (!is.data.table(query) && !is.data.table(subject) && length(list(...)) == 0) {
-  #   h = findOverlaps(query, subject)
-  #   tmp = data.table(subject.id = subjectHits(h), query.id = queryHits(h))
-  # } else {
-  tmp = gr.findoverlaps(query, subject, ...)
-  # }
-  tmp = tmp[!duplicated(tmp$query.id)]
-  out = rep(NA, length(query))
-  out[tmp$query.id] = tmp$subject.id
-  return(out)
-}
 
 subset2 <- function(x, condition) {
     condition_call <- substitute(condition)
     r <- eval(condition_call, x)
-    browser()
     x[r, ]
 }
 
-#' @name %WW%
-#' @title subset x on y ranges wise obeying strand
+
+#' @name %+%
+#' @title Nudge GRanges right
 #' @description
-#' shortcut for x[gr.in(x,y, ignore.strand = FALSE)]
+#' Operator to shift GRanges right "sh" bases
 #'
-#' gr1 %WW% gr2 returns the subsets of gr that overlaps gr2 not ignoring strand
+#' @return shifted granges
+#' @rdname gr.nudge-shortcut
+#' @exportMethod %+%
+#' @aliases %+%,GRanges-method
+#' @author Marcin Imielinski
+#' @export
+setGeneric('%+%', function(gr, ...) standardGeneric('%+%'))
+setMethod("%+%", signature(gr = "GRanges"), function(gr, sh) {
+    end(gr) = end(gr)+sh
+    start(gr) = start(gr)+sh
+    return(gr)
+})
+
+#' @name %-%
+#' @title Shift GRanges left
+#' @description
+#' Operator to shift GRanges left "sh" bases
 #'
-#' @return subset of gr1 that overlaps gr2
-#' @rdname gr.in
-#' @exportMethod %WW%
+#' df %!% c('string.*to.*match', 'another.string.to.match')
+#'
+#' @return shifted granges
+#' @rdname gr.nudge
 #' @export
 #' @author Marcin Imielinski
-setGeneric('%WW%', function(x, ...) standardGeneric('%WW%'))
-setMethod("%WW%", signature(x = "GRanges"), function(x, y) {
+setGeneric('%-%', function(gr, ...) standardGeneric('%-%'))
+setMethod("%-%", signature(gr = "GRanges"), function(gr, sh) {
+    start(gr) = start(gr)-sh
+    end(gr) = end(gr)-sh
+    return(gr)
+})
+
+#' @name %&%
+#' @title subset x on y ranges wise ignoring strand
+#' @description
+#' shortcut for x[gr.in(x,y)]
+#'
+#' gr1 %&% gr2 returns the subsets of gr1 that overlaps gr2
+#'
+#' @return subset of gr1 that overlaps gr2f
+#' @rdname gr.in-shortcut
+#' @exportMethod %&%
+#' @aliases %&%,GRanges-method
+#' @author Marcin Imielinski
+setGeneric('%&%', function(x, ...) standardGeneric('%&%'))
+setMethod("%&%", signature(x = "GRanges"), function(x, y) {
+    if (is.character(y))
+        y = parse.gr(y)
+    return(x[gr.in(x, y)])
+})
+
+#' @name %&&%
+#' @title Subset x on y ranges wise respecting strand
+#' @description
+#' shortcut for x[gr.in(x,y)]
+#'
+#' gr1 %&&% gr2 returns the subsets of gr1 that overlaps gr2
+#'
+#' @return subset of gr1 that overlaps gr2
+#' @rdname gr.in-strand-shortcut
+#' @exportMethod %&%
+#' @aliases %&&%,GRanges-method
+#' @author Marcin Imielinski
+setGeneric('%&&%', function(x, ...) standardGeneric('%&&%'))
+setMethod("%&&%", signature(x = "GRanges"), function(x, y) {
     if (is.character(y))
         y = parse.gr(y)
     return(x[gr.in(x, y, ignore.strand = FALSE)])
@@ -2626,16 +2566,25 @@ setMethod("%WW%", signature(x = "GRanges"), function(x, y) {
 #' gr1 %O% gr2
 #'
 #' @return fractional overlap of gr1 with gr2
-#' @rdname gr.val
+#' @rdname gr.val-O
 #' @exportMethod %O%
-#' @export
+#' @aliases %O%,GRanges-method
 #' @author Marcin Imielinski
+#' @param x See \link{gr.val}
+#' @param ... See \link{gr.val}
 setGeneric('%O%', function(x, ...) standardGeneric('%O%'))
 setMethod("%O%", signature(x = "GRanges"), function(x, y) {
-    ov = grdt(gr.findoverlaps(x, reduce(y)))[ , sum(width), keyby = query.id]
-    x$width.ov = 0
-    x$width.ov[ov$query.id] = ov$V1
-    return(x$width.ov/width(x))
+    query.id = NULL; ## NOTE fix
+    ov = gr2dt(gr.findoverlaps(x, reduce(y)))
+    if (nrow(ov)>0)
+        {
+            ov = ov[ , sum(width), keyby = query.id]            
+            x$width.ov = 0
+            x$width.ov[ov$query.id] = ov$V1           
+            return(x$width.ov/width(x))
+        }
+    else
+        return(rep(0, length(x)))
 })
 
 #' @name %OO%
@@ -2646,17 +2595,26 @@ setMethod("%O%", signature(x = "GRanges"), function(x, y) {
 #' gr1 %OO% gr2
 #'
 #' @return fractional overlap  of gr1 with gr2
-#' @rdname gr.val
+#' @docType methods
+#' @aliases %OO%,GRanges-method
+#' @rdname gr.val-fractional
 #' @exportMethod %OO%
-#' @export
-#' 
 #' @author Marcin Imielinski
+#' @param x See \link{gr.val}
+#' @param ... See \link{gr.val}
 setGeneric('%OO%', function(x, ...) standardGeneric('%OO%'))
 setMethod("%OO%", signature(x = "GRanges"), function(x, y) {
-    ov = grdt(gr.findoverlaps(x, reduce(y), ignore.strand = FALSE))[ , sum(width), keyby = query.id]
-    x$width.ov = 0
-    x$width.ov[ov$query.id] = ov$V1
-    return(x$width.ov/width(x))
+    query.id = NULL; ## NOTE fix
+    ov = gr2dt(gr.findoverlaps(x, reduce(y), ignore.strand = FALSE))
+    if (nrow(ov)>0)
+        {
+            ov = ov[ , sum(width), keyby = query.id]            
+            x$width.ov = 0
+            x$width.ov[ov$query.id] = ov$V1           
+            return(x$width.ov/width(x))
+        }
+    else
+        return(rep(0, length(x)))
 })
 
 #' @name %o%
@@ -2667,97 +2625,167 @@ setMethod("%OO%", signature(x = "GRanges"), function(x, y) {
 #' gr1 %o% gr2
 #'
 #' @return bases overlap of gr1 with gr2
-#' @rdname gr.val
+#' @rdname gr.val-total
 #' @exportMethod %o%
-#' @export
+#' @aliases %o%,GRanges-method
 #' @author Marcin Imielinski
+#' @param x See \link{gr.val}
+#' @param ... See \link{gr.val}
 setGeneric('%o%', function(x, ...) standardGeneric('%o%'))
 setMethod("%o%", signature(x = "GRanges"), function(x, y) {
-    ov = grdt(gr.findoverlaps(x, reduce(y)))[ , sum(width), keyby = query.id]
-    x$width.ov = 0
-    x$width.ov[ov$query.id] = ov$V1
-    return(x$width.ov)
+    query.id = NULL; ## NOTE fix
+    ov = gr2dt(gr.findoverlaps(x, reduce(y)))
+    if (nrow(ov)>0)
+        {
+            ov = ov[ , sum(width), keyby = query.id]            
+            x$width.ov = 0
+            x$width.ov[ov$query.id] = ov$V1            
+            return(x$width.ov)
+        }
+    else
+        return(rep(0, length(x)))
 })
 
 
 #' @name %oo%
 #' @title gr.val shortcut to total per interval width of overlap of gr1 with gr2, respecting strand
 #' @description
-#' Shortcut for gr.val (using val = names(values(y)))
 #'
 #' gr1 %oo% gr2
 #'
 #' @return bases overlap  of gr1 with gr2
-#' @rdname gr.val
+#' @rdname gr.val-strand
+#' @aliases %oo%,GRanges-method
 #' @exportMethod %oo%
-#' @export
 #' @author Marcin Imielinski
+#' @param x See \link{gr.val}
+#' @param ... See \link{gr.val}
 setGeneric('%oo%', function(x, ...) standardGeneric('%oo%'))
 setMethod("%oo%", signature(x = "GRanges"), function(x, y) {
-    ov = grdt(gr.findoverlaps(x, y, ignore.strand = FALSE))[ , sum(width), keyby = query.id]
-    x$width.ov = 0
-    x$width.ov[ov$query.id] = ov$V1
-    return(x$width.ov)
+    query.id = NULL; ## NOTE fix
+    ov = gr2dt(gr.findoverlaps(x, y, ignore.strand = FALSE))
+    if (nrow(ov)>0)
+        {
+            ov = ov[ , sum(width), keyby = query.id]            
+            x$width.ov = 0
+            x$width.ov[ov$query.id] = ov$V1            
+            return(x$width.ov)
+        }
+    else
+        return(rep(0, length(x)))
 })
 
 #' @name %N%
 #' @title gr.val shortcut to get total numbers of intervals in gr2 overlapping with each interval in  gr1, ignoring strand
 #' @description
-#' Shortcut for gr.val (using val = names(values(y)))
-#'
+#' 
 #' gr1 %N% gr2
 #'
 #' @return bases overlap of gr1 with gr2
-#' @rdname gr.val
+#' @rdname gr.val-shortcut
+#' @docType methods
+#' @aliases %N%,GRanges-method
 #' @exportMethod %N%
-#' @export
 #' @author Marcin Imielinski
+#' @param x See \link{gr.val}
+#' @param ... See \link{gr.val}
 setGeneric('%N%', function(x, ...) standardGeneric('%N%'))
 setMethod("%N%", signature(x = "GRanges"), function(x, y) {
-    ov = grdt(gr.findoverlaps(x, reduce(y)))[ , length(width), keyby = query.id]
-    x$width.ov = 0
-    x$width.ov[ov$query.id] = ov$V1
-    return(x$width.ov)
-})
+              query.id = NULL; ## NOTE fix
+              ov = gr2dt(gr.findoverlaps(x, y, ignore.strand = TRUE))
+              if (nrow(ov)>0)
+                  {
+                      ov = ov[ , length(width), keyby = query.id]
+                      x$width.ov = 0
+                      x$width.ov[ov$query.id] = ov$V1
+                      return(x$width.ov)
+                  }
+              else
+                  return(rep(0, length(x)))
+          })
 
 #' @name %NN%
 #' @title gr.val shortcut to get total numbers of intervals in gr2 overlapping with each interval in  gr1, respecting strand
 #' @description
-#' Shortcut for gr.val (using val = names(values(y)))
 #'
 #' gr1 %NN% gr2
 #'
 #' @return bases overlap  of gr1 with gr2
-#' @rdname gr.val
-#' @exportMethod %N%
-#' @export
+#' @rdname gr.val-numbers
+#' @aliases %NN%,GRanges-method
+#' @exportMethod %NN%
 #' @author Marcin Imielinski
+#' @param x See \link{gr.val}
+#' @param ... See \link{gr.val}
 setGeneric('%NN%', function(x, ...) standardGeneric('%NN%'))
 setMethod("%NN%", signature(x = "GRanges"), function(x, y) {
-    ov = grdt(gr.findoverlaps(x, y, ignore.strand = FALSE))[ , length(width), keyby = query.id]
-    x$width.ov = 0
-    x$width.ov[ov$query.id] = ov$V1
+              query.id = NULL; ## NOTE fix
+              ov = gr2dt(gr.findoverlaps(x, y, ignore.strand = FALSE))
+              if (nrow(ov)>0)
+                  {
+                      ov = ov[ , length(width), keyby = query.id]
+                      x$width.ov = 0
+                      x$width.ov[ov$query.id] = ov$V1
+                      return(x$width.ov)
+                  }
+              else
+                  return(rep(0, length(x)))
     return(x$width.ov)
 })
 
 #' @name %_%
-#' @title setdiff shortcut (strand agnostic)
+#' @title \code{BiocGenerics::setdiff} shortcut (strand agnostic)
 #' @description
-#' Shortcut for setdiff
+#' Shortcut for \code{BiocGenerics::setdiff}
 #'
+#' gr1 <- GRanges(1, IRanges(10,20), strand="+")
+#' gr2 <- GRanges(1, IRanges(15,25), strand="-")
+#' gr3 <- "1:1-15"
 #' gr1 %_% gr2
+#' gr1 %_% gr3
 #'
-#' @return granges representing setdiff of input interval
+#' @return \code{GRanges} representing setdiff of input interval
 #' @rdname gr.setdiff
+#' @aliases %_%,GRanges-method
 #' @exportMethod %_%
-#' @export
 #' @author Marcin Imielinski
+#' @param x \code{GRanges} object to to 
+#' @param ... A \code{GRanges} or a character to be parsed into a \code{GRanges}
 setGeneric('%_%', function(x, ...) standardGeneric('%_%'))
 setMethod("%_%", signature(x = "GRanges"), function(x, y) {
     if (is.character(y))
         y = parse.gr(y)
     setdiff(gr.stripstrand(x[, c()]), gr.stripstrand(y[, c()]))
 })
+
+
+#' @name %*%
+#' @title Metadata join with coordinates as keys (wrapper to \code{\link{gr.findoverlaps}})
+#' @description
+#' Shortcut for gr.findoverlaps with \code{qcol} and \code{scol} filled in with all the query and subject metadata names.
+#' This function is useful for piping \code{GRanges} operations together. Another way to think of %*% is as a
+#' join of the metadata, with genomic coordinates as the keys. \cr
+#' Example usage: \cr
+#' x %*% y
+#' @param x \code{GRanges}
+#' @param y \code{GRanges}
+#' @return \code{GRanges} containing every pairwise intersection of ranges in \code{x} and \code{y} with a join of the corresponding  metadata
+#' @rdname grfo
+#' @exportMethod %*%
+#' @export
+#' @importFrom methods setMethod
+#' @author Marcin Imielinski
+#' @docType methods
+#' @aliases %*%,GRanges-method
+#' @examples
+#' example_genes %*% example_dnase
+#setGeneric('%*%', function(gr, ...) standardGeneric('%*%'))
+setMethod("%*%", signature(x = "GRanges"), function(x, y) {
+  gr = gr.findoverlaps(x, y, qcol = names(values(x)), scol = names(values(y)))
+  return(gr)
+})
+
+
 
 #' @name %**%
 #' @title gr.findoverlaps (respects strand)
@@ -2767,10 +2795,12 @@ setMethod("%_%", signature(x = "GRanges"), function(x, y) {
 #' gr1 %**% gr2
 #'
 #' @return new granges containing every pairwise intersection of ranges in gr1 and gr2 with a join of the corresponding metadata
-#' @rdname grfo
+#' @rdname grfo-shortcut
 #' @exportMethod %**%
-#' @export
+#' @aliases %**%,GRanges-method
 #' @author Marcin Imielinski
+#' @param x See \link{gr.findoverlaps}
+#' @param ... See \link{gr.findoverlaps}
 setGeneric('%**%', function(x, ...) standardGeneric('%**%'))
 setMethod("%**%", signature(x = "GRanges"), function(x, y) {
     if (is.character(y))
@@ -2787,10 +2817,12 @@ setMethod("%**%", signature(x = "GRanges"), function(x, y) {
 #' gr1 %^^% gr2
 #'
 #' @return logical vector of length gr1 which is TRUE at entry i only if gr1[i] intersects at least one interval in gr2
-#' @rdname gr.in
+#' @rdname gr.in-shortcut
+#' @aliases %^^%,GRanges-method
 #' @exportMethod %^^%
-#' @export
 #' @author Marcin Imielinski
+#' @param x See \link{gr.in}
+#' @param ... See \link{gr.in}
 setGeneric('%^^%', function(x, ...) standardGeneric('%^^%'))
 setMethod("%^^%", signature(x = "GRanges"), function(x, y) {
     if (is.character(y))
@@ -2806,18 +2838,18 @@ setMethod("%^^%", signature(x = "GRanges"), function(x, y) {
 #' gr1 %$$% gr2
 #'
 #' @return gr1 with extra meta data fields populated from gr2
-#' @rdname gr.val
+#' @rdname gr.val-mean
 #' @exportMethod %$$%
-#' @export
+#' @aliases %$$%,GRanges-method
 #' @author Marcin Imielinski
+#' @param x See \link{gr.val}
+#' @param ... See \link{gr.val}
 setGeneric('%$$%', function(x, ...) standardGeneric('%$$%'))
 setMethod("%$$%", signature(x = "GRanges"), function(x, y) {
     if (is.character(y))
         y = parse.gr(y)
     return(gr.val(x, y, val = names(values(y)), ignore.strand = FALSE))
 })
-
-
 
 #' ra.overlaps
 #'
@@ -2826,7 +2858,7 @@ setMethod("%$$%", signature(x = "GRanges"), function(x, y) {
 #'
 #' if argument pad = 0 (default) then only perfect overlap will validate, otherwise if pad>0 is given, then
 #' padded overlap is allowed
-#'
+#'o
 #' strand matters, though we test overlap of both ra1[i] vs ra2[j] and gr.flip(ra2[j])
 #'
 #' @param ra1 \code{GRangesList} with rearrangement set 1
@@ -2902,8 +2934,10 @@ ra.overlaps = function(ra1, ra2, pad = 0, arr.ind = TRUE, ignore.strand=FALSE, .
 #' @examples
 #'
 #' # generate some junctions
-#' ra1 = split(GRanges(1, IRanges(1:10, width = 1), strand = rep(c('+', '-'), 5)), rep(1:5, each = 2)) 
-#' ra2 = split(GRanges(1, IRanges(4 + 1:10, width = 1), strand = rep(c('+', '-'), 5)), rep(1:5, each = 2))
+#' gr1 <- GRanges(1, IRanges(1:10, width = 1), strand = rep(c('+', '-'), 5))
+#' gr2 <- GRanges(1, IRanges(4 + 1:10, width = 1), strand = rep(c('+', '-'), 5))
+#' ra1 = split(gr1, rep(1:5, each = 2)) 
+#' ra2 = split(gr2, rep(1:5, each = 2))
 #'
 #' ram = ra.merge(ra1, ra2)
 #' values(ram) # shows the metadata with TRUE / FALSE flags
@@ -2917,46 +2951,46 @@ ra.overlaps = function(ra1, ra2, pad = 0, arr.ind = TRUE, ignore.strand=FALSE, .
 ra.merge = function(..., pad = 0, ind = FALSE, ignore.strand = FALSE)
     {
         ## hey why not
-        .rrbind2 = function(..., union = T, as.data.table = FALSE)
-            {
-                dfs = list(...);  # gets list of data frames
-                dfs = dfs[!sapply(dfs, is.null)]
-                dfs = dfs[sapply(dfs, ncol)>0]
-                names.list = lapply(dfs, names);
-                cols = unique(unlist(names.list));
-                unshared = lapply(names.list, function(x) setdiff(cols, x));
-                ix = which(sapply(dfs, nrow)>0)
-                ## only call expanded dfs if needed
-                if (any(sapply(unshared, length) != 0))
-                    expanded.dts <- lapply(ix, function(x) {
-                                               tmp = dfs[[x]]
-                                               if (is.data.table(dfs[[x]]))
-                                                   tmp = as.data.frame(tmp)
-                                               tmp[, unshared[[x]]] = NA;
-                                               return(as.data.table(as.data.frame(tmp[, cols])))
-                                           })
-                else
-                    expanded.dts <- lapply(dfs, function(x) as.data.table(as.data.frame(x)))
-
-                ## convert data frames (or DataFrame) to data table.
-                ## need to convert DataFrame to data.frmae for data.table(...) call.
-                ## structure call is way faster than data.table(as.data.frame(...))
-                ## and works on data.frame and DataFrame
-                                        #    dts <- lapply(expanded.dfs, function(x) structure(as.list(x), class='data.table'))
-                                        #   rout <- data.frame(rbindlist(dts))
-
-                rout <- rbindlist(expanded.dts)
-                if (!as.data.table)
-                    rout = as.data.frame(rout)
-
-                if (!union)
-                    {
-                        shared = setdiff(cols, unique(unlist(unshared)))
-                        rout = rout[, shared];
-                    }
-
-                return(rout)
-            }
+        # .rrbind2 = function(..., union = T, as.data.table = FALSE)
+        #     {
+        #         dfs = list(...);  # gets list of data frames
+        #         dfs = dfs[!sapply(dfs, is.null)]
+        #         dfs = dfs[sapply(dfs, ncol)>0]
+        #         names.list = lapply(dfs, names);
+        #         cols = unique(unlist(names.list));
+        #         unshared = lapply(names.list, function(x) setdiff(cols, x));
+        #         ix = which(sapply(dfs, nrow)>0)
+        #         ## only call expanded dfs if needed
+        #         if (any(sapply(unshared, length) != 0))
+        #             expanded.dts <- lapply(ix, function(x) {
+        #                                        tmp = dfs[[x]]
+        #                                        if (is.data.table(dfs[[x]]))
+        #                                            tmp = as.data.frame(tmp)
+        #                                        tmp[, unshared[[x]]] = NA;
+        #                                        return(data.table::as.data.table(as.data.frame(tmp[, cols])))
+        #                                    })
+        #         else
+        #             expanded.dts <- lapply(dfs, function(x) data.table::as.data.table(as.data.frame(x)))
+        # 
+        #         ## convert data frames (or DataFrame) to data table.
+        #         ## need to convert DataFrame to data.frmae for data.table(...) call.
+        #         ## structure call is way faster than data.table(as.data.frame(...))
+        #         ## and works on data.frame and DataFrame
+        #                                 #    dts <- lapply(expanded.dfs, function(x) structure(as.list(x), class='data.table'))
+        #                                 #   rout <- data.frame(rbindlist(dts))
+        # 
+        #         rout <- rbindlist(expanded.dts)
+        #         if (!as.data.table)
+        #             rout = as.data.frame(rout)
+        # 
+        #         if (!union)
+        #             {
+        #                 shared = setdiff(cols, unique(unlist(unshared)))
+        #                 rout = rout[, shared];
+        #             }
+        # 
+        #         return(rout)
+        #     }
         
         ra = list(...)
         nm = names(ra)
@@ -3095,7 +3129,14 @@ setGeneric('%Q%', function(x, ...) standardGeneric('%Q%'))
 #' @author Marcin Imielinski
 setMethod("%Q%", signature(x = "GRanges"), function(x, y) {
     condition_call  = substitute(y)
-    ix = eval(condition_call, as.data.frame(x))
+    ## serious R voodoo gymnastics .. but I think finally hacked it to remove ghosts
+    env = as( ## create environment that combines the calling env with the granges env
+        c(
+            as.list(as.data.frame(x)),
+            as.list(parent.frame(2))
+        ), 'environment')
+    parent.env(env) = parent.frame()
+    ix = eval(condition_call, env)
     return(x[ix])
 })
 
@@ -3113,6 +3154,9 @@ setMethod("%Q%", signature(x = "GRanges"), function(x, y) {
 #' @export
 #' @docType methods
 #' @aliases %^%,GRanges-method
+#' @param x See \link{gr.in}
+#' @param ... See \link{gr.in}
+
 setGeneric('%^%', function(x, ...) standardGeneric('%^%'))
 setMethod("%^%", signature(x = "GRanges"), function(x, y) {
     if (is.character(y))
@@ -3130,14 +3174,15 @@ setMethod("%^%", signature(x = "GRanges"), function(x, y) {
 #'
 #' @return gr1 with extra meta data fields populated from gr2
 #' @rdname gr.val-shortcut
+#' @docType methods
 #' @param x \code{GRanges} object
+#' @aliases %$%,GRanges-method
 #' @exportMethod %$%
 #' @author Marcin Imielinski
 setGeneric('%$%', function(x, ...) standardGeneric('%$%'))
 setMethod("%$%", signature(x = "GRanges"), function(x, y) {
     return(gr.val(x, y, val = names(values(y))))
 })
-
 
 #' parse.grl
 #'
