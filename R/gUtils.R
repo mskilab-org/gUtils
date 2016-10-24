@@ -1667,7 +1667,7 @@ rle.query = function(subject.rle, query.gr, verbose = FALSE, mc.cores = 1, chunk
 #' @param ... Additional parameters to be passed on to \code{GenomicRanges::findOverlaps}
 #' @name grl.in
 #' @export
-grl.in <- function(grl, windows, some = FALSE, only = FALSE, logical = TRUE, ...)
+grl.in <- function(grl, windows, some = FALSE, only = FALSE, logical = TRUE, ignore.strand = TRUE, ...)
 {
   grl.iid = grl.id = NULL ## for getting past NOTE
 
@@ -1682,17 +1682,17 @@ grl.in <- function(grl, windows, some = FALSE, only = FALSE, logical = TRUE, ...
   gr = grl.unlist(grl)
   if (logical)
       {
-          h = tryCatch(GenomicRanges::findOverlaps(gr, windows, ...), error = function(e) NULL)
+          h = tryCatch(GenomicRanges::findOverlaps(gr, windows, ignor.strand = ignore.strand, ...), error = function(e) NULL)
           if (!is.null(h))
               m = data.table(query.id = queryHits(h), subject.id = subjectHits(h))
           else
-              m = gr2dt(gr.findoverlaps(gr, windows, ...))
+              m = gr2dt(gr.findoverlaps(gr, windows, ignore.strand = ignore.strand, ...))
       }
   else
       {
           some = FALSE
           only = FALSE
-          m = gr2dt(gr.findoverlaps(gr, windows, ...))
+          m = gr2dt(gr.findoverlaps(gr, windows, ignore.strand = ignore.strand, ...))
       }
           
   out = rep(FALSE, length(grl))
@@ -3136,7 +3136,13 @@ setMethod("%Q%", signature(x = "GRanges"), function(x, y) {
             as.list(parent.frame(2))
         ), 'environment')
     parent.env(env) = parent.frame()
-    ix = eval(condition_call, env)
+    ix = tryCatch(eval(condition_call, env), error = function(e) NULL)
+    if (is.null(ix))
+        {
+                 condition_call  = substitute(y)
+             #                   ix = with(GenomicRanges::as.data.frame(x), eval(condition_call))
+                 ix = eval(condition_call, GenomicRanges::as.data.frame(x))
+        }        
     return(x[ix])
 })
 
