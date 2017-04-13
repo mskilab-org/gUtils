@@ -103,7 +103,7 @@ NULL
 #' @name gr2dt
 #' @export
 #'  
-gr2dt  <- function(x)
+gr2dt = function(x)
 {
     ## new approach just directly instantiating data table
     cmd = 'data.frame(';
@@ -134,14 +134,14 @@ gr2dt  <- function(x)
         .StringSetListAsList = function(x) ### why do I need to do this, bioconductor peeps??
         {
             tmp1 = as.character(unlist(x))
-            tmp2 = rep(1:length(x), S4Vectors::elementLengths(x))
+            tmp2 = rep(1:length(x), S4Vectors::elementNROWS(x))
             return(split(tmp1, tmp2))
         }
 
         ## take care of annoying S4 / DataFrame / data.frame (wish-they-were-non-)issues
         as.statement = ifelse(grepl('Integer', class.f), 'as.integer',
                        ifelse(grepl('Character', class.f), 'as.character',
-                       ifelse(grepl('StringSetList', class.f), '.StringSetListAsList',
+                       ifelse(grepl('((StringSet)|(Compressed.*))List', class.f), '.StringSetListAsList',
                        ifelse(grepl('StringSet$', class.f), 'as.character',
                        ifelse(grepl('factor$', class.f), 'as.character',
                        ifelse(grepl('List', class.f), 'as.list',
@@ -152,7 +152,10 @@ gr2dt  <- function(x)
 
     cmd = paste(cmd, ')', sep = '')
 
-    return(data.table::as.data.table(eval(parse(text =cmd))))
+    out = tryCatch(data.table::as.data.table(eval(parse(text =cmd))), error = function(e) NULL)
+    if (is.null(out))
+        out = as.data.table(x)        
+    return(out)
 }
 
 #' Get GRanges corresponding to beginning of range
@@ -178,52 +181,68 @@ gr.start <- function(x, width = 1, force = FALSE, ignore.strand = TRUE, clip = F
   if (any(seqlengths(x)==0) | any(is.na(seqlengths(x))))
     warning('Check or fix seqlengths, some are equal 0 or NA, may lead to negative widths')
 
-  if (force)
+  .grstart = function(x)
+      {
+          if (force)
+          {
+              if (ignore.strand)
+              {
+                  st = as.vector(start(x))
+                  en = as.vector(start(x))+width-1
+              }
+              else
+              {
+                  st = ifelse(as.logical(strand(x)=='+'),
+                              as.vector(start(x)),
+                              as.vector(end(x))-width+1)
+
+                  en = ifelse(as.logical(strand(x)=='+'),
+                              as.vector(start(x))+width-1,
+                              as.vector(end(x))
+                              )
+              }
+          }
+          else
+          {      
+              if (ignore.strand)
+              {
+                  st = start(x)
+                  en = pmin(as.vector(start(x))+width-1, seqlengths(x)[as.character(seqnames(x))], na.rm = TRUE)
+              }
+              else
+              {
+                  st = ifelse(as.logical(strand(x)=='+'),
+                              as.vector(start(x)),
+                              pmax(as.vector(end(x))-width+1, 1)
+                              )
+
+                  en = ifelse(as.logical(strand(x)=='+'),
+                              pmin(as.vector(start(x))+width-1, seqlengths(x)[as.character(seqnames(x))], na.rm = TRUE),
+                              as.vector(end(x)))
+              }
+          }
+
+          if (clip)
+          {
+              en = pmin(en, end(x))
+              st = pmax(st, start(x))
+          }
+
+          ir = IRanges(st, en)
+      }
+
+  ir = tryCatch(.grstart(x), error = function(e) NULL)
+
+  if (is.null(ir))
   {
-    if (ignore.strand)
-    {
-      st = as.vector(start(x))
-      en = as.vector(start(x))+width-1
-    }
-    else
-    {
-      st = ifelse(as.logical(strand(x)=='+'),
-                  as.vector(start(x)),
-                  as.vector(end(x))-width+1)
-
-      en = ifelse(as.logical(strand(x)=='+'),
-                  as.vector(start(x))+width-1,
-                  as.vector(end(x))
-      )
-    }
+      warning("one or more ranges are out of bounds on seqlengths, fixing and rerunning")
+      x = gr.fix(x)
+      ir = .grstart(x)
   }
-  else
-  {
-    if (ignore.strand)
-    {
-      st = start(x)
-      en = pmin(as.vector(start(x))+width-1, seqlengths(x)[as.character(seqnames(x))], na.rm = TRUE)
-    }
-    else
-    {
-      st = ifelse(as.logical(strand(x)=='+'),
-                  as.vector(start(x)),
-                  pmax(as.vector(end(x))-width+1, 1)
-      )
+  
+  out = GRanges(seqnames(x), ir, seqlengths = seqlengths(x), strand = strand(x))
+        
 
-      en = ifelse(as.logical(strand(x)=='+'),
-                  pmin(as.vector(start(x))+width-1, seqlengths(x)[as.character(seqnames(x))], na.rm = TRUE),
-                  as.vector(end(x)))
-    }
-  }
-
-  if (clip)
-  {
-    en = pmin(en, end(x))
-    st = pmax(st, start(x))
-  }
-
-  out = GRanges(seqnames(x), IRanges(st, en), seqlengths = seqlengths(x), strand = strand(x))
   values(out) = values(x)
   return(out)
 }
@@ -295,52 +314,68 @@ gr.end = function(x, width = 1, force = FALSE, ignore.strand = TRUE, clip = TRUE
 
   width = pmax(width, 1)
 
-  if (force)
+  .grend = function(x)
+      {
+          if (force)
+          {
+              if (ignore.strand)
+              {
+                  st = as.vector(end(x))-width+1
+                  en = as.vector(end(x))
+              }
+              else
+              {
+                  st = ifelse(as.logical(strand(x)=='+'),
+                              as.vector(end(x))-width+1,
+                              as.vector(start(x)))
+
+                  en = ifelse(as.logical(strand(x)=='+'),
+                              as.vector(end(x)),
+                              as.vector(start(x))+width-1)
+              }
+              out = GRanges(seqnames(x), IRanges(st, en), seqlengths = seqlengths(x), strand = strand(x))
+          }
+          else
+          {
+              if (ignore.strand)
+              {
+                  st = pmax(as.vector(end(x))-width+1, 1)
+                  en = as.vector(end(x))
+              }
+              else
+              {
+                  st = ifelse(as.logical(strand(x)=='+'),
+                              pmax(as.vector(end(x))-width+1, 1),
+                              as.vector(start(x)))
+
+                  en = ifelse(as.logical(strand(x)=='+'),
+                              as.vector(end(x)),
+                              pmin(as.vector(start(x))+width-1, seqlengths(x)[as.character(seqnames(x))], na.rm = TRUE)
+                              )
+              }
+
+              out = GRanges(seqnames(x), IRanges(st, en), seqlengths = seqlengths(x), strand = strand(x))
+          }
+
+          if (clip)
+          {
+              en = pmin(en, end(x))
+              st = pmax(st, start(x))
+          }
+
+          return(IRanges(st, en))
+      }
+
+  ir = tryCatch(.grend(x), error = function(e) NULL)
+  
+  if (is.null(ir))
   {
-    if (ignore.strand)
-    {
-      st = as.vector(end(x))-width+1
-      en = as.vector(end(x))
-    }
-    else
-    {
-      st = ifelse(as.logical(strand(x)=='+'),
-                  as.vector(end(x))-width+1,
-                  as.vector(start(x)))
-
-      en = ifelse(as.logical(strand(x)=='+'),
-                  as.vector(end(x)),
-                  as.vector(start(x))+width-1)
-    }
-    out = GRanges(seqnames(x), IRanges(st, en), seqlengths = seqlengths(x), strand = strand(x))
+      warning("one or more ranges are out of bounds on seqlengths, fixing and rerunning")
+      x = gr.fix(x)
+      ir = .grend(x)
   }
-  else
-  {
-    if (ignore.strand)
-    {
-      st = pmax(as.vector(end(x))-width+1, 1)
-      en = as.vector(end(x))
-    }
-    else
-    {
-      st = ifelse(as.logical(strand(x)=='+'),
-                  pmax(as.vector(end(x))-width+1, 1),
-                  as.vector(start(x)))
-
-      en = ifelse(as.logical(strand(x)=='+'),
-                  as.vector(end(x)),
-                  pmin(as.vector(start(x))+width-1, seqlengths(x)[as.character(seqnames(x))], na.rm = TRUE)
-      )
-    }
-
-    out = GRanges(seqnames(x), IRanges(st, en), seqlengths = seqlengths(x), strand = strand(x))
-  }
-
-  if (clip)
-  {
-    en = pmin(en, end(x))
-    st = pmax(st, start(x))
-  }
+  
+  out = GRanges(seqnames(x), ir, seqlengths = seqlengths(x), strand = strand(x))
 
   values(out) = values(x)
   return(out)
@@ -644,7 +679,13 @@ grbind = function(x, ...)
 
   isDataFrame <- sapply(vals, class) == 'DataFrame'
   if (any(isDataFrame))
-    vals[isDataFrame] = lapply(vals[isDataFrame], gr2dt)
+  {
+      tmp = tryCatch(lapply(vals[isDataFrame], gr2dt), error = function(e) NULL) ## sometimes works, sometimes doesn't 
+      if (is.null(tmp))
+          tmp = lapply(vals[isDataFrame, as.data.frame])
+      
+      vals[isDataFrame] = tmp      
+  }
 
   #      if (any(sapply(vals[isDataFrame][[1]], function(y) inherits(y, 'XStringSet'))))
   #        stop('grbind: DataFrame from IRanges contains XStringSet objects. Convert to character, then grbind, then convert back')
@@ -1268,7 +1309,7 @@ gr.val = function(query, target,
   if (inherits(query, 'GRangesList'))
   {
     query.was.grl = TRUE;
-    query.grl.id = rep(1:length(query), S4Vectors::elementLengths(query))
+    query.grl.id = rep(1:length(query), S4Vectors::elementNROWS(query))
     query = unlist(query)
   }
   else
@@ -2547,7 +2588,7 @@ setMethod("%&%", signature(x = "GRanges"), function(x, y) {
 #'
 #' @return subset of gr1 that overlaps gr2
 #' @rdname gr.in-strand-shortcut
-#' @exportMethod %&%
+#' @exportMethod %&&%
 #' @aliases %&&%,GRanges-method
 #' @author Marcin Imielinski
 setGeneric('%&&%', function(x, ...) standardGeneric('%&&%'))
@@ -2757,6 +2798,42 @@ setMethod("%_%", signature(x = "GRanges"), function(x, y) {
         y = parse.gr(y)
     setdiff(gr.stripstrand(x[, c()]), gr.stripstrand(y[, c()]))
 })
+
+
+#' @name gr.setdiff    
+#' More robust and faster implementation of GenomicRangs::setdiff
+#'
+#' Robust to common edge cases of setdiff(gr1, gr2)  where gr2 ranges are contained inside gr1's (yieldings
+#' setdiffs yield two output ranges for some of the input gr1 intervals.
+#'
+#' @param query \code{GRanges} object as query
+#' @param subject \code{GRanges} object as subject
+#' @param max.slice Default Inf. If query is bigger than this, chunk into smaller on different cores
+#' @param verbose Default FALSE
+#' @param mc.cores Default 1. Only works if exceeded max.slice
+#' @param ... arguments to be passed to \link{gr.findoverlaps}
+#' @return returns indices of query in subject or NA if none found
+#' @export
+gr.setdiff = function(query, subject, ignore.strand = TRUE, by = NULL,  ...)
+{
+    if (!is.null(by)) ## in this case need to be careful about setdiffing only within the "by" level
+    {
+        tmp = gr2dt(subject)
+        tmp$strand = factor(tmp$strand, c('+', '-', '*'))
+        sl = seqlengths(subject)
+        gp = seg2gr(tmp[, as.data.frame(gaps(IRanges(start, end), 1, sl[seqnames][1])), by = c('seqnames', 'strand', by)], seqinfo = seqinfo(subject))
+    }
+    else ## otherwise easier
+    {
+        if (ignore.strand)
+            gp = gaps(gr.stripstrand(subject)) %Q% (strand == '*')
+        else
+            gp = gaps(subject)
+    }
+
+    out = gr.findoverlaps(query, gp, qcol = names(values(query)), ignore.strand = ignore.strand, by = by, ...)
+    return(out)
+}
 
 
 #' @name %*%
@@ -3201,7 +3278,7 @@ setMethod("%$%", signature(x = "GRanges"), function(x, y) {
 parse.grl = function(x, seqlengths = hg_seqlengths())
 {
   nm = names(x)
-  tmp = strsplit(x, '[;]')
+  tmp = strsplit(x, '[;\\,]')
   tmp.u = unlist(tmp)
   tmp.u = gsub('\\,', '', tmp.u)
   tmp.id = rep(1:length(tmp), sapply(tmp, length))

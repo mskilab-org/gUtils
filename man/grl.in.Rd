@@ -27,4 +27,3 @@ only if the ranges in grl[i] intersect <<all>>, <<some>>, <<only>>  windows in t
 \details{
 eg can use to identify read pairs whose ends are contained inside two genes)
 }
-
