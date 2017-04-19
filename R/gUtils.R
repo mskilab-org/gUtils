@@ -521,7 +521,7 @@ gr.trim = function(gr, starts=1, ends=1)
 #' }
 #' @param gr \code{GRanges} object defining the territory to sample from
 #' @param k Number of ranges to sample
-#' @param len Length of the \code{GRanges} element to produce [100]
+#' @param wid Length of the \code{GRanges} element to produce [100]
 #' @param replace If TRUE, will bootstrap, otherwise will sample without replacement. [TRUE]
 #' @return GRanges of max length sum(k) [if k is vector) or k*length(gr) (if k is scalar) with labels indicating the originating range.
 #'
@@ -530,45 +530,66 @@ gr.trim = function(gr, starts=1, ends=1)
 #' gr.sample(reduce(example_genes), k=5, len=10)
 #' @note This is different from \code{GenomicRanges::sample} function, which just samples from a pile of \code{GRanges}
 #' @export
-gr.sample = function(gr, k, len = 100, replace = TRUE)
+gr.sample = function(gr, k, wid = 100, replace = TRUE)
 {
   if (!inherits(gr, 'GRanges'))
     gr = si2gr(gr)
 
   if (length(k)==1)
   {
-    gr.f = gr.flatten(gr.trim(gr, starts = 1, ends = width(gr)-len), gap = 0);
-    terr = sum(gr.f$end-gr.f$start)
-    st = gr.f$start;
+      gr$ix.og = 1:length(gr)
+      gr = gr[width(gr)>=wid]
+      if (length(gr)==0)
+          stop('Input territory has zero regions of sufficient width')
+      gr.f = as.data.table(gr.flatten(gr.trim(gr, starts = 1, ends = width(gr)-wid), gap = 0))
+    terr = sum(gr.f$end-gr.f$start + 1)
+      st = gr.f$start;
 
-    if (terr==0)
-        stop('Input territory has zero width')
+      gr.f$ix = 1:nrow(gr.f)
+
     
     if (!replace)
     {
       if (!is.na(k))
-        s = len*sample(floor(terr/len), k, replace = FALSE)
+        s = sort(wid*sample(floor(terr/wid), k, replace = FALSE))
       else
-        s = seq(1, terr, len)
+        s = sort(seq(1, terr, wid))
     }
     else
-      s = terr*stats::runif(k)
+      s = sort(terr*stats::runif(k))
 
     # map back to original gr's
     #      si = sapply(s, function(x) {i = 1; while (st[i]<x & i<=length(st)) {i = i+1}; return(i)})
-    si = rep(NA, length(s))
-    for (i in 1:nrow(gr.f))
-      si[s>=gr.f$start[i] & s<=gr.f$end[i]] = i
+      si = rep(NA, length(s))
+      ## concatenate input and random locations
+      gr.r = data.table(start = s, end = s+wid-1, ix = as.numeric(NA))
+      tmp = rbind(gr.f,  gr.r, fill = TRUE)[order(start), ]
 
-    sg = s-st[si]+start(gr)[si];
+      ## match random events to their last "ix"
+      ## find all non NA to NA transitions
+      ## and tag all NA runs with the same number
+      tmp[, transition := is.na(c(NA, ix[-length(ix)])) != is.na(ix) & is.na(ix)]
+      tmp[, nacluster := ifelse(is.na(ix), cumsum(transition), 0)]
+      tmp[, clusterlength := length(start), by = nacluster]
+      tmp[, ix.new := ifelse(transition, c(NA, ix[-length(ix)]), ix)]
+      tmp[, ix.new := ix.new[1], by = nacluster]
 
-    return(GRanges(seqnames(gr)[si], IRanges(sg, sg+len-1), strand = strand(gr)[si], seqlengths = seqlengths(gr), query.id = si))
+      ## now lift up random ranges to their original coordinates
+       tmp[is.na(ix), ":="(seqnames = as.character(seqnames(gr)[ix.new]),
+                          pos1 = start + start(gr)[ix.new]-gr.f$start[ix.new],
+                          pos2 = end + start(gr)[ix.new]-gr.f$start[ix.new])]
+
+      tmp = tmp[is.na(ix), ]
+
+      out = GRanges(tmp$seqnames, IRanges(tmp$pos1, tmp$pos2), strand = '*', seqlengths = seqlengths(gr))
+      out$query.id = gr.f$ix.og[tmp$ix.new]
+      return(out)
   }
   else
   {
     gr.df = data.frame(chr = as.character(seqnames(gr)), start = start(gr), end = end(gr))
     gr.df$k = k;
-    gr.df$length = len
+    gr.df$length = wid
     gr.df$replace = replace
     tmp = lapply(1:length(gr), function(i)
     {
@@ -576,22 +597,22 @@ gr.sample = function(gr, k, len = 100, replace = TRUE)
       {
         if (!is.na(k[i]))
         {
-          w = floor(width(gr)[i]/len)
+          w = floor(width(gr)[i]/wid)
           k[i] = min(k[i], w)
           if (k[i]>0) {
-            s = len*sample(w, k[i], replace = FALSE) + gr.df$start[i]
+            s = wid*sample(w, k[i], replace = FALSE) + gr.df$start[i]
           } else {
             warning("gr.sample: trying to sample range of length > width of supplied GRanges element. Returning NULL for this element.")
             return(NULL)
           }
         }
         else
-          s = seq(gr.df$start[i], gr.df$end[i], len)
+          s = seq(gr.df$start[i], gr.df$end[i], wid)
       }
       else
-        s = (gr.df$end[i]-gr.df$start[i]-gr.df$len[i])*stats::runif(k[i])+gr.df$start[i]
+        s = (gr.df$end[i]-gr.df$start[i]-gr.df$wid[i])*stats::runif(k[i])+gr.df$start[i]
 
-      return(data.frame(chr = gr.df$chr[i], start=s, end =s+len-1, strand = as.character(strand(gr)[i]), query.id = i))
+      return(data.frame(chr = gr.df$chr[i], start=s, end =s+wid-1, strand = as.character(strand(gr)[i]), query.id = i))
     })
     
     ## add check that not all widths are zero
@@ -1036,6 +1057,7 @@ gr.flatten = function(gr, gap = 0)
     return(data.frame(start = 1, end = width(gr)))
   else
   {
+      browser()
     starts = as.numeric(cumsum(c(1, width(gr[1:(length(gr)-1)])+gap)))
     ends = as.numeric(starts+width(gr)-1)
     return(cbind(data.frame(start=starts, end=ends), as.data.frame(mcols(gr))))
