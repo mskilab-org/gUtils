@@ -1057,7 +1057,6 @@ gr.flatten = function(gr, gap = 0)
     return(data.frame(start = 1, end = width(gr)))
   else
   {
-      browser()
     starts = as.numeric(cumsum(c(1, width(gr[1:(length(gr)-1)])+gap)))
     ends = as.numeric(starts+width(gr)-1)
     return(cbind(data.frame(start=starts, end=ends), as.data.frame(mcols(gr))))
