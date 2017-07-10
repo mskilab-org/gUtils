@@ -3343,12 +3343,7 @@ parse.gr = function(...)
 #'
 #' @author Xiaotong Yao
 #'
-#' @import gTrack
 #' @import GenomicRanges
-#' @import Matrix
-#' @import parallel
-#' @import data.table
-#' @import gUtils
 #'
 #' @param bps \code{GRanges} of width 1, locations of the bp; if any element width
 #' larger than 1, both boundary will be considered individual breakpoints
