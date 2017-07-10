@@ -3350,7 +3350,8 @@ parse.gr = function(...)
 #' @import data.table
 #' @import gUtils
 #'
-#' @param bps \code{GRanges} of width 1, locations of the bp
+#' @param bps \code{GRanges} of width 1, locations of the bp; if any element width
+#' larger than 1, both boundary will be considered individual breakpoints
 #' @param query a disjoint \code{GRanges} object to be broken
 #'
 #' @return \code{GRanges} disjoint object at least the same length as query,
@@ -3409,7 +3410,11 @@ gr.breaks = function(bps=NULL, query=NULL){
         ## some not a point? turn it into a point
         if (any(width(bps)!=1)){
             warning("Some breakpoint width>1.")
-            bps = reduce(c(gr.start(bps), gr.end(bps)))
+            rbps = gr.end(bps)
+            lbps = gr.start(bps)
+            start(lbps) = pmax(start(lbps)-1, 1)
+            ## bps = streduce(c(gr.start(bps), gr.end(bps)))
+            bps = streduce(c(lbps, rbps))
         }
 
         bps$inQuery = bps %^% query
