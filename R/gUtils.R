@@ -3446,7 +3446,8 @@ gr.breaks = function(bps=NULL, query=NULL){
         newGr = GRanges(newRange, seqinfo = seqinfo(query))
         values(newGr) = values(query)[newGr$qid2, , drop=F] ## preserve the input metacol
         ## with the intact not mapped part of query
-        output = c(newGr, query[!mappedQ]) %Q% (order(strand, seqnames, start))
+        output = sort(c(newGr, query[!mappedQ]))
+        ## %Q% (order(strand, seqnames, start))
         return(output)
     }
 }
