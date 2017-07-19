@@ -3091,6 +3091,7 @@ ra.merge = function(..., pad = 0, ind = FALSE, ignore.strand = FALSE)
         #     }
 
         ra = list(...)
+        ra = ra[which(!sapply(ra, is.null))]
         nm = names(ra)
         if (is.null(nm))
             nm = paste('ra', 1:length(ra), sep = '')
