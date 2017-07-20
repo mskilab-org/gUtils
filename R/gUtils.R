@@ -3375,8 +3375,8 @@ gr.breaks = function(bps=NULL, query=NULL){
                     message("Default BSgenome not found, let's hardcode it.")
                     cs = system.file("extdata",
                                      "hg19.regularChr.chrom.sizes", package = "gUtils")
-                    sl = fread(cs)
-                    sl = sl[, setNames(V2, V1)]
+                    sl = read.delim(cs, header=FALSE, sep="\t")
+                    sl = setNames(sl$V2, sl$V1)
                     query = gr.stripstrand(si2gr(sl))
                 }
             }
@@ -3403,14 +3403,27 @@ gr.breaks = function(bps=NULL, query=NULL){
             warning("Some breakpoints have strand info. Force to '*'.")
             bps = gr.stripstrand(bps)
         }
-        ## some not a point? turn it into a point
-        if (any(width(bps)!=1)){
+
+        ## solve three edge cases
+        if (any(w.0 <- (width(bps)<1))){
+            warning("Some breakpoint width==0.")
+            ## right bound smaller coor
+            ## and there's no negative width GR allowed
+            bps[which(w.0)] = gr.end(bps[which(w.0)])
+        }
+        if (any(w.2 <- (width(bps)==2))){
+            warning("Some breakpoint width==2.")
+            ## this is seen as breakpoint by spanning two bases
+            bps[which(w.2)] = gr.start(bps[which(w.2)])
+        }
+        if (any(w.l <- (width(bps)>2))){
+            ## some not a point? turn it into a point
             warning("Some breakpoint width>1.")
-            rbps = gr.end(bps)
-            lbps = gr.start(bps)
+            bps = bps[which(!w.l)]
+            rbps = gr.end(bps[which(w.l)])
+            lbps = gr.start(bps[which(w.l)])
             start(lbps) = pmax(start(lbps)-1, 1)
-            ## bps = streduce(c(gr.start(bps), gr.end(bps)))
-            bps = streduce(c(lbps, rbps))
+            bps = c(bps, streduce(c(lbps, rbps)))
         }
 
         bps$inQuery = bps %^% query
@@ -3449,6 +3462,7 @@ gr.breaks = function(bps=NULL, query=NULL){
         ## with the intact not mapped part of query
         output = sort(c(newGr, query[!mappedQ]))
         ## %Q% (order(strand, seqnames, start))
+        ## browser()
         return(output)
     }
 }
