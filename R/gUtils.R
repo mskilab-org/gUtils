@@ -1,3 +1,4 @@
+es
 #' DNAaseI hypersensitivity sites for hg19A
 #'
 #' DNAaseI hypersensitivity sites from UCSC Table Browser hg19,
@@ -51,6 +52,7 @@ NULL
 #' @param include.junk Flag for whether to not trim to only 1-22, X, Y, M. Default FALSE
 #' @return Named integer vector with elements corresponding to the genome seqlengths
 #' @importFrom utils read.delim
+#' @author Marcin Imielinski
 #' @export
 hg_seqlengths = function(genome = NULL, chr = FALSE, include.junk = FALSE)
 {
@@ -303,6 +305,7 @@ dt2gr <- function(dt, key = NULL, seqlengths = hg_seqlengths(), seqinfo = Seqinf
 #' gr.end(example_dnase, width=200, clip=TRUE)
 #' @importFrom GenomeInfoDb seqlengths
 #' @importFrom GenomicRanges strand seqnames values<- values
+#' @author Marcin Imielinski
 #' @export
 gr.end = function(x, width = 1, force = FALSE, ignore.strand = TRUE, clip = TRUE)
 {
@@ -409,6 +412,7 @@ gr.mid = function(x)
 #' @examples
 #' ## Generate 5 non-overlapping regions of width 10 on hg19
 #' gr.rand(rep(10,5), BSgenome.Hsapiens.UCSC.hg19::Hsapiens)
+#' @author Marcin Imielinski
 #' @export
 gr.rand = function(w, genome)
 {
@@ -529,6 +533,7 @@ gr.trim = function(gr, starts=1, ends=1)
 #' ## sample 5 \code{GRanges} of length 10 each from territory of RefSeq genes
 #' gr.sample(reduce(example_genes), k=5, len=10)
 #' @note This is different from \code{GenomicRanges::sample} function, which just samples from a pile of \code{GRanges}
+#' @author Marcin Imielinski
 #' @export
 gr.sample = function(gr, k, wid = 100, replace = TRUE)
 {
@@ -771,6 +776,7 @@ grbind = function(x, ...)
 #' mcols(grl.hiC2)$test = 1
 #' grlbind(grl.hiC2, grl.hiC[1:30])
 #' @export
+#' @author Marcin Imielinski
 #' @importFrom GenomicRanges mcols<- mcols split
 grlbind = function(...)
 {
@@ -889,6 +895,7 @@ streduce = function(gr, pad = 0, sort = TRUE)
 #' @examples
 #' gr.string(example_genes, other.cols = c("name", "name2"))
 #' @export
+#' @author Marcin Imielinski
 gr.string = function(gr, add.chr = FALSE, mb = FALSE, round = 3, other.cols = c(), pretty = FALSE)
     {
         if (length(gr)==0)
@@ -928,6 +935,7 @@ gr.string = function(gr, add.chr = FALSE, mb = FALSE, round = 3, other.cols = c(
 #' @name grl.string
 #' @examples
 #' grl.string(grl.hiC, mb=TRUE)
+#' @author Marcin Imielinski
 #' @export
 grl.string = function(grl, mb= FALSE, sep = ',', ...)
 {
@@ -1165,6 +1173,7 @@ gr.tile = function(gr, w = 1e3)
 #' @return \code{list} of length = \code{length(query)}, where each element \code{i} is a vector of indicies in \code{subject} that overlaps element \code{i} of \code{query}
 #' @note Assumes that input query and subject have no gaps (including at end) or overlaps, i.e. ignores end()
 #' coordinates and only uses "starts"
+#' @author Marcin Imielinski
 #' @export
 gr.tile.map = function(query, subject, verbose = FALSE)
 {
@@ -1269,6 +1278,7 @@ gr.tile.map = function(query, subject, verbose = FALSE)
 #' @param default.val If no hit in \code{target} found in \code{query}, fill output \code{val} field with this value.
 #' @param ... Additional arguments to be sent to \code{\link{gr.findoverlaps}}.
 #' @return \code{query} with the \code{val} field populated
+#' @author Marcin Imielinski
 #' @export
 gr.val = function(query, target,
                   val = NULL,
@@ -1536,6 +1546,7 @@ gr.duplicated = function(query, by = NULL, type = 'any')
 #' @return \code{GRangesList} where kth element is a diced pile of \code{GRanges} from kth input \code{GRanges}
 #' @examples
 #' gr.dice(GRanges(c(1,4), IRanges(c(10,10),20)))
+#' @author Marcin Imielinski
 #' @export
 gr.dice = function(gr)
 {
@@ -1584,6 +1595,7 @@ gr.dice = function(gr)
 #' @param ... Additional arguments to be supplied to \code{GenomicRanges::distance}
 #' @return \code{N} by \code{M} matrix with the pairwise distances, with \code{gr1} on rows and \code{gr2} on cols
 #' @name gr.dist
+#' @author Marcin Imielinski
 #' @export
 gr.dist = function(gr1, gr2 = NULL, ignore.strand = FALSE, ...)
 {
@@ -1800,6 +1812,7 @@ grl.unlist = function(grl)
       return(GRanges())
 
   if (is(grl, 'GRanges'))
+
       {
           grl$grl.ix = 1
           grl$grl.iix = 1:length(grl)
@@ -1817,8 +1830,9 @@ grl.unlist = function(grl)
   mcols(out)$grl.ix = el
   tmp = rle(el)
 
+  nm = setdiff(names(values(grl)), c('grl.ix', 'grl.iix'))
   out$grl.iix = as.integer(unlist(sapply(tmp$lengths, function(x) 1:x)))
-  values(out) = BiocGenerics::cbind(values(grl)[out$grl.ix, , drop = FALSE], values(out))
+  values(out) = BiocGenerics::cbind(values(grl)[out$grl.ix, nm, drop = FALSE], values(out))
   return(out)
 }
 
@@ -1854,7 +1868,8 @@ grl.pivot = function(x)
 #' @return \code{data.frame} or \code{data.table} of the \code{rbind} operation
 #' @export
 #' @importFrom data.table data.table rbindlist
-rrbind = function (..., union = TRUE, as.data.table = FALSE)
+#' @author Marcin Imielinski
+rrbind = function (..., union = TRUE, as.data.table = FALSE) 
 {
     dfs = list(...)
     dfs = dfs[!sapply(dfs, is.null)]
@@ -2462,6 +2477,45 @@ gr.in = function(query, subject, ...)
   return(out)
 }
 
+
+
+
+#' @name gr.cov
+#' @title gr.cov
+#' @description
+#'
+#' Sums granges either by doing coverage and either weighting them equally
+#' or using a field "weight".  Will return either sum or average.
+#' 
+#' Most basic functionality is like an as(coverage(gr), 'GRanges')
+#'  
+#' @param gr \code{GRanges} to sum
+#' @param field metadata field from gr to use as a weight
+#' @param mean logical scalar specifying whether to divide the output at each interval but the total number of intervals overlapping it (only applies if field == NULL) (default FALSE)
+#' @return non-overlapping granges spanning the seqlengths of gr with $score (if field is NULL) or $field specifying the sum / mean at that position
+#' @name gr.collapse
+#' @export
+gr.sum = function(gr, field = NULL, mean = FALSE)
+{
+  SHIFT = abs(min(start(gr))-1)
+
+  if (is.null(field))
+    field = 1
+
+  out = as(coverage((gr %+% SHIFT), weight = values(gr)[, field]), 'GRanges') %-% SHIFT
+  
+  if (!is.numeric(field))
+    {
+      if (mean)
+      {
+        count = as(coverage((gr %+% SHIFT), weight = 1), 'GRanges') %-% SHIFT
+        out$score = out$score/count$score[gr.match(out, count)] ## divide by total count at each location
+      }
+      names(values(out))[length(names(values(out)))] = field
+    }   
+  return(out)
+}
+
 #' Collapse adjacent ranges
 #'
 #' Like \code{GenomicRanges::reduce} except only collapses <<adjacent>> ranges in the input
@@ -2469,6 +2523,7 @@ gr.in = function(query, subject, ...)
 #' @param pad Padding that allows for not quite adjacent elements to be considered overlapping. 1
 #' @return Collapsed ranges
 #' @name gr.collapse
+#' @author Marcin Imielinski
 #' @export
 gr.collapse = function(gr, pad = 1)
 {
@@ -2509,6 +2564,7 @@ gr.collapse = function(gr, pad = 1)
 #' @param verbose whether to give verbose output
 #' @importFrom parallel mclapply
 #' @param ... Additional arguments to be passed along to \code{\link{gr.findoverlaps}}.
+#' @author Marcin Imielinski
 #' @export
 gr.match = function(query, subject, max.slice = Inf, verbose = FALSE, ...)
     {
@@ -3296,6 +3352,7 @@ setMethod("%$%", signature(x = "GRanges"), function(x, y) {
 #' @name parse.grl
 #' @param x  character vector representing a GRangesList with UCSC style coordinates (chr:start-end[+-]) representing a [signed] Granges and  ";" separators within each item of x separating individaul each GRAnges
 #' @param seqlengths   named integer vector representing genome (hg_seqlengths() by default)
+#' @author Marcin Imielinski
 #' @export
 parse.grl = function(x, seqlengths = hg_seqlengths())
 {
@@ -3328,6 +3385,49 @@ parse.grl = function(x, seqlengths = hg_seqlengths())
   return(grl)
 }
 
+
+#' @name anchorlift
+#' @title anchorlift
+#' @description
+#'
+#' "lifts" all queries with respect to subject in coordinates that are within "pad"
+#' i.e. puts the queries into subject-centric coordinates, which is a new genome with label "Anchor" (default)
+#'
+#' Respects strand of subject (i.e. if subject strand gr is "-" then will lift all queries to the left of it
+#' into positive subject-centric coordinates). Keeps track of subject and query id for later deconvolution if need be. 
+#'
+#' @param query  GRanges that will be lifted around the subject
+#' @param subject GRanges around which the queries will be lifted
+#' @param window non-negative integer scalar specifying how far around each subject to gather query intervals to lift (default 1e9)
+#' @param by  character vector specifying additional columsn (e.g. sample id) around which to restrict overlaps (via gr.findoverlaps) (default NULL)
+#' @param seqname Character specifying the name of the output sequence around which to anchor (default "Anchor")
+#' @param include.values logical flag whether to include values from query and subject (default TRUE)
+#' @author Marcin Imielinski
+#' @export
+anchorlift = function(query, subject, window = 1e9, by = NULL, seqname = "Anchor", include.values = TRUE)
+{
+
+  if (length(query)*length(subject)==0)
+    return(NULL)
+  ov = gr.findoverlaps(query, subject+window, by = by)
+  if (length(ov)==0)
+    return(NULL)
+  nov = query[ov$query.id] %-% (start(subject[ov$subject.id]) + round(width(query[ov$query.id])/2))
+  values(nov) = cbind(values(nov), values(ov))   
+  flip = ifelse(strand(subject)[ov$subject.id] == '+', 1, -1)
+  tmp = t(apply(cbind(start(nov)*flip, end(nov)*flip), 1, sort))
+  out = GRanges(seqname,  IRanges(tmp[,1], tmp[,2]))
+  values(out)$subject.id = ov$subject.id
+  values(out)$query.id = ov$query.id
+  if (include.values)
+  {
+    values(out) = cbind(values(out), as.data.frame(values(query))[ov$query.id,, drop = FALSE])
+    values(out) = cbind(values(out), as.data.frame(values(subject))[ov$subject.id, ,drop = FALSE])
+  }
+  return(out)
+}
+
+
 #' parse.gr
 #'
 #' quick function to parse gr from character vector IGV / UCSC style strings of format gr1;gr2;gr3 wohere each gr is of format chr:start-end[+/-]
@@ -3335,6 +3435,7 @@ parse.grl = function(x, seqlengths = hg_seqlengths())
 #' @name parse.gr
 #' @param ... arguments to parse.grl i.e. character strings in UCSC style chr:start-end[+-]
 #' @export
+#' @author Marcin Imielinski
 parse.gr = function(...)
 {
   return(unlist(parse.grl(...)))
