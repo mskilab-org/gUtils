@@ -1,4 +1,3 @@
-es
 #' DNAaseI hypersensitivity sites for hg19A
 #'
 #' DNAaseI hypersensitivity sites from UCSC Table Browser hg19,
@@ -1869,7 +1868,7 @@ grl.pivot = function(x)
 #' @export
 #' @importFrom data.table data.table rbindlist
 #' @author Marcin Imielinski
-rrbind = function (..., union = TRUE, as.data.table = FALSE) 
+rrbind = function (..., union = TRUE, as.data.table = FALSE)
 {
     dfs = list(...)
     dfs = dfs[!sapply(dfs, is.null)]
@@ -2486,9 +2485,9 @@ gr.in = function(query, subject, ...)
 #'
 #' Sums granges either by doing coverage and either weighting them equally
 #' or using a field "weight".  Will return either sum or average.
-#' 
+#'
 #' Most basic functionality is like an as(coverage(gr), 'GRanges')
-#'  
+#'
 #' @param gr \code{GRanges} to sum
 #' @param field metadata field from gr to use as a weight
 #' @param mean logical scalar specifying whether to divide the output at each interval but the total number of intervals overlapping it (only applies if field == NULL) (default FALSE)
@@ -2503,7 +2502,7 @@ gr.sum = function(gr, field = NULL, mean = FALSE)
     field = 1
 
   out = as(coverage((gr %+% SHIFT), weight = values(gr)[, field]), 'GRanges') %-% SHIFT
-  
+
   if (!is.numeric(field))
     {
       if (mean)
@@ -2512,7 +2511,7 @@ gr.sum = function(gr, field = NULL, mean = FALSE)
         out$score = out$score/count$score[gr.match(out, count)] ## divide by total count at each location
       }
       names(values(out))[length(names(values(out)))] = field
-    }   
+    }
   return(out)
 }
 
@@ -3394,7 +3393,7 @@ parse.grl = function(x, seqlengths = hg_seqlengths())
 #' i.e. puts the queries into subject-centric coordinates, which is a new genome with label "Anchor" (default)
 #'
 #' Respects strand of subject (i.e. if subject strand gr is "-" then will lift all queries to the left of it
-#' into positive subject-centric coordinates). Keeps track of subject and query id for later deconvolution if need be. 
+#' into positive subject-centric coordinates). Keeps track of subject and query id for later deconvolution if need be.
 #'
 #' @param query  GRanges that will be lifted around the subject
 #' @param subject GRanges around which the queries will be lifted
@@ -3413,7 +3412,7 @@ anchorlift = function(query, subject, window = 1e9, by = NULL, seqname = "Anchor
   if (length(ov)==0)
     return(NULL)
   nov = query[ov$query.id] %-% (start(subject[ov$subject.id]) + round(width(query[ov$query.id])/2))
-  values(nov) = cbind(values(nov), values(ov))   
+  values(nov) = cbind(values(nov), values(ov))
   flip = ifelse(strand(subject)[ov$subject.id] == '+', 1, -1)
   tmp = t(apply(cbind(start(nov)*flip, end(nov)*flip), 1, sort))
   out = GRanges(seqname,  IRanges(tmp[,1], tmp[,2]))
@@ -3499,6 +3498,9 @@ gr.breaks = function(bps=NULL, query=NULL){
         }
 
         ## preprocess bps
+        ## having meta fields? remove them!
+        bps = bps[, c()]
+
         ## having strand info? remove it!
         if (any(strand(bps)!="*")){
             warning("Some breakpoints have strand info. Force to '*'.")
@@ -3510,7 +3512,7 @@ gr.breaks = function(bps=NULL, query=NULL){
             warning("Some breakpoint width==0.")
             ## right bound smaller coor
             ## and there's no negative width GR allowed
-            bps[which(w.0)] = gr.end(bps[which(w.0)])
+            bps[which(w.0)] = gr.start(bps[which(w.0)]) %-% 1
         }
         if (any(w.2 <- (width(bps)==2))){
             warning("Some breakpoint width==2.")
@@ -3520,11 +3522,10 @@ gr.breaks = function(bps=NULL, query=NULL){
         if (any(w.l <- (width(bps)>2))){
             ## some not a point? turn it into a point
             warning("Some breakpoint width>1.")
-            bps = bps[which(!w.l)]
             rbps = gr.end(bps[which(w.l)])
             lbps = gr.start(bps[which(w.l)])
             start(lbps) = pmax(start(lbps)-1, 1)
-            bps = c(bps, streduce(c(lbps, rbps)))
+            bps = c(bps[which(!w.l)], streduce(c(lbps, rbps)))
         }
 
         bps$inQuery = bps %^% query
