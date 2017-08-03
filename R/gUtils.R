@@ -3213,6 +3213,69 @@ ra.merge = function(..., pad = 0, ind = FALSE, ignore.strand = FALSE)
         return(out)
     }
 
+#' Deduplicates rearrangements represented by \code{GRangesList} objects
+#'
+#' Determines overlaps between two or more piles of rearrangement junctions (as named or numbered arguments) +/- padding
+#' and will merge those that overlap into single junctions in the output, and then keep track for each output junction which
+#' of the input junctions it was "seen in" using logical flag  meta data fields prefixed by "seen.by." and then the argument name
+#' (or "seen.by.ra" and the argument number)
+#'
+#' @author Xiaotong Yao
+#' @param grl GRangesList representing rearrangements to be merged
+#' @param pad non-negative integer specifying padding
+#' @param ignore.strand whether to ignore strand (implies all strand information will be ignored, use at your own risk)
+#' @return \code{GRangesList} of merged junctions with meta data fields specifying which of the inputs each outputted junction was "seen.by"
+#' @name ra.dedup
+#' @examples
+#'
+#' @export
+ra.dedup = function(grl, pad=500, ignore.strand=FALSE){
+    ## TODO: deduplicate it self
+    if (!is(grl, "GRangesList")) stop("Input must be GRangesList!")
+
+    if (any(elementNROWS(grl)!=2)) stop("Each element must be length 2!")
+
+    if (length(grl)==0) return(grl)
+
+    if (length(grl)>1){
+        ix.pair = as.data.table(
+            ra.overlaps(grl, grl, pad=pad, ignore.strand = ignore.strand))[ra1.ix!=ra2.ix]
+        if (nrow(ix.pair)==0){
+            return(grl)
+        } else {
+            dup.ix = unique(rowMax(as.matrix(ix.pair)))
+            return(grl[-dup.ix])
+        }
+    }
+}
+
+## #' Calc pairwise distance for rearrangements represented by \code{GRangesList} objects
+## #'
+## #' return length(grl) by length(grl) numeric matrix of pairwise distances between
+## #' junctions, as defined by the value of gr.dist of the corresponding breakpoints
+## #'
+## #' @author Xiaotong Yao
+## #' @param grl GRangesList representing rearrangements to be merged
+## #' @param ignore.strand whether to ignore strand (implies all strand information will be ignored, use at your own risk)
+## #'
+## #' @return \code{GRangesList} of merged junctions with meta data fields specifying which of the inputs each outputted junction was "seen.by"
+## #' @name ra.dist
+## #'
+## #' @export
+## ra.dist = function(grl, ignore.strand=FALSE){
+##     grl.srt = sort(grl)
+##     pv.grl.srt = grl.pivot(grl.srt)
+##     bp1 = pv.grl.srt[[1]]
+##     bp2 = pv.grl.srt[[2]]
+
+##     if (ignore.strand) strand(bps) = "*"
+
+##     dist1 = gr.dist(bp1, ignore.strand = ignore.strand)
+##     dist2 = gr.dist(bp2, ignore.strand = ignore.strand)
+
+##     return(list(dist1, dist2))
+## }
+
 #' Simplify granges by collapsing all non-overlapping adjacent ranges that share a given "field" value
 #' (adjacent == adjacent in the input GRanges object)
 #'
