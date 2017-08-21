@@ -3560,6 +3560,11 @@ gr.breaks = function(bps=NULL, query=NULL){
         ## having meta fields? remove them!
         bps = bps[, c()]
 
+        if (any(!is.null(names(bps)))){
+            warning("Removing row names from bps.")
+            names(bps) = NULL
+        }
+
         ## having strand info? remove it!
         if (any(strand(bps)!="*")){
             warning("Some breakpoints have strand info. Force to '*'.")
