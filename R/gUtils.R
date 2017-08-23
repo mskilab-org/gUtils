@@ -3235,7 +3235,7 @@ ra.dedup = function(grl, pad=500, ignore.strand=FALSE){
 
     if (any(elementNROWS(grl)!=2)) stop("Each element must be length 2!")
 
-    if (length(grl)==0) return(grl)
+    if (length(grl)==0 | length(grl)==1) return(grl)
 
     if (length(grl)>1){
         ix.pair = as.data.table(
