@@ -175,6 +175,6 @@ Attributions
 
 > Jeremiah Wala - Harvard MD-PhD candidate, Bioinformatics and Integrative Genomics, Rameen Beroukhim Lab, Dana Farber Cancer Institute
 
-[license]: https://github.com/jwalabroad/gTrack/blob/master/LICENSE
+[license]: https://github.com/mskilab/gUtils/blob/master/LICENSE
 [docs]: http://gutils.readthedocs.org/en/latest/index.html
 
