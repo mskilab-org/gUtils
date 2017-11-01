@@ -258,9 +258,11 @@ test_that("gr.sample", {
 
 
 test_that("gr.sample without replace", {
-
-  gene1 = GRanges("3:3540000-234329000")  
-  gene2 = GRanges("2:24440-30000")                                                                                                                                                                          gene3 = GRanges("2:278444-321000")                                                                                                                                                                        gene4 = GRanges("3:1000-1500")                                                                                                             
+    
+  gene1 = GRanges("3:3540000-234329000")
+  gene2 = GRanges("2:24440-30000")
+  gene3 = GRanges("2:278444-321000")
+  gene4 = GRanges("3:1000-1500")                                                                                                             
   example_genes = c(gene1, gene2, gene3, gene4)                                                                                                                                                                                                                 
   gg <- gr.sample(reduce(example_genes), 10, k=1, replace=FALSE)
   expect_equal(unique(width(gg)), 10)
