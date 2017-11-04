@@ -482,12 +482,13 @@ test_that("gr.tile.map", {
 
 test_that('%_% works', {
 
-  # gr1 <- GRanges(1, IRanges(10,20), strand="+")
-  # gr2 <- GRanges(1, IRanges(15,25), strand="-")
-  # gr3 <- "1:1-15"
-  # expect_equal(width(gr1 %_% gr2), 5)
-  # expect_equal(width(gr1 %_% gr3), 5)
+  gr1 <- GRanges(1, IRanges(10,20), strand="+")
+  gr2 <- GRanges(1, IRanges(15,25), strand="-")
+  gr3 <- GRanges("1:1-15")
+  expect_equal(width(gr1 %_% gr2), 5)
+  expect_equal(width(gr1 %_% gr3), 5)
 })
+
 
 test_that('%Q% works', {
 
