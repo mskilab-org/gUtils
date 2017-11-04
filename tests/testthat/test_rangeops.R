@@ -492,9 +492,24 @@ test_that('%_% works', {
 test_that('%Q% works', {
 
   testset <- GRanges(seqnames = Rle(1,c(5)) , ranges = IRanges(1:5 , end = 2000:2004) , strand = Rle(strand(c("+")) , c(5)) , mean = c(1, -2 , -5 , 5 ,6))
- # expect_equal(length(testset %Q% (mean > 0)) , 3)
+  expect_equal(length(testset %Q% (mean > 0)) , 3)
 
 })
+
+test_that('second test that %Q% works', {
+    
+    foo = GRanges(seqnames = Rle(1,c(5)) , ranges = IRanges(1:5 , end = 2000:2004) , strand = Rle(strand(c("+")) , c(5)) , mean = c(50, 200, 300, 400, 500))
+    expect_equal(length(foo %Q% (mean == 300)) , 1)
+    
+})
+
+test_that('third test that %Q% works', {
+    
+    foo = GRanges(seqnames = Rle(1,c(5)) , ranges = IRanges(1:5 , end = c(5, 10, 15, 20, 25)) , strand = Rle(strand(c("+", "-", "-", "-", "-"))) , mean = c(1, -2 , -5 , 5 ,6))
+    expect_equal(length(foo %Q% (strand == "-") ) , 4)
+    
+})
+
 
 test_that('%^% works', {
 
