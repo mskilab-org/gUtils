@@ -47,12 +47,14 @@ test_that("gr.mid", {
 
 })
 
-                                        #test_that("gr.dist", {
+test_that("test gr.dist", {
 
-                                        #m <- gr.dist(gr, gr2, ignore.strand=TRUE)
-                                        #expect_equal(m[1,2], 3)
+  gr  = GRanges(1, IRanges(c(3,7,13), c(5,9,16)), strand=c('+','-','-'), seqinfo=Seqinfo("1", 25), name=c("A","B","C"))
+  gr2 = GRanges(1, IRanges(c(1,9), c(6,14)), strand=c('+','-'), seqinfo=Seqinfo("1", 25), field=c(1,2))
+  m = gr.dist(gr, gr2, ignore.strand=TRUE)
+  expect_equal(m[1,2], 3)
 
-                                        #})
+})
 
 test_that("gr.rand", {
 
