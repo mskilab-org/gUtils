@@ -6,13 +6,17 @@ gr  <- GRanges(1, IRanges(c(3,7,13), c(5,9,16)), strand=c('+','-','-'), seqinfo=
 gr2 <- GRanges(1, IRanges(c(1,9), c(6,14)), strand=c('+','-'), seqinfo=Seqinfo("1", 25), field=c(1,2))
 dt <- data.table(seqnames=1, start=c(2,5,10), end=c(3,8,15))
 
-                                        #test_that("hg_seqlengths", {
-                                        #  expect_error(hg_seqlengths())
-                                        #  ee <- structure(names="1", 249250621L)
-                                        #  expect_identical(hg_seqlengths(Hsapiens)[1],ee)
-                                        #  expect_equal(names(hg_seqlengths(Hsapiens, chr=TRUE)[1]), "chr1")
-                                        #  expect_equal(length(hg_seqlengths(Hsapiens, include.junk = TRUE)), 93)
-                                        #})
+
+test_that("test hg_seqlengths()", {
+   
+  expect_identical(as.numeric(length(hg_seqlengths())), 25)
+  expect_identical(hg_seqlengths(Hsapiens)[1],ee)
+  ee = structure(names="1", 249250621L)
+  expect_identical(hg_seqlengths(Hsapiens)[1],ee)
+  expect_equal(names(hg_seqlengths(Hsapiens, chr=TRUE)[1]), "chr1")
+  expect_equal(length(hg_seqlengths(Hsapiens, include.junk = TRUE)), 93)
+
+})
 
 test_that("gr.start ", {
 
