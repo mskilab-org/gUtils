@@ -1,5 +1,7 @@
 library(gUtils)
 library(BSgenome.Hsapiens.UCSC.hg19)
+Sys.setenv(DEFAULT_BSGENOME = "BSgenome.Hsapiens.UCSC.hg19::Hsapiens")
+
 context("Range ops")
 
 gr  <- GRanges(1, IRanges(c(3,7,13), c(5,9,16)), strand=c('+','-','-'), seqinfo=Seqinfo("1", 25), name=c("A","B","C"))
@@ -89,7 +91,7 @@ test_that("grbind", {
 
     example_dnase = GRanges(1, IRanges(c(562757, 564442, 564442), c(563203, 564813, 564813)), strand = c("-", "+", "+"))
     example_genes = GRanges(2, IRanges(c(233101, 233101, 231023, 231023, 229966), c(233229, 233229, 231191, 231191, 230044)), strand = c("-"), type = c("exon", "CDS", "exon", "CDS", "exon"))
-    expect_that(length(grbind(example_genes, example_dnase)) > 0, is_true())
+    expect_that(length(suppressWarnings(grbind(example_genes, example_dnase))) > 0, is_true())
 
 })
 
@@ -142,7 +144,7 @@ test_that("gr.match", {
     gr1 <- GRanges(1, IRanges(c(10,20), width=5), strand=c("+", "-"))
     gr2 <- GRanges(1, IRanges(c(8,18, 100), width=5), strand=c("-", "+", "+"))
 
-    expect_identical(gr.match(gr1, gr2), c(1L,2L))
+    expect_identical(suppressWarnings(gr.match(gr1, gr2)), c(1L,2L))
 
     ## ignore strand is successfully passed
     expect_error(gr.match(gr1, gr2, ignore.strand = FALSE))
@@ -154,8 +156,8 @@ test_that("gr.findoverlaps chunk", {
     example_dnase = GRanges(1, IRanges(c(562757, 564442, 564442), c(563203, 564813, 564813)), strand = c("-", "+", "+"))
     example_genes = GRanges(2, IRanges(c(233101, 233101, 231023, 231023, 229966), c(233229, 233229, 231191, 231191, 230044)), strand = c("-"), type = c("exon", "CDS", "exon", "CDS", "exon"))
 
-    fo  <- gr.findoverlaps(example_genes, example_dnase)
-    fo2 <- gr.findoverlaps(example_genes, example_dnase, max.chunk = 1e7, verbose=TRUE)
+    fo  <- suppressWarnings(gr.findoverlaps(example_genes, example_dnase))
+    fo2 <- suppressWarnings(gr.findoverlaps(example_genes, example_dnase, max.chunk = 1e7, verbose=TRUE))
     expect_identical(fo, fo2)
 
 })
@@ -177,12 +179,12 @@ test_that("gr.findoverlaps ignore.strand", {
     strand(example_dnase2) <- ifelse(runif(length(example_dnase)) > 0.5, '+', '-')
 
     ## get the overlaps with the original unstranded, and with ignore.strand
-    fo1 <- gr.findoverlaps(example_dnase, example_genes)
-    fo2 <- gr.findoverlaps(example_dnase2, example_genes, ignore.strand=TRUE)
+    fo1 <- suppressWarnings(gr.findoverlaps(example_dnase, example_genes))
+    fo2 <- suppressWarnings(gr.findoverlaps(example_dnase2, example_genes, ignore.strand=TRUE))
     expect_identical(fo1, fo2)
 
     ## make sure no strands overlap
-    fo1 <- gr.findoverlaps(example_dnase2, example_genes, ignore.strand=FALSE)
+    fo1 <- suppressWarnings(gr.findoverlaps(example_dnase2, example_genes, ignore.strand=FALSE))
     expect_that(!any(strand(example_dnase2)[fo1$query.id] != strand(example_genes)[fo1$subject.id]), is_true())
 
 })
