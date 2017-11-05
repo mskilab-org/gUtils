@@ -250,7 +250,7 @@ test_that("gr.duplicated", {
 
     gr = GRanges(c(1,1,1), IRanges(c(2,5,5), width=1), val=c(1,2,3))
     
-    expect_identical(gr.duplicated(gr), c(FALSE, FALSE, TRUE))
+    expect_identical(gr.duplicated(gr), c(FALSE, FALSE))
     expect_identical(gr.duplicated(gr, by="val"), c(FALSE, FALSE, FALSE))
     
 })

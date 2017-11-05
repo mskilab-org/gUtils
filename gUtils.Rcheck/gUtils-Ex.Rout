@@ -1,0 +1,309 @@
+
+R version 3.3.3 (2017-03-06) -- "Another Canoe"
+Copyright (C) 2017 The R Foundation for Statistical Computing
+Platform: x86_64-apple-darwin13.4.0 (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> pkgname <- "gUtils"
+> source(file.path(R.home("share"), "R", "examples-header.R"))
+> options(warn = 1)
+> library('gUtils')
+Loading required package: GenomicRanges
+Loading required package: stats4
+Loading required package: BiocGenerics
+Loading required package: parallel
+
+Attaching package: ‘BiocGenerics’
+
+The following objects are masked from ‘package:parallel’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, parApply, parCapply, parLapply,
+    parLapplyLB, parRapply, parSapply, parSapplyLB
+
+The following objects are masked from ‘package:stats’:
+
+    IQR, mad, xtabs
+
+The following objects are masked from ‘package:base’:
+
+    Filter, Find, Map, Position, Reduce, anyDuplicated, append,
+    as.data.frame, cbind, colnames, do.call, duplicated, eval, evalq,
+    get, grep, grepl, intersect, is.unsorted, lapply, lengths, mapply,
+    match, mget, order, paste, pmax, pmax.int, pmin, pmin.int, rank,
+    rbind, rownames, sapply, setdiff, sort, table, tapply, union,
+    unique, unsplit, which, which.max, which.min
+
+Loading required package: S4Vectors
+
+Attaching package: ‘S4Vectors’
+
+The following objects are masked from ‘package:base’:
+
+    colMeans, colSums, expand.grid, rowMeans, rowSums
+
+Loading required package: IRanges
+Loading required package: GenomeInfoDb
+Loading required package: data.table
+
+Attaching package: ‘data.table’
+
+The following object is masked from ‘package:GenomicRanges’:
+
+    shift
+
+The following object is masked from ‘package:IRanges’:
+
+    shift
+
+The following objects are masked from ‘package:S4Vectors’:
+
+    first, second
+
+
+Attaching package: ‘gUtils’
+
+The following object is masked from ‘package:base’:
+
+    %o%
+
+> 
+> base::assign(".oldSearch", base::search(), pos = 'CheckExEnv')
+> cleanEx()
+> nameEx("dt2gr")
+> ### * dt2gr
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: dt2gr
+> ### Title: Convert data.table to GRanges
+> ### Aliases: dt2gr
+> 
+> ### ** Examples
+> 
+> gr <- dt2gr(data.table(start=c(1,2), seqnames=c("X", "1"), end=c(10,20), strand = c('+', '-')))
+Warning in hg_seqlengths() :
+  hg_seqlengths: supply genome seqlengths or set default with env variable DEFAULT_BSGENOME (e.g. Sys.setenv(DEFAULT_BSGENOME = "BSgenome.Hsapiens.UCSC.hg19::Hsapiens").  DEFAULT_BSGENOME can also be set to a path or URL of a tab delimited text *.chrom.sizes file
+> 
+> 
+> 
+> cleanEx()
+> nameEx("gr.chr")
+> ### * gr.chr
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: gr.chr
+> ### Title: Prepend "chr" to 'GRanges seqlevels'
+> ### Aliases: gr.chr
+> 
+> ### ** Examples
+> 
+> gr <-  gr.chr(GRanges(c(1,"chrX"), IRanges(c(1,2), 1)))
+> seqnames(gr)
+factor-Rle of length 2 with 2 runs
+  Lengths:    1    1
+  Values : chr1 chrX
+Levels(2): chr1 chrX
+> 
+> 
+> 
+> cleanEx()
+> nameEx("gr.dice")
+> ### * gr.dice
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: gr.dice
+> ### Title: Dice up 'GRanges' into 'width = 1' 'GRanges' spanning the input
+> ###   (warning can produce a very large object)
+> ### Aliases: gr.dice
+> 
+> ### ** Examples
+> 
+> gr.dice(GRanges(c(1,4), IRanges(c(10,10),20)))
+GRangesList object of length 2:
+$1 
+GRanges object with 11 ranges and 0 metadata columns:
+       seqnames    ranges strand
+          <Rle> <IRanges>  <Rle>
+   [1]        1  [10, 10]      *
+   [2]        1  [11, 11]      *
+   [3]        1  [12, 12]      *
+   [4]        1  [13, 13]      *
+   [5]        1  [14, 14]      *
+   [6]        1  [15, 15]      *
+   [7]        1  [16, 16]      *
+   [8]        1  [17, 17]      *
+   [9]        1  [18, 18]      *
+  [10]        1  [19, 19]      *
+  [11]        1  [20, 20]      *
+
+...
+<1 more element>
+-------
+seqinfo: 2 sequences from an unspecified genome; no seqlengths
+> 
+> 
+> 
+> cleanEx()
+> nameEx("gr.duplicated")
+> ### * gr.duplicated
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: gr.duplicated
+> ### Title: Allows to restrict duplicates using "by" columns and allows in
+> ###   exact matching
+> ### Aliases: gr.duplicated
+> 
+> ### ** Examples
+> 
+> gr.duplicated(GRanges(c(1,1,1), IRanges(c(2,5,5), width=1)))
+Warning in hg_seqlengths() :
+  hg_seqlengths: supply genome seqlengths or set default with env variable DEFAULT_BSGENOME (e.g. Sys.setenv(DEFAULT_BSGENOME = "BSgenome.Hsapiens.UCSC.hg19::Hsapiens").  DEFAULT_BSGENOME can also be set to a path or URL of a tab delimited text *.chrom.sizes file
+[1] FALSE FALSE  TRUE
+> 
+> gr.duplicated(GRanges(c(1,1,1), IRanges(c(2,5,5), width=1)))
+Warning in hg_seqlengths() :
+  hg_seqlengths: supply genome seqlengths or set default with env variable DEFAULT_BSGENOME (e.g. Sys.setenv(DEFAULT_BSGENOME = "BSgenome.Hsapiens.UCSC.hg19::Hsapiens").  DEFAULT_BSGENOME can also be set to a path or URL of a tab delimited text *.chrom.sizes file
+[1] FALSE FALSE  TRUE
+> 
+> 
+> 
+> 
+> cleanEx()
+> nameEx("gr.end")
+> ### * gr.end
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: gr.end
+> ### Title: Get the right ends of a 'GRanges'
+> ### Aliases: gr.end
+> 
+> ### ** Examples
+> 
+> gr.end(example_dnase, width=200, clip=TRUE)
+GRanges object with 10000 ranges and 2 metadata columns:
+          seqnames                 ranges strand | signalValue    pValue
+             <Rle>              <IRanges>  <Rle> |   <numeric> <numeric>
+      [1]        1     [ 567694,  567893]      * |     50.4687   282.177
+      [2]        1     [ 848275,  848474]      * |     9.15261    12.211
+      [3]        1     [ 861599,  861798]      * |     23.4447   53.1665
+      [4]        1     [1172533, 1172732]      * |     2.74806   2.10225
+      [5]        1     [1210285, 1210484]      * |     2.20956   1.60014
+      ...      ...                    ...    ... .         ...       ...
+   [9996]        X [153715389, 153715588]      * |     63.7299    217.34
+   [9997]        X [153941219, 153941418]      * |     2.74806   2.10225
+   [9998]        X [153943745, 153943944]      * |     45.5592   133.478
+   [9999]        X [154356414, 154356482]      * |     3.23308   2.51551
+  [10000]        X [154401301, 154401500]      * |     2.47881   1.84304
+  -------
+  seqinfo: 25 sequences from an unspecified genome
+> 
+> 
+> 
+> cleanEx()
+> nameEx("gr.flipstrand")
+> ### * gr.flipstrand
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: gr.flipstrand
+> ### Title: Flip strand on 'GRanges'
+> ### Aliases: gr.flipstrand
+> 
+> ### ** Examples
+> 
+> gr.flipstrand(GRanges(1, IRanges(c(10,10,10),20), strand=c("+","*","-")))
+GRanges object with 3 ranges and 0 metadata columns:
+      seqnames    ranges strand
+         <Rle> <IRanges>  <Rle>
+  [1]        1  [10, 20]      -
+  [2]        1  [10, 20]      *
+  [3]        1  [10, 20]      +
+  -------
+  seqinfo: 1 sequence from an unspecified genome; no seqlengths
+> 
+> 
+> 
+> cleanEx()
+> nameEx("gr.mid")
+> ### * gr.mid
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: gr.mid
+> ### Title: Get the midpoints of 'GRanges' ranges
+> ### Aliases: gr.mid
+> 
+> ### ** Examples
+> 
+> gr.mid(GRanges(1, IRanges(1000,2000), seqinfo=Seqinfo("1", 2000)))
+GRanges object with 1 range and 0 metadata columns:
+      seqnames       ranges strand
+         <Rle>    <IRanges>  <Rle>
+  [1]        1 [1500, 1500]      *
+  -------
+  seqinfo: 1 sequence from an unspecified genome
+> 
+> 
+> 
+> cleanEx()
+> nameEx("gr.rand")
+> ### * gr.rand
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: gr.rand
+> ### Title: Generate random 'GRanges' on genome
+> ### Aliases: gr.rand
+> 
+> ### ** Examples
+> 
+> ## Generate 5 non-overlapping regions of width 10 on hg19
+> gr.rand(rep(10,5), BSgenome.Hsapiens.UCSC.hg19::Hsapiens)
+GRanges object with 5 ranges and 0 metadata columns:
+      seqnames                 ranges strand
+         <Rle>              <IRanges>  <Rle>
+  [1]     chr4 [142470875, 142470884]      *
+  [2]     chr6 [104870469, 104870478]      *
+  [3]    chr10 [116759857, 116759866]      *
+  [4]    chr22 [ 19465013,  19465022]      *
+  [5]     chr3 [140258582, 140258591]      *
+  -------
+  seqinfo: 93 sequences from an unspecified genome
+> 
+> 
+> 
+> cleanEx()
+> nameEx("gr.sample")
+> ### * gr.sample
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: gr.sample
+> ### Title: Randomly sample 'GRanges' intervals within territory
+> ### Aliases: gr.sample
+> 
+> ### ** Examples
+> 
+> ## sample 5 \code{GRanges} of length 10 each from territory of RefSeq genes
+> gr.sample(reduce(example_genes), k=5, len=10)
+Error in gr.sample(reduce(example_genes), k = 5, len = 10) : 
+  unused argument (len = 10)
+Execution halted

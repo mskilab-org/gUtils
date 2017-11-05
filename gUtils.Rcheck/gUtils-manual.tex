@@ -1,0 +1,2417 @@
+\nonstopmode{}
+\documentclass[a4paper]{book}
+\usepackage[times,inconsolata,hyper]{Rd}
+\usepackage{makeidx}
+\usepackage[utf8,latin1]{inputenc}
+% \usepackage{graphicx} % @USE GRAPHICX@
+\makeindex{}
+\begin{document}
+\chapter*{}
+\begin{center}
+{\textbf{\huge Package `gUtils'}}
+\par\bigskip{\large \today}
+\end{center}
+\begin{description}
+\raggedright{}
+\item[Title]\AsIs{R Package Providing Additional Capabilities and Speed for
+GenomicRanges Operations}
+\item[Version]\AsIs{0.2.0}
+\item[Description]\AsIs{R package providing additional capabilities and speed for GenomicRanges operations.}
+\item[Depends]\AsIs{R (>= 3.1.0), GenomicRanges (>= 1.18), data.table (>= 1.9)}
+\item[Imports]\AsIs{IRanges (>= 2.0), S4Vectors (>= 0.4), GenomeInfoDb (>= 1.2),
+parallel, BiocGenerics(>= 0.12), methods, Matrix, stringr}
+\item[Suggests]\AsIs{BSgenome.Hsapiens.UCSC.hg19, testthat, rtracklayer}
+\item[License]\AsIs{GPL-2}
+\item[BugReports]\AsIs{}\url{http://github.com/mskilab/gUtils/issues}\AsIs{}
+\item[LazyData]\AsIs{true}
+\item[RoxygenNote]\AsIs{6.0.1.9000}
+\item[NeedsCompilation]\AsIs{no}
+\item[Author]\AsIs{Jeremiah Wala [aut],
+Marcin Imielinski [aut, cre]}
+\item[Maintainer]\AsIs{Marcin Imielinski }\email{mimielinski@nygenome.org}\AsIs{}
+\end{description}
+\Rdcontents{\R{} topics documented:}
+\inputencoding{utf8}
+\HeaderA{anchorlift}{anchorlift}{anchorlift}
+%
+\begin{Description}\relax
+"lifts" all queries with respect to subject in coordinates that are within "pad"
+i.e. puts the queries into subject-centric coordinates, which is a new genome with label "Anchor" (default)
+
+Respects strand of subject (i.e. if subject strand gr is "-" then will lift all queries to the left of it
+into positive subject-centric coordinates). Keeps track of subject and query id for later deconvolution if need be.
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+anchorlift(query, subject, window = 1e+09, by = NULL, seqname = "Anchor",
+  include.values = TRUE)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{query}] GRanges that will be lifted around the subject
+
+\item[\code{subject}] GRanges around which the queries will be lifted
+
+\item[\code{window}] non-negative integer scalar specifying how far around each subject to gather query intervals to lift (default 1e9)
+
+\item[\code{by}] character vector specifying additional columsn (e.g. sample id) around which to restrict overlaps (via gr.findoverlaps) (default NULL)
+
+\item[\code{seqname}] Character specifying the name of the output sequence around which to anchor (default "Anchor")
+
+\item[\code{include.values}] logical flag whether to include values from query and subject (default TRUE)
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Author}\relax
+Marcin Imielinski
+\end{Author}
+\inputencoding{utf8}
+\HeaderA{dt2gr}{Convert data.table to GRanges}{dt2gr}
+%
+\begin{Description}\relax
+Takes as input a data.table which must have the following fields: \code{start}, \code{end}, \code{strand}, \code{seqnames}. Will throw
+an error if any one of these is not present.
+All of the remaining fields are added as metadata to the \code{GRanges}.
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+dt2gr(dt, key = NULL, seqlengths = hg_seqlengths(), seqinfo = Seqinfo())
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{dt}] \code{data.table} to convert to \code{GRanges}
+
+\item[\code{dt}] data.table to convert
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+\code{GRanges} object of \code{length = nrow(dt)}
+\end{Value}
+%
+\begin{Examples}
+\begin{ExampleCode}
+gr <- dt2gr(data.table(start=c(1,2), seqnames=c("X", "1"), end=c(10,20), strand = c('+', '-')))
+\end{ExampleCode}
+\end{Examples}
+\inputencoding{utf8}
+\HeaderA{example\_dnase}{DNAaseI hypersensitivity sites for hg19A}{example.Rul.dnase}
+\keyword{data}{example\_dnase}
+%
+\begin{Description}\relax
+DNAaseI hypersensitivity sites from UCSC Table Browser hg19,
+subsampled to 10,000 sites
+\end{Description}
+%
+\begin{Format}
+\code{GRanges}
+\end{Format}
+\inputencoding{utf8}
+\HeaderA{example\_genes}{RefSeq genes for hg19}{example.Rul.genes}
+\keyword{data}{example\_genes}
+%
+\begin{Description}\relax
+RefSeq genes with exon count and name
+\end{Description}
+%
+\begin{Format}
+\code{GRanges}
+\end{Format}
+\inputencoding{utf8}
+\HeaderA{gr.breaks}{Break GRanges at given breakpoints into disjoint gr}{gr.breaks}
+%
+\begin{Description}\relax
+Break GRanges at given breakpoints into disjoint gr
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+gr.breaks(bps = NULL, query = NULL)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{bps}] \code{GRanges} of width 1, locations of the bp; if any element width
+larger than 1, both boundary will be considered individual breakpoints
+
+\item[\code{query}] a disjoint \code{GRanges} object to be broken
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+\code{GRanges} disjoint object at least the same length as query,
+with a metadata column \code{qid} indicating input index where new segment is from
+\end{Value}
+%
+\begin{Author}\relax
+Xiaotong Yao
+\end{Author}
+\inputencoding{utf8}
+\HeaderA{gr.chr}{Prepend "chr" to \code{GRanges seqlevels}}{gr.chr}
+%
+\begin{Description}\relax
+Prepend "chr" to \code{GRanges seqlevels}
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+gr.chr(gr)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{gr}] \code{GRanges} object to append 'chr' to
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+Identical \code{GRanges}, but with 'chr' prepended to each seqlevel
+\end{Value}
+%
+\begin{Examples}
+\begin{ExampleCode}
+gr <-  gr.chr(GRanges(c(1,"chrX"), IRanges(c(1,2), 1)))
+seqnames(gr)
+\end{ExampleCode}
+\end{Examples}
+\inputencoding{utf8}
+\HeaderA{gr.collapse}{Collapse adjacent ranges}{gr.collapse}
+%
+\begin{Description}\relax
+Like \code{GenomicRanges::reduce} except only collapses <<adjacent>> ranges in the input
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+gr.collapse(gr, pad = 1)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{gr}] \code{GRanges} to collapse
+
+\item[\code{pad}] Padding that allows for not quite adjacent elements to be considered overlapping. 1
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+Collapsed ranges
+\end{Value}
+%
+\begin{Author}\relax
+Marcin Imielinski
+\end{Author}
+\inputencoding{utf8}
+\HeaderA{gr.cov}{gr.cov}{gr.cov}
+\aliasA{gr.sum}{gr.cov}{gr.sum}
+%
+\begin{Description}\relax
+Sums granges either by doing coverage and either weighting them equally
+or using a field "weight".  Will return either sum or average.
+
+Most basic functionality is like an as(coverage(gr), 'GRanges')
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+gr.sum(gr, field = NULL, mean = FALSE)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{gr}] \code{GRanges} to sum
+
+\item[\code{field}] metadata field from gr to use as a weight
+
+\item[\code{mean}] logical scalar specifying whether to divide the output at each interval but the total number of intervals overlapping it (only applies if field == NULL) (default FALSE)
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+non-overlapping granges spanning the seqlengths of gr with \$score (if field is NULL) or \$field specifying the sum / mean at that position
+\end{Value}
+\inputencoding{utf8}
+\HeaderA{gr.dice}{Dice up \code{GRanges} into \code{width = 1} \code{GRanges} spanning the input (warning can produce a very large object)}{gr.dice}
+%
+\begin{Description}\relax
+Dice up \code{GRanges} into \code{width = 1} \code{GRanges} spanning the input (warning can produce a very large object)
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+gr.dice(gr)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{gr}] \code{GRanges} object to dice
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+\code{GRangesList} where kth element is a diced pile of \code{GRanges} from kth input \code{GRanges}
+\end{Value}
+%
+\begin{Author}\relax
+Marcin Imielinski
+\end{Author}
+%
+\begin{Examples}
+\begin{ExampleCode}
+gr.dice(GRanges(c(1,4), IRanges(c(10,10),20)))
+\end{ExampleCode}
+\end{Examples}
+\inputencoding{utf8}
+\HeaderA{gr.disjoin}{GenomicRanges disjoin with some spice Identical to GRanges disjoin, except outputs inherit metadata from first overlapping parent instance on input}{gr.disjoin}
+%
+\begin{Description}\relax
+GenomicRanges disjoin with some spice
+
+Identical to GRanges disjoin, except outputs inherit metadata from first overlapping parent instance on input
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+gr.disjoin(x, ..., ignore.strand = TRUE)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{x}] GRanges to disjoin
+
+\item[\code{...}] arguments to disjoin
+
+\item[\code{ignore.strand}] logical scalar, default TRUE
+\end{ldescription}
+\end{Arguments}
+\inputencoding{utf8}
+\HeaderA{gr.dist}{Pairwise distance between two \code{GRanges}}{gr.dist}
+%
+\begin{Description}\relax
+Computes matrix of pairwise distance between elements of two \code{GRanges} objects of length \code{n} and \code{m}.
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+gr.dist(gr1, gr2 = NULL, ignore.strand = FALSE, ...)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{gr1}] First \code{GRanges}
+
+\item[\code{gr2}] Second \code{GRanges}
+
+\item[\code{ignore.strand}] Don't required elements be on same strand to avoid \code{NA [FALSE]}
+
+\item[\code{...}] Additional arguments to be supplied to \code{GenomicRanges::distance}
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Details}\relax
+Distances are computed as follows:
+\begin{itemize}
+
+\item NA for ranges on different seqnames
+\item 0 for overlapping ranges
+\item min(abs(end1-end2), abs(end1-start2), abs(start1-end2), abs(start1-end1),) for all others
+
+\end{itemize}
+
+If only \code{gr1} is provided, then will return n x n matrix of \code{gr1} vs itself \\{}
+If \code{max.dist = TRUE}, then will replace \code{min} with \code{max} above
+\end{Details}
+%
+\begin{Value}
+\code{N} by \code{M} matrix with the pairwise distances, with \code{gr1} on rows and \code{gr2} on cols
+\end{Value}
+%
+\begin{Author}\relax
+Marcin Imielinski
+\end{Author}
+\inputencoding{utf8}
+\HeaderA{gr.duplicated}{Allows to restrict duplicates using "by" columns and allows in exact matching}{gr.duplicated}
+%
+\begin{Description}\relax
+Allows to restrict duplicates using "by" columns and allows in exact matching
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+gr.duplicated(query, by = NULL, type = "any")
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{query}] query ranges
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Examples}
+\begin{ExampleCode}
+gr.duplicated(GRanges(c(1,1,1), IRanges(c(2,5,5), width=1)))
+
+gr.duplicated(GRanges(c(1,1,1), IRanges(c(2,5,5), width=1)))
+
+\end{ExampleCode}
+\end{Examples}
+\inputencoding{utf8}
+\HeaderA{gr.end}{Get the right ends of a \code{GRanges}}{gr.end}
+%
+\begin{Description}\relax
+Alternative to \code{GenomicRanges::flank} that will provide end positions *within* intervals
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+gr.end(x, width = 1, force = FALSE, ignore.strand = TRUE, clip = TRUE)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{x}] \code{GRanges} object to operate on
+
+\item[\code{width}] Specify subranges of greater width including the start of the range. \code{[1]}
+
+\item[\code{force}] Allows returned \code{GRanges} to have ranges outside of its \code{Seqinfo} bounds. \code{[FALSE]}
+
+\item[\code{ignore.strand}] If set to \code{FALSE}, will extend '-' strands from the other direction. \code{[TRUE]}
+
+\item[\code{clip}] Trims returned \code{GRanges} so that it does not extend beyond bounds of the input \code{GRanges}. \code{[TRUE]}
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+\code{GRanges} object of width = \code{width} ranges representing end of each genomic range in the input.
+\end{Value}
+%
+\begin{Author}\relax
+Marcin Imielinski
+\end{Author}
+%
+\begin{Examples}
+\begin{ExampleCode}
+gr.end(example_dnase, width=200, clip=TRUE)
+\end{ExampleCode}
+\end{Examples}
+\inputencoding{utf8}
+\HeaderA{gr.findoverlaps}{Wrapper to \code{GenomicRanges::findOverlaps} with added functionality}{gr.findoverlaps}
+%
+\begin{Description}\relax
+Returns \code{GRanges} of matches with two additional fields:
+\begin{itemize}
+
+\code{\$query.id} - index of matching query
+\code{\$subject.id} - index of matching subject
+
+\end{itemize}
+
+Optional \code{"by"} field is a character scalar that specifies a metadata column present in both query and subject
+that will be used to additionally restrict matches, i.e. to pairs of ranges that overlap and also
+have the same values of their \code{"by"} fields
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+gr.findoverlaps(query, subject, ignore.strand = TRUE, first = FALSE,
+  qcol = NULL, scol = NULL, type = "any", by = NULL,
+  return.type = "same", max.chunk = 1e+13, verbose = FALSE,
+  mc.cores = 1, ...)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{query}] Query \code{GRanges} pile
+
+\item[\code{subject}] Subject \code{GRanges} pile
+
+\item[\code{ignore.strand}] Don't consider strand information during overlaps. \code{[TRUE]}
+
+\item[\code{first}] Restrict to only the first match of the subject (default is to return all matches). \code{[FALSE]}
+
+\item[\code{qcol}] \code{character} vector of query meta-data columns to add to results
+
+\item[\code{scol}] \code{character} vector of subject meta-data columns to add to results
+
+\item[\code{type}] \code{type} argument as defined by \code{IRanges::findOverlaps} (\code{"any"}, \code{"start"}, \code{"end"}, \code{"within"}, \code{"equal"}). \code{["any"]}
+
+\item[\code{by}] Meta-data column to consider when performing overlaps [NULL]
+
+\item[\code{return.type}] Select data format to return (supplied as character): \code{"same"}, \code{"data.table"}, \code{"GRanges"}. \code{["same"]}
+
+\item[\code{max.chunk}] Maximum number of \code{query*subject} ranges to consider at once. Lower number increases runtime but decreased memory. If \code{length(query)*length(subject)} is less than \code{max.chunk}, overlaps will run in one batch.\code{[1e13]}
+
+\item[\code{verbose}] Increase the verbosity. \code{[FALSE]}
+
+\item[\code{mc.cores}] Number of cores to use when running in chunked mode
+
+\item[\code{...}] Additional arguments sent to \code{IRanges::findOverlaps}.
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+\code{GRanges} pile of the intersection regions, with \code{query.id} and \code{subject.id} marking sources
+\end{Value}
+\inputencoding{utf8}
+\HeaderA{gr.fix}{"Fixes" \code{seqlengths} / \code{seqlevels}}{gr.fix}
+%
+\begin{Description}\relax
+If "genome" not specified will replace \code{NA} \code{seqlengths} in GRanges to reflect largest coordinate per \code{seqlevel}
+and removes all \code{NA seqlevels} after this fix.
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+gr.fix(gr, genome = NULL, gname = NULL, drop = FALSE)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{gr}] \code{GRanges} object to fix
+
+\item[\code{genome}] Genome to fix to: \code{Seqinfo}, \code{BSgenome}, \code{GRanges} (w/seqlengths), \code{GRangesList} (w/seqlengths)
+
+\item[\code{gname}] Name of the genome (optional, just appends to \code{Seqinfo} of the output) [NULL]
+
+\item[\code{drop}] Remove ranges that are not present in the supplied genome [FALSE]
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Details}\relax
+if "genome" defined (i.e. as \code{Seqinfo} object, or a \code{BSgenome}, \code{GRanges}, \code{GRangesList} object with populated \code{seqlengths}),
+then will replace \code{seqlengths} in \code{gr} with those for that genome
+\end{Details}
+%
+\begin{Value}
+\code{GRanges} pile with the fixed \code{Seqinfo}
+\end{Value}
+\inputencoding{utf8}
+\HeaderA{gr.flatten}{Lay ranges end-to-end onto a derivate "chromosome"}{gr.flatten}
+%
+\begin{Description}\relax
+Takes pile of \code{GRanges} and returns into a \code{data.frame} with \code{nrow = length(gr)} with each
+representing the corresponding input range superimposed onto a single "flattened"
+chromosome, with ranges laid end-to-end
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+gr.flatten(gr, gap = 0)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{gr}] \code{GRanges} to flatten
+
+\item[\code{gap}] Number of bases between ranges on the new chromosome \code{[0]}
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+\code{data.frame} with start and end coordinates, and all of the original metadata
+\end{Value}
+\inputencoding{utf8}
+\HeaderA{gr.flipstrand}{Flip strand on \code{GRanges}}{gr.flipstrand}
+%
+\begin{Description}\relax
+Flip strand on \code{GRanges}
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+gr.flipstrand(gr)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{gr}] \code{GRanges} pile with strands to be flipped
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+\code{GRanges} with flipped strands (+ to -, * to *, - to *)
+\end{Value}
+%
+\begin{Examples}
+\begin{ExampleCode}
+gr.flipstrand(GRanges(1, IRanges(c(10,10,10),20), strand=c("+","*","-")))
+\end{ExampleCode}
+\end{Examples}
+\inputencoding{utf8}
+\HeaderA{gr.in}{Versatile implementation of \code{GenomicRanges::over}}{gr.in}
+%
+\begin{Description}\relax
+returns T / F vector if query range i is found in any range in subject
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+gr.in(query, subject, ...)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{query}] \code{GRanges}
+
+\item[\code{subject}] \code{GRanges}
+
+\item[\code{...}] Argument to be sent to \code{\LinkA{gr.findoverlaps}{gr.findoverlaps}} (e.g. \code{by})
+\end{ldescription}
+\end{Arguments}
+\inputencoding{utf8}
+\HeaderA{gr.match}{Alternative \code{GenomicRanges::match} that accepts additional \code{\LinkA{gr.findoverlaps}{gr.findoverlaps}} options}{gr.match}
+%
+\begin{Description}\relax
+Wrapper to \code{GenomicRanges::match} (uses \code{\LinkA{gr.findoverlaps}{gr.findoverlaps}}). This allows users to
+match on additional \code{by} fields, or chunk into smaller pieces for lower memory.
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+gr.match(query, subject, max.slice = Inf, verbose = FALSE, ...)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{query}] Query \code{GRanges} pile
+
+\item[\code{subject}] Subject \code{GRanges} pile
+
+\item[\code{max.slice}] max slice of query to match at a time
+
+\item[\code{verbose}] whether to give verbose output
+
+\item[\code{...}] Additional arguments to be passed along to \code{\LinkA{gr.findoverlaps}{gr.findoverlaps}}.
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+Vector of length = \code{length(query)} with subject indices of *first* subject in query, or NA if none found.
+This behavior is different from \code{\LinkA{gr.findoverlaps}{gr.findoverlaps}}, which will
+return *all* indicies of subject in query (in the case of one query overlaps with multiple subject)
+... = additional args for findOverlaps (IRanges version)
+\end{Value}
+%
+\begin{Author}\relax
+Marcin Imielinski
+\end{Author}
+\inputencoding{utf8}
+\HeaderA{gr.merge}{merge GRanges using coordinates as primary key}{gr.merge}
+%
+\begin{Description}\relax
+Uses gr.findoverlaps to enable internal and external joins of GRanges using
+syntax similar to "merge" where merging is done using coordinates +/- "by" fields
+
+Uses gr.findoverlaps / findOverlaps for heavy lifting, but returns outputs with
+metadata populated as well as query and subject ids.  For external joins,
+overlaps x with gaps(y) and gaps(x) with y.
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+gr.merge(query, subject, by = NULL, all = FALSE, all.query = all,
+  all.subject = all, verbose = FALSE, ignore.strand = TRUE, ...)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{query}] query ranges
+
+\item[\code{subject}] subject
+
+\item[\code{by}] additional metadata fields to join on
+
+\item[\code{all}] whether to include left and right joins
+
+\item[\code{all.query}] whether to do a left join
+
+\item[\code{all.subject}] whether to do a right join
+\end{ldescription}
+\end{Arguments}
+\inputencoding{utf8}
+\HeaderA{gr.mid}{Get the midpoints of \code{GRanges} ranges}{gr.mid}
+%
+\begin{Description}\relax
+Get the midpoints of \code{GRanges} ranges
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+gr.mid(x)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{x}] \code{GRanges} object to operate on
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+\code{GRanges} of the midpoint, calculated from \code{floor(width(x)/2)}
+\end{Value}
+%
+\begin{Examples}
+\begin{ExampleCode}
+gr.mid(GRanges(1, IRanges(1000,2000), seqinfo=Seqinfo("1", 2000)))
+\end{ExampleCode}
+\end{Examples}
+\inputencoding{utf8}
+\HeaderA{gr.nochr}{Remove chr prefix from GRanges seqlevels}{gr.nochr}
+%
+\begin{Description}\relax
+Remove chr prefix from GRanges seqlevels
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+gr.nochr(gr)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{gr}] \code{GRanges} with chr seqlevel prefixes
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+GRanges without chr seqlevel prefixes
+\end{Value}
+\inputencoding{utf8}
+\HeaderA{gr.pairflip}{Create pairs of ranges and their strand-inverse}{gr.pairflip}
+%
+\begin{Description}\relax
+From a \code{GRanges} returns a \code{GRangesList} with each item consisting
+of the original \code{GRanges} and its strand flip
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+gr.pairflip(gr)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{gr}] \code{GRanges}
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+\code{GRangesList} with each element of length 2
+\end{Value}
+\inputencoding{utf8}
+\HeaderA{gr.rand}{Generate random \code{GRanges} on genome}{gr.rand}
+%
+\begin{Description}\relax
+Randomly generates non-overlapping \code{GRanges} with supplied widths on supplied genome.
+Seed can be supplied with \code{set.seed}
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+gr.rand(w, genome)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{w}] Vector of widths (length of \code{w} determines length of output)
+
+\item[\code{genome}] Genome which can be a \code{GRanges}, \code{GRangesList}, or \code{Seqinfo} object. Default is "hg19" from the \code{BSGenome} package.
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+\code{GRanges} with random intervals on the specifed "chromosomes"
+\end{Value}
+%
+\begin{Note}\relax
+This function is currently quite slow, needs optimization
+\end{Note}
+%
+\begin{Author}\relax
+Marcin Imielinski
+\end{Author}
+%
+\begin{Examples}
+\begin{ExampleCode}
+## Generate 5 non-overlapping regions of width 10 on hg19
+gr.rand(rep(10,5), BSgenome.Hsapiens.UCSC.hg19::Hsapiens)
+\end{ExampleCode}
+\end{Examples}
+\inputencoding{utf8}
+\HeaderA{gr.sample}{Randomly sample \code{GRanges} intervals within territory}{gr.sample}
+%
+\begin{Description}\relax
+Samples \code{k} intervals of length "len" from a pile of \code{GRanges}.
+\begin{itemize}
+
+\item If k is a scalar then will (uniformly) select k intervals from the summed territory of \code{GRanges}
+\item If k is a vector of length(gr) then will uniformly select k intervals from each.
+
+\end{itemize}
+
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+gr.sample(gr, k, wid = 100, replace = TRUE)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{gr}] \code{GRanges} object defining the territory to sample from
+
+\item[\code{k}] Number of ranges to sample
+
+\item[\code{wid}] Length of the \code{GRanges} element to produce [100]
+
+\item[\code{replace}] If TRUE, will bootstrap, otherwise will sample without replacement. [TRUE]
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+GRanges of max length sum(k) [if k is vector) or k*length(gr) (if k is scalar) with labels indicating the originating range.
+\end{Value}
+%
+\begin{Note}\relax
+This is different from \code{GenomicRanges::sample} function, which just samples from a pile of \code{GRanges}
+\end{Note}
+%
+\begin{Author}\relax
+Marcin Imielinski
+\end{Author}
+%
+\begin{Examples}
+\begin{ExampleCode}
+## sample 5 \code{GRanges} of length 10 each from territory of RefSeq genes
+gr.sample(reduce(example_genes), k=5, len=10)
+\end{ExampleCode}
+\end{Examples}
+\inputencoding{utf8}
+\HeaderA{gr.simplify}{Simplify granges by collapsing all non-overlapping adjacent ranges that share a given "field" value (adjacent == adjacent in the input GRanges object)}{gr.simplify}
+%
+\begin{Description}\relax
+Simplify granges by collapsing all non-overlapping adjacent ranges that share a given "field" value
+(adjacent == adjacent in the input GRanges object)
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+gr.simplify(gr, field = NULL, val = NULL, include.val = TRUE,
+  split = FALSE, pad = 1)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{gr}] takes in gr or grl
+
+\item[\code{field}] character scalar, corresponding to value field of gr. \code{[NULL]}
+
+\item[\code{val}] \code{[NULL]}
+
+\item[\code{include.val}] scalar logical, will include in out gr values field of first matching record in input gr. \code{[TRUE]}
+
+\item[\code{split}] Split the output into \code{GRangesList} split by \code{"field"}. \code{[FALSE]}
+
+\item[\code{pad}] Pad ranges by this amount before doing merge. [1], which merges contiguous but non-overlapping ranges.
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+Simplified GRanges with "field" populated with uniquely contiguous values
+\end{Value}
+\inputencoding{utf8}
+\HeaderA{gr.start}{Get GRanges corresponding to beginning of range}{gr.start}
+%
+\begin{Description}\relax
+Get GRanges corresponding to beginning of range
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+gr.start(x, width = 1, force = FALSE, ignore.strand = TRUE, clip = TRUE)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{x}] \code{GRanges} object to operate on
+
+\item[\code{width}] [default = 1] Specify subranges of greater width including the start of the range.
+
+\item[\code{force}] [default = F] Allows returned \code{GRanges} to have ranges outside of its \code{Seqinfo} bounds.
+
+\item[\code{ignore.strand}] If set to \code{FALSE}, will extend '-' strands from the other direction [TRUE].
+
+\item[\code{clip}] [default = F] Trims returned \code{GRanges} so that it does not extend beyond bounds of the input \code{GRanges}
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+\code{GRanges} object of width 1 ranges representing start of each genomic range in the input.
+\end{Value}
+%
+\begin{Examples}
+\begin{ExampleCode}
+gr.start(example_dnase, width=200)
+gr.start(example_dnase, width=200, clip=TRUE)
+\end{ExampleCode}
+\end{Examples}
+\inputencoding{utf8}
+\HeaderA{gr.string}{Return UCSC style interval string corresponding to \code{GRanges} pile (ie chr:start-end)}{gr.string}
+%
+\begin{Description}\relax
+Return UCSC style interval string corresponding to \code{GRanges} pile (ie chr:start-end)
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+gr.string(gr, add.chr = FALSE, mb = FALSE, round = 3, other.cols = c(),
+  pretty = FALSE)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{gr}] \code{GRanges} pile to get intervals from
+
+\item[\code{add.chr}] Prepend seqnames with "chr" \code{[FALSE]}
+
+\item[\code{mb}] Round to the nearest megabase \code{[FALSE]}
+
+\item[\code{round}] If \code{mb} supplied, how many digits to round to. \code{[3]}
+
+\item[\code{other.cols}] Names of additional \code{mcols} fields to add to the string (seperated by ";")
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Author}\relax
+Marcin Imielinski
+\end{Author}
+%
+\begin{Examples}
+\begin{ExampleCode}
+gr.string(example_genes, other.cols = c("name", "name2"))
+\end{ExampleCode}
+\end{Examples}
+\inputencoding{utf8}
+\HeaderA{gr.stripstrand}{gr.stripstrand}{gr.stripstrand}
+%
+\begin{Description}\relax
+Sets strand to "*"
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+gr.stripstrand(gr)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{gr}] \code{GRanges} to remove strand information from
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+\code{GRanges} with strand set to \code{*}
+\end{Value}
+\inputencoding{utf8}
+\HeaderA{gr.sub}{Apply \code{gsub} to seqlevels of a \code{GRanges}}{gr.sub}
+%
+\begin{Description}\relax
+Apply gsub to seqlevels of gr, by default removing 'chr', and "0.1" suffixes, and replacing "MT" with "M"
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+gr.sub(gr, a = c("(^chr)(\\.1$)", "MT"), b = c("", "M"))
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{gr}] \code{GRanges} to switch out seqlevels for
+
+\item[\code{a}] Vector of regular expressions of things to sub-out
+
+\item[\code{b}] Vector of values to sub in
+\end{ldescription}
+\end{Arguments}
+\inputencoding{utf8}
+\HeaderA{gr.tile}{Tile ranges across \code{GRanges}}{gr.tile}
+%
+\begin{Description}\relax
+Tiles interval (or whole genome) with segments of \code{<=} specified width.
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+gr.tile(gr, w = 1000)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{gr}] \code{GRanges}, \code{seqlengths} or \code{Seqinfo} range to tile. If has \code{GRanges} has overlaps, will reduce first.
+
+\item[\code{w}] Width of each tile
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Examples}
+\begin{ExampleCode}
+## 10 tiles of width 10
+gr1 <- gr.tile(GRanges(1, IRanges(1,100)), w=10)
+## make them overlap each other by 5
+gr1 + 5
+\end{ExampleCode}
+\end{Examples}
+\inputencoding{utf8}
+\HeaderA{gr.tile.map}{gr.tile.map}{gr.tile.map}
+%
+\begin{Description}\relax
+Given two tilings of the genome (e.g. at different resolution)
+query and subject outputs a length(query) list whose items are integer vectors of indices in subject
+overlapping that overlap that query (strand non-specific)
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+gr.tile.map(query, subject, verbose = FALSE)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{query}] Query \code{GRanges} pile, perhaps created from some tile (e.g. \code{gr.tile}), and assumed to have no gaps
+
+\item[\code{subject}] Subject \code{GRanges} pile, perhaps created from some tile (e.g. \code{gr.tile}), and assumed to have no gaps
+
+\item[\code{verbose}] Increase the verbosity of the output
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+\code{list} of length = \code{length(query)}, where each element \code{i} is a vector of indicies in \code{subject} that overlaps element \code{i} of \code{query}
+\end{Value}
+%
+\begin{Note}\relax
+Assumes that input query and subject have no gaps (including at end) or overlaps, i.e. ignores end()
+coordinates and only uses "starts"
+\end{Note}
+%
+\begin{Author}\relax
+Marcin Imielinski
+\end{Author}
+\inputencoding{utf8}
+\HeaderA{gr.trim}{Trims pile of \code{GRanges} relative to the specified <local> coordinates of each range}{gr.trim}
+%
+\begin{Description}\relax
+Example: \code{GRanges} with genomic coordinates 1:1,000,000-1,001,000 can get the first 20 and last 50 bases trimmed off with
+\code{start = 20, end = 950}.
+if end is larger than the width of the corresponding gr, then the corresponding output will only have \code{end(gr)} as its coordinate.
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+gr.trim(gr, starts = 1, ends = 1)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{gr}] \code{GRanges} to trim
+
+\item[\code{starts}] Number of bases to trim off of the front\code{[1]}
+
+\item[\code{ends}] Number of bases to trim off of the back\code{[1]}
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Details}\relax
+This is a role not currently provided by the standard \code{GenomicRanges} functions
+(e.g. \code{shift}, \code{reduce}, \code{restrict}, \code{shift}, \code{resize}, \code{flank})
+\end{Details}
+%
+\begin{Examples}
+\begin{ExampleCode}
+## trim the first 20 and last 50 bases
+gr.trim(GRanges(1, IRanges(1e6, width=1000)), starts=20, ends=950)
+## return value: GRanges on 1:1,000,019-1,000,949
+\end{ExampleCode}
+\end{Examples}
+\inputencoding{utf8}
+\HeaderA{gr.val}{Annotate \code{GRanges} with values from another \code{GRanges}}{gr.val}
+%
+\begin{Description}\relax
+Annotates \code{GRanges} in \code{query} with aggregated values of \code{GRanges} in \code{target} in field \code{val}.
+If \code{val} is numeric: given \code{target} with value column \code{target} representing ranged data
+(i.e. segment intensities), thn computes the value
+in each \code{query} \code{GRanges} as the weighted mean of its intersection with target
+(ie the target values weighted by the width of the intersections).
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+gr.val(query, target, val = NULL, mean = TRUE, weighted = mean,
+  na.rm = FALSE, by = NULL, by.prefix = val, merge = FALSE,
+  verbose = FALSE, FUN = NULL, default.val = NA, max.slice = Inf,
+  mc.cores = 1, ..., sep = ", ")
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{query}] \code{GRanges} of query ranges whose \code{val} column we will populate with aggregated values of \code{target}
+
+\item[\code{target}] \code{GRanges} of target ranges that already have "val" column populated
+
+\item[\code{val}] If a character field: then aggregation will paste together the (unique), overlapping values, collapsing by comma. \code{[NULL]}
+
+\item[\code{mean}] Scalar logical flag. If \code{FALSE} then will return sum instead of mean, only applies if target \code{val} column is numeric.
+
+\item[\code{weighted}] Calculate a weighted mean. If \code{FALSE}, calculates unweighted mean. \code{[TRUE]}
+
+\item[\code{na.rm}] Remove NA values when calulating means. only applies if val column of target is numeric \code{[FALSE]}
+
+\item[\code{by}] scalar character, specifies additional "by" column of query AND target that will be used to match up query and target pairs (i.e. in addition to pure GRanges overlap), default is NULL
+
+\item[\code{by.prefix}] Choose a set of \code{val} fields by a shared prefix.
+
+\item[\code{merge}] if merge = FALSE then will cross every range in query with every level of "by" in target (and create data matrix), otherwise will assume query has "by" and merge only ranges that have matching "by" values in both query and target
+
+\item[\code{verbose}] Increase the verbosity of the output
+
+\item[\code{FUN}] Optional different function to call than mean. Takes two arguments (value, na.rm = TRUE) if weighted = FALSE, and three (value, width, na.rm = TRUE) if weighted = TRUE
+
+\item[\code{default.val}] If no hit in \code{target} found in \code{query}, fill output \code{val} field with this value.
+
+\item[\code{max.slice}] Maximum number of query ranges to consider in one memory chunk. \code{[Inf]}
+
+\item[\code{mc.cores}] Number of cores to use when running in chunked mode
+
+\item[\code{...}] Additional arguments to be sent to \code{\LinkA{gr.findoverlaps}{gr.findoverlaps}}.
+
+\item[\code{sep}] scalar character, specifies character to use as separator when aggregating character "vals" from target, only applies if target is character
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Details}\relax
+Applications include (among others):
+\begin{itemize}
+
+\item Querying the average value of target across a given query interval (e.g. exon to gene pileup)
+\item recasting a high res tiling in terms of low res intervals.
+
+\end{itemize}
+
+Usually query intervals are bigger than the target intervals.
+\end{Details}
+%
+\begin{Value}
+\code{query} with the \code{val} field populated
+\end{Value}
+%
+\begin{Note}\relax
+\code{query} and \code{target} can be \code{GRangesList} object, in which case val will refer to \code{GRangesList} level values fields
+\end{Note}
+%
+\begin{Author}\relax
+Marcin Imielinski
+\end{Author}
+\inputencoding{utf8}
+\HeaderA{gr2dt}{Converts \code{GRanges} to \code{data.table}}{gr2dt}
+%
+\begin{Description}\relax
+and a field grl.iix which saves the (local) index that that gr was in its corresponding grl item
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+gr2dt(x)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{x}] \code{GRanges} to convert
+\end{ldescription}
+\end{Arguments}
+\inputencoding{utf8}
+\HeaderA{grbind}{Concatenate \code{GRanges}, robust to different \code{mcols}}{grbind}
+%
+\begin{Description}\relax
+Concatenates \code{GRanges} objects, taking the union of their features if they have non-overlapping features
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+grbind(x, ...)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{x}] First \code{GRanges}
+
+\item[\code{...}] additional \code{GRanges}
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+Concatenated \code{GRanges}
+grbind(example\_genes, example\_dnase)
+\end{Value}
+%
+\begin{Note}\relax
+Does not fill in the \code{Seqinfo} for the output \code{GRanges}
+\end{Note}
+\inputencoding{utf8}
+\HeaderA{grl.eval}{evaluate and aggregate expression on GRanges column in GRangesList}{grl.eval}
+%
+\begin{Description}\relax
+Evaluate expression expr on indivdual granges inside grangeslist.
+Expression should result in a single i.e. scalar value per grangeslist item.
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+grl.eval(grl, expr, condition = NULL)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{grl}] GRangesList to eval over
+
+\item[\code{expr}] expression on columns of granges or granges list
+
+\item[\code{condition}] optional expression (with logical or integer output) on columns of GRanges on which to subset prior to evaluating main expr
+\end{ldescription}
+\end{Arguments}
+\inputencoding{utf8}
+\HeaderA{grl.hiC}{HiC data for chr14 from Lieberman-Aiden 2009 (in hg19), subsampled to 10,000 interactions}{grl.hiC}
+\keyword{data}{grl.hiC}
+%
+\begin{Description}\relax
+HiC data for chr14 from Lieberman-Aiden 2009 (in hg19), subsampled
+to 10,000 interactions
+\end{Description}
+%
+\begin{Format}
+\code{GRangesList}
+\end{Format}
+\inputencoding{utf8}
+\HeaderA{grl.in}{Check intersection of \code{GRangesList} with windows on genome}{grl.in}
+%
+\begin{Description}\relax
+Like 
+only if the ranges in grl[i] intersect <<all>>, <<some>>, <<only>>  windows in the subject
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+grl.in(grl, windows, some = FALSE, only = FALSE, logical = TRUE,
+  exact = FALSE, ignore.strand = TRUE, ...)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{grl}] \code{GRangesList} object to query for membership in \code{windows}
+
+\item[\code{windows}] \code{GRanges} pile of windows
+
+\item[\code{some}] Will return \code{TRUE} for \code{GRangesList} elements that intersect at least on window range [FALSE]
+
+\item[\code{only}] Will return \code{TRUE} for \code{GRangesList} elements only if there are no elements of query that fail to interesect with windows [FALSE]
+
+\item[\code{logical}] will return logical otherwise will return numeric vector of number of windows overlapping each grl
+
+\item[\code{...}] Additional parameters to be passed on to \code{GenomicRanges::findOverlaps}
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Details}\relax
+eg can use to identify read pairs whose ends are contained inside two genes)
+\end{Details}
+\inputencoding{utf8}
+\HeaderA{grl.pivot}{Pivot a \code{GRangesList}, inverting "x" and "y"}{grl.pivot}
+%
+\begin{Description}\relax
+"Pivots" grl object "x" by returning a new grl "y" whose
+kth item is gr object of ranges x[[i]][k] for all i in 1:length(x)
+e.g. If \code{length(grl)} is 50 and length of each \code{GRanges} element inside is 2, then \code{grl.pivot}
+will produce a length 3 \code{GRangesList} with 50 elements per \code{GRanges}
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+grl.pivot(x)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{x}] \code{GRangesList} object to pivot
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Details}\relax
+Assumes all grs in "x" are of equal length
+\end{Details}
+%
+\begin{Examples}
+\begin{ExampleCode}
+grl.pivot(grl.hiC)
+\end{ExampleCode}
+\end{Examples}
+\inputencoding{utf8}
+\HeaderA{grl.reduce}{grl.reduce}{grl.reduce}
+%
+\begin{Description}\relax
+Quickly ranges inside grl +/- pad
+Can use with split / unlist
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+grl.reduce(grl, pad = 0, clip = FALSE)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{grl}] \code{GRangesList}
+
+\item[\code{pad}] padding to add to ranges inside grl before reduing
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Author}\relax
+Marcin Imielinski
+\end{Author}
+%
+\begin{Examples}
+\begin{ExampleCode}
+
+grl.reduce(grl, 1000)
+
+unlist(grl.reduce(split(reads+10000, reads$BX)))
+
+\end{ExampleCode}
+\end{Examples}
+\inputencoding{utf8}
+\HeaderA{grl.string}{Create string representation of \code{GRangesList}}{grl.string}
+%
+\begin{Description}\relax
+Return ucsc style interval string corresponding to each \code{GRanges} in the \code{GRangesList}.
+One line per per \code{GRangesList} item. \code{GRanges} elements themselves are separated by \code{sep}
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+grl.string(grl, mb = FALSE, sep = ",", ...)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{grl}] \code{GRangesList} to convert to string vector
+
+\item[\code{mb}] Will return as MB and round to "round" [FALSE]
+
+\item[\code{sep}] Character to separate single \code{GRanges} ranges [,]
+
+\item[\code{...}] Additional arguments to be passed to \code{gr.string}
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+Character vector where each element is a \code{GRanges} pile corresponding to a single \code{GRangesList} element
+\end{Value}
+%
+\begin{Author}\relax
+Marcin Imielinski
+\end{Author}
+%
+\begin{Examples}
+\begin{ExampleCode}
+grl.string(grl.hiC, mb=TRUE)
+\end{ExampleCode}
+\end{Examples}
+\inputencoding{utf8}
+\HeaderA{grl.stripnames}{Remove \code{GRanges} names inside a \code{GRangesList}}{grl.stripnames}
+%
+\begin{Description}\relax
+Remove \code{GRanges} names inside a \code{GRangesList}
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+grl.stripnames(grl)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{grl}] \code{GRangesList} with names elements
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+\code{GRangesList} where \code{GRanges} have no names
+\end{Value}
+\inputencoding{utf8}
+\HeaderA{grl.unlist}{Robust unlisting of \code{GRangesList} that keeps track of origin}{grl.unlist}
+%
+\begin{Description}\relax
+Does a "nice" unlist of a \code{GRangesList} object adding a field \code{grl.ix} denoting which element of the \code{GRangesList}
+each \code{GRanges} corresponds to and a field \code{grl.iix} which saves the (local) index that that gr was in its corresponding \code{GRangesList} item
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+grl.unlist(grl)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{grl}] \code{GRangeList} object to unlist
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Details}\relax
+In this way, \code{grl.unlist} is reversible, while \code{BiocGenerics::unlist} is not.
+\end{Details}
+%
+\begin{Value}
+\code{GRanges} with added metadata fields \code{grl.ix} and \code{grl.iix}.
+\end{Value}
+%
+\begin{Examples}
+\begin{ExampleCode}
+grl.unlist(grl.hiC)
+\end{ExampleCode}
+\end{Examples}
+\inputencoding{utf8}
+\HeaderA{grl1}{Fake rearrangement data (set 1)}{grl1}
+\keyword{data}{grl1}
+%
+\begin{Description}\relax
+Fake rearrangement data (set 1)
+\end{Description}
+%
+\begin{Format}
+\code{GRangesList}
+\end{Format}
+\inputencoding{utf8}
+\HeaderA{grl2}{Fake rearrangement data (set 2)}{grl2}
+\keyword{data}{grl2}
+%
+\begin{Description}\relax
+Fake rearrangement data (set 2)
+\end{Description}
+%
+\begin{Format}
+\code{GRangesList}
+\end{Format}
+\inputencoding{utf8}
+\HeaderA{grlbind}{Concatenate \code{GRangesList} objects.}{grlbind}
+%
+\begin{Description}\relax
+Concatenates \code{GRangesList} objects taking the union of their \code{mcols} features if they have non-overlapping features
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+grlbind(...)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{...}] Any number of \code{GRangesList} to concatenate together
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+Concatenated \code{GRangesList} with NA filled in for \code{mcols} fields that are non-overlapping. Note that the
+elements are re-named with sequential numbers
+\end{Value}
+%
+\begin{Author}\relax
+Marcin Imielinski
+\end{Author}
+%
+\begin{Examples}
+\begin{ExampleCode}
+## Concatenate
+grl.hiC2 <- grl.hiC[1:20]
+mcols(grl.hiC2)$test = 1
+grlbind(grl.hiC2, grl.hiC[1:30])
+\end{ExampleCode}
+\end{Examples}
+\inputencoding{utf8}
+\HeaderA{hg\_seqlengths}{Output standard human genome seqlengths}{hg.Rul.seqlengths}
+%
+\begin{Description}\relax
+Outputs a standard seqlengths for human genome +/- "chr".
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+hg_seqlengths(genome = NULL, chr = FALSE, include.junk = FALSE)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{genome}] A \code{BSgenome} or object with a \code{seqlengths} accessor. Default is hg19, but loads with warning unless explicitly provided
+
+\item[\code{chr}] Flag for whether to keep "chr". Default FALSE
+
+\item[\code{include.junk}] Flag for whether to not trim to only 1-22, X, Y, M. Default FALSE
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+Named integer vector with elements corresponding to the genome seqlengths
+\end{Value}
+%
+\begin{Note}\relax
+A default genome can be set with the environment variable DEFAULT\_BSGENOME. This
+can be the full namespace of the genome  e.g.: \code{DEFAULT\_BSGENOME=BSgenome.Hsapiens.UCSC.hg19::Hsapiens} OR  a URL / file path pointing to a chrom.sizes text file (e.g. http://genome.ucsc.edu/goldenpath/help/hg19.chrom.sizes) specifying a genome definition
+\end{Note}
+%
+\begin{Author}\relax
+Marcin Imielinski
+\end{Author}
+\inputencoding{utf8}
+\HeaderA{parse.gr}{parse.gr}{parse.gr}
+%
+\begin{Description}\relax
+quick function to parse gr from character vector IGV / UCSC style strings of format gr1;gr2;gr3 wohere each gr is of format chr:start-end[+/-]
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+parse.gr(...)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{...}] arguments to parse.grl i.e. character strings in UCSC style chr:start-end[+-]
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Author}\relax
+Marcin Imielinski
+\end{Author}
+\inputencoding{utf8}
+\HeaderA{parse.grl}{parse.grl}{parse.grl}
+%
+\begin{Description}\relax
+quick function to parse \code{GRangesList} from character vector IGV / UCSC style strings of format gr1;gr2;gr3 where each gr is of format chr:start-end[+/-]
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+parse.grl(x, seqlengths = hg_seqlengths())
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{x}] character vector representing a GRangesList with UCSC style coordinates (chr:start-end[+-]) representing a [signed] Granges and  ";" separators within each item of x separating individaul each GRAnges
+
+\item[\code{seqlengths}] named integer vector representing genome (hg\_seqlengths() by default)
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Author}\relax
+Marcin Imielinski
+\end{Author}
+\inputencoding{utf8}
+\HeaderA{ra.dedup}{Deduplicates rearrangements represented by \code{GRangesList} objects}{ra.dedup}
+%
+\begin{Description}\relax
+Determines overlaps between two or more piles of rearrangement junctions (as named or numbered arguments) +/- padding
+and will merge those that overlap into single junctions in the output, and then keep track for each output junction which
+of the input junctions it was "seen in" using logical flag  meta data fields prefixed by "seen.by." and then the argument name
+(or "seen.by.ra" and the argument number)
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+ra.dedup(grl, pad = 500, ignore.strand = FALSE)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{grl}] GRangesList representing rearrangements to be merged
+
+\item[\code{pad}] non-negative integer specifying padding
+
+\item[\code{ignore.strand}] whether to ignore strand (implies all strand information will be ignored, use at your own risk)
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+\code{GRangesList} of merged junctions with meta data fields specifying which of the inputs each outputted junction was "seen.by"
+\end{Value}
+%
+\begin{Author}\relax
+Xiaotong Yao
+\end{Author}
+\inputencoding{utf8}
+\HeaderA{ra.duplicated}{Show if junctions are Deduplicated}{ra.duplicated}
+%
+\begin{Description}\relax
+Determines overlaps between two or more piles of rearrangement junctions (as named or numbered arguments) +/- padding
+and will merge those that overlap into single junctions in the output, and then keep track for each output junction which
+of the input junctions it was "seen in" using logical flag  meta data fields prefixed by "seen.by." and then the argument name
+(or "seen.by.ra" and the argument number)
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+ra.duplicated(grl, pad = 500, ignore.strand = FALSE)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{grl}] GRangesList representing rearrangements to be merged
+
+\item[\code{pad}] non-negative integer specifying padding
+
+\item[\code{ignore.strand}] whether to ignore strand (implies all strand information will be ignored, use at your own risk)
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+\code{GRangesList} of merged junctions with meta data fields specifying which of the inputs each outputted junction was "seen.by"
+\end{Value}
+%
+\begin{Author}\relax
+Xiaotong Yao
+\end{Author}
+\inputencoding{utf8}
+\HeaderA{ra.merge}{Merges rearrangements represented by \code{GRangesList} objects}{ra.merge}
+%
+\begin{Description}\relax
+Determines overlaps between two or more piles of rearrangement junctions (as named or numbered arguments) +/- padding
+and will merge those that overlap into single junctions in the output, and then keep track for each output junction which
+of the input junctions it was "seen in" using logical flag  meta data fields prefixed by "seen.by." and then the argument name
+(or "seen.by.ra" and the argument number)
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+ra.merge(..., pad = 0, ind = FALSE, ignore.strand = FALSE)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{...}] GRangesList representing rearrangements to be merged
+
+\item[\code{pad}] non-negative integer specifying padding
+
+\item[\code{ind}] logical flag (default FALSE) specifying whether the "seen.by" fields should contain indices of inputs (rather than logical flags) and NA if the given junction is missing
+
+\item[\code{ignore.strand}] whether to ignore strand (implies all strand information will be ignored, use at your own risk)
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+\code{GRangesList} of merged junctions with meta data fields specifying which of the inputs each outputted junction was "seen.by"
+\end{Value}
+%
+\begin{Examples}
+\begin{ExampleCode}
+
+# generate some junctions
+gr1 <- GRanges(1, IRanges(1:10, width = 1), strand = rep(c('+', '-'), 5))
+gr2 <- GRanges(1, IRanges(4 + 1:10, width = 1), strand = rep(c('+', '-'), 5))
+ra1 = split(gr1, rep(1:5, each = 2))
+ra2 = split(gr2, rep(1:5, each = 2))
+
+ram = ra.merge(ra1, ra2)
+values(ram) # shows the metadata with TRUE / FALSE flags
+
+ram2 = ra.merge(ra1, ra2, pad = 5) # more inexact matching results in more merging
+values(ram2)
+
+ram3 = ra.merge(ra1, ra2, ind = TRUE) #indices instead of flags
+values(ram3)
+\end{ExampleCode}
+\end{Examples}
+\inputencoding{utf8}
+\HeaderA{ra.overlaps}{ra.overlaps}{ra.overlaps}
+%
+\begin{Description}\relax
+Determines overlaps between two piles of rearrangement junctions ra1 and ra2 (each GRangesLists of signed locus pairs)
+against each other, returning a sparseMatrix that is T at entry ij if junction i overlaps junction j.
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+ra.overlaps(ra1, ra2, pad = 0, arr.ind = TRUE, ignore.strand = FALSE, ...)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{ra1}] \code{GRangesList} with rearrangement set 1
+
+\item[\code{ra2}] \code{GRangesList} with rearrangement set 2
+
+\item[\code{pad}] Amount to pad the overlaps by. Larger is more permissive. Default is exact (0)
+
+\item[\code{arr.ind}] Default TRUE
+
+\item[\code{ignore.strand}] Ignore rearrangement orientation when doing overlaps. Default FALSE
+
+\item[\code{...}] params to be sent to \code{\LinkA{gr.findoverlaps}{gr.findoverlaps}}
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Details}\relax
+if argument pad = 0 (default) then only perfect overlap will validate, otherwise if pad>0 is given, then
+padded overlap is allowed
+o
+strand matters, though we test overlap of both ra1[i] vs ra2[j] and gr.flip(ra2[j])
+\end{Details}
+\inputencoding{utf8}
+\HeaderA{rle.query}{Queries an \code{\LinkA{RleList}{RleList}} representing genomic data}{rle.query}
+%
+\begin{Description}\relax
+(ie a list whose names represent seqnames ie chromosomes, and lengths represent seqlengths)
+via \code{GRanges} object
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+rle.query(subject.rle, query.gr, verbose = FALSE, mc.cores = 1,
+  chunksize = 1e+09)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{subject.rle}] \code{Rle}
+
+\item[\code{query.gr}] TODO
+
+\item[\code{verbose}] Set the verbosity of the output
+
+\item[\code{mc.cores}] Number of cores to apply when doing chunked operation
+
+\item[\code{chunksize}] Number of \code{query.gr} ranges to consider in one memory chunk. 1e9
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+Rle representing the (concatenated) vector of data (reversing order in case of negative strand input)
+\end{Value}
+%
+\begin{Note}\relax
+Throws warning if seqlengths(gr) do not correspond to the lengths of the \code{RleList} components
+\end{Note}
+\inputencoding{utf8}
+\HeaderA{rrbind}{Improved \code{rbind} for intersecting/union columns of \code{data.frames} or \code{data.tables}}{rrbind}
+%
+\begin{Description}\relax
+Like \code{rbind}, but takes the intersecting columns of the data.
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+rrbind(..., union = TRUE, as.data.table = FALSE)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{...}] Any number of \code{data.frame} or \code{data.table} objects
+
+\item[\code{union}] Take union of columns (and put NA's for columns of df1 not in df2 and vice versa). \code{[TRUE]}
+
+\item[\code{as.data.table}] Return the binded data as a \code{data.table}. \code{[FALSE]}
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+\code{data.frame} or \code{data.table} of the \code{rbind} operation
+\end{Value}
+%
+\begin{Author}\relax
+Marcin Imielinski
+\end{Author}
+\inputencoding{utf8}
+\HeaderA{seg2gr}{Convert GRange like data.frames into GRanges}{seg2gr}
+\aliasA{standardize\_segs}{seg2gr}{standardize.Rul.segs}
+%
+\begin{Description}\relax
+Take data frame of ranges "segs" and converts into granges object porting over additional value columns
+"segs" data frame can obey any number of conventions to specify chrom, start, and end of ranges
+(eg \$pos1, \$pos2, \$Start\_position, \$End\_position) --> see "standardize\_segs" for more info
+
+Take data frame of ranges "segs" and converts into granges object porting over additional value columns
+"segs" data frame can obey any number of conventions to specify chrom, start, and end of ranges
+(eg \$pos1, \$pos2, \$Start\_position, \$End\_position) --> see "standardize\_segs" for more info
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+seg2gr(segs, seqlengths = NULL, seqinfo = Seqinfo())
+
+standardize_segs(seg, chr = FALSE)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{segs}] data frame of segments with fields denoting chromosome, start, end, and other metadata (see standardized segs for seg data frame input formats)
+
+\item[\code{seqlengths}] seqlengths of output GRanges object
+
+\item[\code{seqinfo}] seqinfo of output GRanges object
+
+\item[\code{segs}] data frame of segments with fields denoting chromosome, start, end, and other metadata (see standardized segs for seg data frame input formats)
+
+\item[\code{seqlengths}] seqlengths of output GRanges object
+
+\item[\code{seqinfo}] seqinfo of output GRanges object
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Details}\relax
+standardize\_segs
+
+(data frame seg function)
+
+Takes and returns segs data frame standardized to a single format (ie \$chr, \$pos1, \$pos2)
+
+if chr = TRUE will ensure "chr" prefix is added to chromossome(if does not exist)
+\end{Details}
+\inputencoding{utf8}
+\HeaderA{si}{\code{Seqinfo} object for hg19}{si}
+\keyword{data}{si}
+%
+\begin{Description}\relax
+\code{Seqinfo} object for hg19
+\end{Description}
+%
+\begin{Format}
+\code{Seqinfo}
+\end{Format}
+\inputencoding{utf8}
+\HeaderA{si2gr}{Create \code{GRanges} from \code{Seqinfo} or \code{BSgenome}}{si2gr}
+%
+\begin{Description}\relax
+Creates a genomic ranges from seqinfo object
+ie a pile of ranges spanning the genome
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+si2gr(si, strip.empty = FALSE)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{si}] \code{Seqinfo} object or a \code{BSgenome} genome
+
+\item[\code{strip.empty}] Don't know. \code{[FALSE]}
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+\code{GRanges} representing the range of the input genome
+\end{Value}
+%
+\begin{Examples}
+\begin{ExampleCode}
+si2gr(BSgenome.Hsapiens.UCSC.hg19::Hsapiens)
+\end{ExampleCode}
+\end{Examples}
+\inputencoding{utf8}
+\HeaderA{streduce}{Reduce \code{GRanges} and \code{GRangesList} to miminal footprint}{streduce}
+%
+\begin{Description}\relax
+Shortcut for \code{reduce(sort(gr.stripstrand(unlist(x))))}
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+streduce(gr, pad = 0, sort = TRUE)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{gr}] \code{GRanges} or \code{GRangesList}
+
+\item[\code{pad}] Expand the input data before reducing. \code{[0]}
+
+\item[\code{sort}] Flag to sort the output. \code{[TRUE]}
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+\code{GRanges} object with no strand information, representing a minimal footprint
+\end{Value}
+%
+\begin{Examples}
+\begin{ExampleCode}
+streduce(grl.hiC, pad=10)
+streduce(example_genes, pad=1000)
+\end{ExampleCode}
+\end{Examples}
+\inputencoding{utf8}
+\HeaderA{\Rpercent{}\&\Rpercent{}}{subset x on y ranges wise ignoring strand}{.Rpcent..Ramp..Rpcent.}
+\aliasA{\%\&\%,GRanges-method}{\Rpercent{}\&\Rpercent{}}{.Rpcent..Ramp..Rpcent.,GRanges.Rdash.method}
+\aliasA{\%\textasciicircum{}\%}{\Rpercent{}\&\Rpercent{}}{.Rpcent..Rcaret..Rpcent.}
+\aliasA{\%\textasciicircum{}\%,GRanges-method}{\Rpercent{}\&\Rpercent{}}{.Rpcent..Rcaret..Rpcent.,GRanges.Rdash.method}
+\aliasA{\%\textasciicircum{}\textasciicircum{}\%}{\Rpercent{}\&\Rpercent{}}{.Rpcent..Rcaret..Rcaret..Rpcent.}
+\aliasA{\%\textasciicircum{}\textasciicircum{}\%,GRanges-method}{\Rpercent{}\&\Rpercent{}}{.Rpcent..Rcaret..Rcaret..Rpcent.,GRanges.Rdash.method}
+%
+\begin{Description}\relax
+shortcut for x[gr.in(x,y)]
+
+gr1 
+
+Shortcut for gr.in
+
+gr1 
+
+Shortcut for gr.in (standard arguments)
+
+gr1 
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+x %&% ...
+
+x %^^% ...
+
+x %^% ...
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{x}] See \LinkA{gr.in}{gr.in}
+
+\item[\code{...}] See \LinkA{gr.in}{gr.in}
+
+\item[\code{x}] \code{GRanges} object
+
+\item[\code{...}] additional arguments to gr.in
+
+\item[\code{x}] See \LinkA{gr.in}{gr.in}
+
+\item[\code{...}] See \LinkA{gr.in}{gr.in}
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+subset of gr1 that overlaps gr2f
+
+logical vector of length gr1 which is TRUE at entry i only if gr1[i] intersects at least one interval in gr2
+
+logical vector of length gr1 which is TRUE at entry i only if gr1[i] intersects at least one interval in gr2 (strand agnostic)
+\end{Value}
+%
+\begin{Author}\relax
+Marcin Imielinski
+
+Marcin Imielinski
+\end{Author}
+\inputencoding{utf8}
+\HeaderA{\Rpercent{}\&\&\Rpercent{}}{Subset x on y ranges wise respecting strand}{.Rpcent..Ramp..Ramp..Rpcent.}
+\aliasA{\%\&\&\%,GRanges-method}{\Rpercent{}\&\&\Rpercent{}}{.Rpcent..Ramp..Ramp..Rpcent.,GRanges.Rdash.method}
+%
+\begin{Description}\relax
+shortcut for x[gr.in(x,y)]
+
+gr1 
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+x %&&% ...
+\end{verbatim}
+\end{Usage}
+%
+\begin{Value}
+subset of gr1 that overlaps gr2
+\end{Value}
+%
+\begin{Author}\relax
+Marcin Imielinski
+\end{Author}
+\inputencoding{utf8}
+\HeaderA{\Rpercent{}+\Rpercent{}}{Nudge GRanges right}{.Rpcent.+.Rpcent.}
+\aliasA{\%+\%,GRanges-method}{\Rpercent{}+\Rpercent{}}{.Rpcent.+.Rpcent.,GRanges.Rdash.method}
+%
+\begin{Description}\relax
+Operator to shift GRanges right "sh" bases
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+gr %+% ...
+\end{verbatim}
+\end{Usage}
+%
+\begin{Value}
+shifted granges
+\end{Value}
+%
+\begin{Author}\relax
+Marcin Imielinski
+\end{Author}
+\inputencoding{utf8}
+\HeaderA{\Rpercent{}-\Rpercent{}}{Shift GRanges left}{.Rpcent..Rdash..Rpcent.}
+%
+\begin{Description}\relax
+Operator to shift GRanges left "sh" bases
+
+df 
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+gr %-% ...
+\end{verbatim}
+\end{Usage}
+%
+\begin{Value}
+shifted granges
+\end{Value}
+%
+\begin{Author}\relax
+Marcin Imielinski
+\end{Author}
+\inputencoding{utf8}
+\HeaderA{\Rpercent{}Q\Rpercent{}}{query ranges by applying an expression to ranges metadata}{.Rpcent.Q.Rpcent.}
+\aliasA{\%Q\%,GRanges-method}{\Rpercent{}Q\Rpercent{}}{.Rpcent.Q.Rpcent.,GRanges.Rdash.method}
+%
+\begin{Description}\relax
+gr 
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+## S4 method for signature 'GRanges'
+x %Q% y
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{x}] \code{GRanges} to match against a query \code{GRanges}
+
+\item[\code{y}] \code{GRanges} with metadata to be queried
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+subset of gr that matches query
+\end{Value}
+%
+\begin{Author}\relax
+Marcin Imielinski
+\end{Author}
+\inputencoding{utf8}
+\HeaderA{\Rpercent{}\_\Rpercent{}}{\code{BiocGenerics::setdiff} shortcut (strand agnostic)}{.Rpcent..Rul..Rpcent.}
+\aliasA{\%\_\%,GRanges-method}{\Rpercent{}\_\Rpercent{}}{.Rpcent..Rul..Rpcent.,GRanges.Rdash.method}
+\aliasA{gr.setdiff}{\Rpercent{}\_\Rpercent{}}{gr.setdiff}
+%
+\begin{Description}\relax
+Shortcut for \code{BiocGenerics::setdiff}
+
+gr1 <- GRanges(1, IRanges(10,20), strand="+")
+gr2 <- GRanges(1, IRanges(15,25), strand="-")
+gr3 <- "1:1-15"
+gr1 
+gr1 
+
+More robust and faster implementation of GenomicRangs::setdiff
+
+Robust to common edge cases of setdiff(gr1, gr2)  where gr2 ranges are contained inside gr1's (yieldings
+setdiffs yield two output ranges for some of the input gr1 intervals.
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+x %_% ...
+
+gr.setdiff(query, subject, ignore.strand = TRUE, by = NULL, ...)
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{x}] \code{GRanges} object to to
+
+\item[\code{...}] A \code{GRanges} or a character to be parsed into a \code{GRanges}
+
+\item[\code{query}] \code{GRanges} object as query
+
+\item[\code{subject}] \code{GRanges} object as subject
+
+\item[\code{max.slice}] Default Inf. If query is bigger than this, chunk into smaller on different cores
+
+\item[\code{verbose}] Default FALSE
+
+\item[\code{mc.cores}] Default 1. Only works if exceeded max.slice
+
+\item[\code{...}] arguments to be passed to \LinkA{gr.findoverlaps}{gr.findoverlaps}
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+\code{GRanges} representing setdiff of input interval
+
+returns indices of query in subject or NA if none found
+\end{Value}
+%
+\begin{Author}\relax
+Marcin Imielinski
+\end{Author}
+\inputencoding{utf8}
+\HeaderA{\Rpercent{}O\Rpercent{}}{gr.val shortcut to get fractional overlap of gr1 by gr2, ignoring strand}{.Rpcent.O.Rpcent.}
+\aliasA{\%O\%,GRanges-method}{\Rpercent{}O\Rpercent{}}{.Rpcent.O.Rpcent.,GRanges.Rdash.method}
+%
+\begin{Description}\relax
+Shortcut for gr.val (using val = names(values(y)))
+
+gr1 
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+x %O% ...
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{x}] See \LinkA{gr.val}{gr.val}
+
+\item[\code{...}] See \LinkA{gr.val}{gr.val}
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+fractional overlap of gr1 with gr2
+\end{Value}
+%
+\begin{Author}\relax
+Marcin Imielinski
+\end{Author}
+\inputencoding{utf8}
+\HeaderA{\Rpercent{}OO\Rpercent{}}{gr.val shortcut to get fractional overlap of gr1 by gr2, respecting strand}{.Rpcent.OO.Rpcent.}
+\aliasA{\%OO\%,GRanges-method}{\Rpercent{}OO\Rpercent{}}{.Rpcent.OO.Rpcent.,GRanges.Rdash.method}
+%
+\begin{Description}\relax
+Shortcut for gr.val (using val = names(values(y)))
+
+gr1 
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+x %OO% ...
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{x}] See \LinkA{gr.val}{gr.val}
+
+\item[\code{...}] See \LinkA{gr.val}{gr.val}
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+fractional overlap  of gr1 with gr2
+\end{Value}
+%
+\begin{Author}\relax
+Marcin Imielinski
+\end{Author}
+\inputencoding{utf8}
+\HeaderA{\Rpercent{}\$\$\Rpercent{}}{gr.val shortcut to get mean values of subject "x" meta data fields in query "y" (respects strand)}{.Rpcent..Rdol..Rdol..Rpcent.}
+\aliasA{\%\$\$\%,GRanges-method}{\Rpercent{}\$\$\Rpercent{}}{.Rpcent..Rdol..Rdol..Rpcent.,GRanges.Rdash.method}
+%
+\begin{Description}\relax
+Shortcut for gr.val (using val = names(values(y)))
+
+gr1 
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+x %$$% ...
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{x}] See \LinkA{gr.val}{gr.val}
+
+\item[\code{...}] See \LinkA{gr.val}{gr.val}
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+gr1 with extra meta data fields populated from gr2
+\end{Value}
+%
+\begin{Author}\relax
+Marcin Imielinski
+\end{Author}
+\inputencoding{utf8}
+\HeaderA{\Rpercent{}NN\Rpercent{}}{gr.val shortcut to get total numbers of intervals in gr2 overlapping with each interval in  gr1, respecting strand}{.Rpcent.NN.Rpcent.}
+\aliasA{\%NN\%,GRanges-method}{\Rpercent{}NN\Rpercent{}}{.Rpcent.NN.Rpcent.,GRanges.Rdash.method}
+%
+\begin{Description}\relax
+gr1 
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+x %NN% ...
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{x}] See \LinkA{gr.val}{gr.val}
+
+\item[\code{...}] See \LinkA{gr.val}{gr.val}
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+bases overlap  of gr1 with gr2
+\end{Value}
+%
+\begin{Author}\relax
+Marcin Imielinski
+\end{Author}
+\inputencoding{utf8}
+\HeaderA{\Rpercent{}N\Rpercent{}}{gr.val shortcut to get total numbers of intervals in gr2 overlapping with each interval in  gr1, ignoring strand}{.Rpcent.N.Rpcent.}
+\aliasA{\%\$\%}{\Rpercent{}N\Rpercent{}}{.Rpcent..Rdol..Rpcent.}
+\aliasA{\%\$\%,GRanges-method}{\Rpercent{}N\Rpercent{}}{.Rpcent..Rdol..Rpcent.,GRanges.Rdash.method}
+\aliasA{\%N\%,GRanges-method}{\Rpercent{}N\Rpercent{}}{.Rpcent.N.Rpcent.,GRanges.Rdash.method}
+%
+\begin{Description}\relax
+gr1 
+
+Shortcut for gr.val (using val = names(values(y)))
+
+gr1 
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+x %N% ...
+
+x %$% ...
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{x}] See \LinkA{gr.val}{gr.val}
+
+\item[\code{...}] See \LinkA{gr.val}{gr.val}
+
+\item[\code{x}] \code{GRanges} object
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+bases overlap of gr1 with gr2
+
+gr1 with extra meta data fields populated from gr2
+\end{Value}
+%
+\begin{Author}\relax
+Marcin Imielinski
+
+Marcin Imielinski
+\end{Author}
+\inputencoding{utf8}
+\HeaderA{\Rpercent{}oo\Rpercent{}}{gr.val shortcut to total per interval width of overlap of gr1 with gr2, respecting strand}{.Rpcent.oo.Rpcent.}
+\aliasA{\%oo\%,GRanges-method}{\Rpercent{}oo\Rpercent{}}{.Rpcent.oo.Rpcent.,GRanges.Rdash.method}
+%
+\begin{Description}\relax
+gr1 
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+x %oo% ...
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{x}] See \LinkA{gr.val}{gr.val}
+
+\item[\code{...}] See \LinkA{gr.val}{gr.val}
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+bases overlap  of gr1 with gr2
+\end{Value}
+%
+\begin{Author}\relax
+Marcin Imielinski
+\end{Author}
+\inputencoding{utf8}
+\HeaderA{\Rpercent{}o\Rpercent{}}{gr.val shortcut to total per interval width of overlap of gr1 with gr2, ignoring strand}{.Rpcent.o.Rpcent.}
+\aliasA{\%o\%,GRanges-method}{\Rpercent{}o\Rpercent{}}{.Rpcent.o.Rpcent.,GRanges.Rdash.method}
+%
+\begin{Description}\relax
+Shortcut for gr.val (using val = names(values(y)))
+
+gr1 
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+x %o% ...
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{x}] See \LinkA{gr.val}{gr.val}
+
+\item[\code{...}] See \LinkA{gr.val}{gr.val}
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+bases overlap of gr1 with gr2
+\end{Value}
+%
+\begin{Author}\relax
+Marcin Imielinski
+\end{Author}
+\inputencoding{utf8}
+\HeaderA{\Rpercent{}**\Rpercent{}}{gr.findoverlaps (respects strand)}{.Rpcent.**.Rpcent.}
+\aliasA{\%**\%,GRanges-method}{\Rpercent{}**\Rpercent{}}{.Rpcent.**.Rpcent.,GRanges.Rdash.method}
+%
+\begin{Description}\relax
+Shortcut for gr.findoverlaps
+
+gr1 
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+x %**% ...
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{x}] See \LinkA{gr.findoverlaps}{gr.findoverlaps}
+
+\item[\code{...}] See \LinkA{gr.findoverlaps}{gr.findoverlaps}
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+new granges containing every pairwise intersection of ranges in gr1 and gr2 with a join of the corresponding metadata
+\end{Value}
+%
+\begin{Author}\relax
+Marcin Imielinski
+\end{Author}
+\inputencoding{utf8}
+\HeaderA{\Rpercent{}*\Rpercent{}}{Metadata join with coordinates as keys (wrapper to \code{\LinkA{gr.findoverlaps}{gr.findoverlaps}})}{.Rpcent.*.Rpcent.}
+\aliasA{\%*\%,GRanges-method}{\Rpercent{}*\Rpercent{}}{.Rpcent.*.Rpcent.,GRanges.Rdash.method}
+%
+\begin{Description}\relax
+Shortcut for gr.findoverlaps with \code{qcol} and \code{scol} filled in with all the query and subject metadata names.
+This function is useful for piping \code{GRanges} operations together. Another way to think of 
+join of the metadata, with genomic coordinates as the keys. \\{}
+Example usage: \\{}
+x 
+\end{Description}
+%
+\begin{Usage}
+\begin{verbatim}
+## S4 method for signature 'GRanges,ANY'
+x %*% y
+\end{verbatim}
+\end{Usage}
+%
+\begin{Arguments}
+\begin{ldescription}
+\item[\code{x}] \code{GRanges}
+
+\item[\code{y}] \code{GRanges}
+\end{ldescription}
+\end{Arguments}
+%
+\begin{Value}
+\code{GRanges} containing every pairwise intersection of ranges in \code{x} and \code{y} with a join of the corresponding  metadata
+\end{Value}
+%
+\begin{Author}\relax
+Marcin Imielinski
+\end{Author}
+%
+\begin{Examples}
+\begin{ExampleCode}
+example_genes %*% example_dnase
+\end{ExampleCode}
+\end{Examples}
+\printindex{}
+\end{document}

@@ -1,0 +1,222 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head><title>R: R Package Providing Additional Capabilities and Speed for
+GenomicRanges Operations</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="R.css" />
+</head><body>
+<h1> R Package Providing Additional Capabilities and Speed for
+GenomicRanges Operations
+<img class="toplogo" src="../../../doc/html/Rlogo.svg" alt="[R logo]" />
+</h1>
+<hr/>
+<div style="text-align: center;">
+<a href="../../../doc/html/packages.html"><img class="arrow" src="../../../doc/html/left.jpg" alt="[Up]" /></a>
+<a href="../../../doc/html/index.html"><img class="arrow" src="../../../doc/html/up.jpg" alt="[Top]" /></a>
+</div><h2>Documentation for package &lsquo;gUtils&rsquo; version 0.2.0</h2>
+
+<ul><li><a href="../DESCRIPTION">DESCRIPTION file</a>.</li>
+</ul>
+
+<h2>Help Pages</h2>
+
+
+<table width="100%">
+<tr><td style="width: 25%;"><a href="gr.val-mean.html">%$$%</a></td>
+<td>gr.val shortcut to get mean values of subject "x" meta data fields in query "y" (respects strand)</td></tr>
+<tr><td style="width: 25%;"><a href="gr.val-mean.html">%$$%-method</a></td>
+<td>gr.val shortcut to get mean values of subject "x" meta data fields in query "y" (respects strand)</td></tr>
+<tr><td style="width: 25%;"><a href="gr.val-shortcut.html">%$%</a></td>
+<td>gr.val shortcut to get total numbers of intervals in gr2 overlapping with each interval in gr1, ignoring strand</td></tr>
+<tr><td style="width: 25%;"><a href="gr.val-shortcut.html">%$%-method</a></td>
+<td>gr.val shortcut to get total numbers of intervals in gr2 overlapping with each interval in gr1, ignoring strand</td></tr>
+<tr><td style="width: 25%;"><a href="gr.in-shortcut.html">%&amp;%</a></td>
+<td>subset x on y ranges wise ignoring strand</td></tr>
+<tr><td style="width: 25%;"><a href="gr.in-shortcut.html">%&amp;%-method</a></td>
+<td>subset x on y ranges wise ignoring strand</td></tr>
+<tr><td style="width: 25%;"><a href="gr.in-strand-shortcut.html">%&amp;&amp;%</a></td>
+<td>Subset x on y ranges wise respecting strand</td></tr>
+<tr><td style="width: 25%;"><a href="gr.in-strand-shortcut.html">%&amp;&amp;%-method</a></td>
+<td>Subset x on y ranges wise respecting strand</td></tr>
+<tr><td style="width: 25%;"><a href="grfo.html">%*%</a></td>
+<td>Metadata join with coordinates as keys (wrapper to 'gr.findoverlaps')</td></tr>
+<tr><td style="width: 25%;"><a href="grfo.html">%*%-method</a></td>
+<td>Metadata join with coordinates as keys (wrapper to 'gr.findoverlaps')</td></tr>
+<tr><td style="width: 25%;"><a href="grfo-shortcut.html">%**%</a></td>
+<td>gr.findoverlaps (respects strand)</td></tr>
+<tr><td style="width: 25%;"><a href="grfo-shortcut.html">%**%-method</a></td>
+<td>gr.findoverlaps (respects strand)</td></tr>
+<tr><td style="width: 25%;"><a href="gr.nudge-shortcut.html">%+%</a></td>
+<td>Nudge GRanges right</td></tr>
+<tr><td style="width: 25%;"><a href="gr.nudge-shortcut.html">%+%-method</a></td>
+<td>Nudge GRanges right</td></tr>
+<tr><td style="width: 25%;"><a href="gr.nudge.html">%-%</a></td>
+<td>Shift GRanges left</td></tr>
+<tr><td style="width: 25%;"><a href="gr.val-shortcut.html">%N%</a></td>
+<td>gr.val shortcut to get total numbers of intervals in gr2 overlapping with each interval in gr1, ignoring strand</td></tr>
+<tr><td style="width: 25%;"><a href="gr.val-shortcut.html">%N%-method</a></td>
+<td>gr.val shortcut to get total numbers of intervals in gr2 overlapping with each interval in gr1, ignoring strand</td></tr>
+<tr><td style="width: 25%;"><a href="gr.val-numbers.html">%NN%</a></td>
+<td>gr.val shortcut to get total numbers of intervals in gr2 overlapping with each interval in gr1, respecting strand</td></tr>
+<tr><td style="width: 25%;"><a href="gr.val-numbers.html">%NN%-method</a></td>
+<td>gr.val shortcut to get total numbers of intervals in gr2 overlapping with each interval in gr1, respecting strand</td></tr>
+<tr><td style="width: 25%;"><a href="gr.val-O.html">%O%</a></td>
+<td>gr.val shortcut to get fractional overlap of gr1 by gr2, ignoring strand</td></tr>
+<tr><td style="width: 25%;"><a href="gr.val-total.html">%o%</a></td>
+<td>gr.val shortcut to total per interval width of overlap of gr1 with gr2, ignoring strand</td></tr>
+<tr><td style="width: 25%;"><a href="gr.val-O.html">%O%-method</a></td>
+<td>gr.val shortcut to get fractional overlap of gr1 by gr2, ignoring strand</td></tr>
+<tr><td style="width: 25%;"><a href="gr.val-total.html">%o%-method</a></td>
+<td>gr.val shortcut to total per interval width of overlap of gr1 with gr2, ignoring strand</td></tr>
+<tr><td style="width: 25%;"><a href="gr.val-fractional.html">%OO%</a></td>
+<td>gr.val shortcut to get fractional overlap of gr1 by gr2, respecting strand</td></tr>
+<tr><td style="width: 25%;"><a href="gr.val-strand.html">%oo%</a></td>
+<td>gr.val shortcut to total per interval width of overlap of gr1 with gr2, respecting strand</td></tr>
+<tr><td style="width: 25%;"><a href="gr.val-fractional.html">%OO%-method</a></td>
+<td>gr.val shortcut to get fractional overlap of gr1 by gr2, respecting strand</td></tr>
+<tr><td style="width: 25%;"><a href="gr.val-strand.html">%oo%-method</a></td>
+<td>gr.val shortcut to total per interval width of overlap of gr1 with gr2, respecting strand</td></tr>
+<tr><td style="width: 25%;"><a href="gr.query.html">%Q%</a></td>
+<td>query ranges by applying an expression to ranges metadata</td></tr>
+<tr><td style="width: 25%;"><a href="gr.query.html">%Q%-method</a></td>
+<td>query ranges by applying an expression to ranges metadata</td></tr>
+<tr><td style="width: 25%;"><a href="gr.in-shortcut.html">%^%</a></td>
+<td>subset x on y ranges wise ignoring strand</td></tr>
+<tr><td style="width: 25%;"><a href="gr.in-shortcut.html">%^%-method</a></td>
+<td>subset x on y ranges wise ignoring strand</td></tr>
+<tr><td style="width: 25%;"><a href="gr.in-shortcut.html">%^^%</a></td>
+<td>subset x on y ranges wise ignoring strand</td></tr>
+<tr><td style="width: 25%;"><a href="gr.in-shortcut.html">%^^%-method</a></td>
+<td>subset x on y ranges wise ignoring strand</td></tr>
+<tr><td style="width: 25%;"><a href="gr.setdiff.html">%_%</a></td>
+<td>'BiocGenerics::setdiff' shortcut (strand agnostic)</td></tr>
+<tr><td style="width: 25%;"><a href="gr.setdiff.html">%_%-method</a></td>
+<td>'BiocGenerics::setdiff' shortcut (strand agnostic)</td></tr>
+<tr><td style="width: 25%;"><a href="anchorlift.html">anchorlift</a></td>
+<td>anchorlift</td></tr>
+<tr><td style="width: 25%;"><a href="dt2gr.html">dt2gr</a></td>
+<td>Convert data.table to GRanges</td></tr>
+<tr><td style="width: 25%;"><a href="example_dnase.html">example_dnase</a></td>
+<td>DNAaseI hypersensitivity sites for hg19A</td></tr>
+<tr><td style="width: 25%;"><a href="example_genes.html">example_genes</a></td>
+<td>RefSeq genes for hg19</td></tr>
+<tr><td style="width: 25%;"><a href="gr.breaks.html">gr.breaks</a></td>
+<td>Break GRanges at given breakpoints into disjoint gr</td></tr>
+<tr><td style="width: 25%;"><a href="gr.chr.html">gr.chr</a></td>
+<td>Prepend "chr" to 'GRanges seqlevels'</td></tr>
+<tr><td style="width: 25%;"><a href="gr.collapse.html">gr.collapse</a></td>
+<td>Collapse adjacent ranges</td></tr>
+<tr><td style="width: 25%;"><a href="gr.cov.html">gr.cov</a></td>
+<td>gr.cov</td></tr>
+<tr><td style="width: 25%;"><a href="gr.dice.html">gr.dice</a></td>
+<td>Dice up 'GRanges' into 'width = 1' 'GRanges' spanning the input (warning can produce a very large object)</td></tr>
+<tr><td style="width: 25%;"><a href="gr.disjoin.html">gr.disjoin</a></td>
+<td>GenomicRanges disjoin with some spice Identical to GRanges disjoin, except outputs inherit metadata from first overlapping parent instance on input</td></tr>
+<tr><td style="width: 25%;"><a href="gr.dist.html">gr.dist</a></td>
+<td>Pairwise distance between two 'GRanges'</td></tr>
+<tr><td style="width: 25%;"><a href="gr.duplicated.html">gr.duplicated</a></td>
+<td>Allows to restrict duplicates using "by" columns and allows in exact matching</td></tr>
+<tr><td style="width: 25%;"><a href="gr.end.html">gr.end</a></td>
+<td>Get the right ends of a 'GRanges'</td></tr>
+<tr><td style="width: 25%;"><a href="gr.findoverlaps.html">gr.findoverlaps</a></td>
+<td>Wrapper to 'GenomicRanges::findOverlaps' with added functionality</td></tr>
+<tr><td style="width: 25%;"><a href="gr.fix.html">gr.fix</a></td>
+<td>"Fixes" 'seqlengths' / 'seqlevels'</td></tr>
+<tr><td style="width: 25%;"><a href="gr.flatten.html">gr.flatten</a></td>
+<td>Lay ranges end-to-end onto a derivate "chromosome"</td></tr>
+<tr><td style="width: 25%;"><a href="gr.flipstrand.html">gr.flipstrand</a></td>
+<td>Flip strand on 'GRanges'</td></tr>
+<tr><td style="width: 25%;"><a href="gr.in.html">gr.in</a></td>
+<td>Versatile implementation of 'GenomicRanges::over'</td></tr>
+<tr><td style="width: 25%;"><a href="gr.match.html">gr.match</a></td>
+<td>Alternative 'GenomicRanges::match' that accepts additional 'gr.findoverlaps' options</td></tr>
+<tr><td style="width: 25%;"><a href="gr.merge.html">gr.merge</a></td>
+<td>merge GRanges using coordinates as primary key</td></tr>
+<tr><td style="width: 25%;"><a href="gr.mid.html">gr.mid</a></td>
+<td>Get the midpoints of 'GRanges' ranges</td></tr>
+<tr><td style="width: 25%;"><a href="gr.nochr.html">gr.nochr</a></td>
+<td>Remove chr prefix from GRanges seqlevels</td></tr>
+<tr><td style="width: 25%;"><a href="gr.pairflip.html">gr.pairflip</a></td>
+<td>Create pairs of ranges and their strand-inverse</td></tr>
+<tr><td style="width: 25%;"><a href="gr.rand.html">gr.rand</a></td>
+<td>Generate random 'GRanges' on genome</td></tr>
+<tr><td style="width: 25%;"><a href="gr.sample.html">gr.sample</a></td>
+<td>Randomly sample 'GRanges' intervals within territory</td></tr>
+<tr><td style="width: 25%;"><a href="gr.setdiff.html">gr.setdiff</a></td>
+<td>'BiocGenerics::setdiff' shortcut (strand agnostic)</td></tr>
+<tr><td style="width: 25%;"><a href="gr.simplify.html">gr.simplify</a></td>
+<td>Simplify granges by collapsing all non-overlapping adjacent ranges that share a given "field" value (adjacent == adjacent in the input GRanges object)</td></tr>
+<tr><td style="width: 25%;"><a href="gr.start.html">gr.start</a></td>
+<td>Get GRanges corresponding to beginning of range</td></tr>
+<tr><td style="width: 25%;"><a href="gr.string.html">gr.string</a></td>
+<td>Return UCSC style interval string corresponding to 'GRanges' pile (ie chr:start-end)</td></tr>
+<tr><td style="width: 25%;"><a href="gr.stripstrand.html">gr.stripstrand</a></td>
+<td>gr.stripstrand</td></tr>
+<tr><td style="width: 25%;"><a href="gr.sub.html">gr.sub</a></td>
+<td>Apply 'gsub' to seqlevels of a 'GRanges'</td></tr>
+<tr><td style="width: 25%;"><a href="gr.cov.html">gr.sum</a></td>
+<td>gr.cov</td></tr>
+<tr><td style="width: 25%;"><a href="gr.tile.html">gr.tile</a></td>
+<td>Tile ranges across 'GRanges'</td></tr>
+<tr><td style="width: 25%;"><a href="gr.tile.map.html">gr.tile.map</a></td>
+<td>gr.tile.map</td></tr>
+<tr><td style="width: 25%;"><a href="gr.trim.html">gr.trim</a></td>
+<td>Trims pile of 'GRanges' relative to the specified &lt;local&gt; coordinates of each range</td></tr>
+<tr><td style="width: 25%;"><a href="gr.val.html">gr.val</a></td>
+<td>Annotate 'GRanges' with values from another 'GRanges'</td></tr>
+<tr><td style="width: 25%;"><a href="gr2dt.html">gr2dt</a></td>
+<td>Converts 'GRanges' to 'data.table'</td></tr>
+<tr><td style="width: 25%;"><a href="grbind.html">grbind</a></td>
+<td>Concatenate 'GRanges', robust to different 'mcols'</td></tr>
+<tr><td style="width: 25%;"><a href="grl.eval.html">grl.eval</a></td>
+<td>evaluate and aggregate expression on GRanges column in GRangesList</td></tr>
+<tr><td style="width: 25%;"><a href="grl.hiC.html">grl.hiC</a></td>
+<td>HiC data for chr14 from Lieberman-Aiden 2009 (in hg19), subsampled to 10,000 interactions</td></tr>
+<tr><td style="width: 25%;"><a href="grl.in.html">grl.in</a></td>
+<td>Check intersection of 'GRangesList' with windows on genome</td></tr>
+<tr><td style="width: 25%;"><a href="grl.pivot.html">grl.pivot</a></td>
+<td>Pivot a 'GRangesList', inverting "x" and "y"</td></tr>
+<tr><td style="width: 25%;"><a href="grl.reduce.html">grl.reduce</a></td>
+<td>grl.reduce</td></tr>
+<tr><td style="width: 25%;"><a href="grl.string.html">grl.string</a></td>
+<td>Create string representation of 'GRangesList'</td></tr>
+<tr><td style="width: 25%;"><a href="grl.stripnames.html">grl.stripnames</a></td>
+<td>Remove 'GRanges' names inside a 'GRangesList'</td></tr>
+<tr><td style="width: 25%;"><a href="grl.unlist.html">grl.unlist</a></td>
+<td>Robust unlisting of 'GRangesList' that keeps track of origin</td></tr>
+<tr><td style="width: 25%;"><a href="grl1.html">grl1</a></td>
+<td>Fake rearrangement data (set 1)</td></tr>
+<tr><td style="width: 25%;"><a href="grl2.html">grl2</a></td>
+<td>Fake rearrangement data (set 2)</td></tr>
+<tr><td style="width: 25%;"><a href="grlbind.html">grlbind</a></td>
+<td>Concatenate 'GRangesList' objects.</td></tr>
+<tr><td style="width: 25%;"><a href="hg_seqlengths.html">hg_seqlengths</a></td>
+<td>Output standard human genome seqlengths</td></tr>
+<tr><td style="width: 25%;"><a href="parse.gr.html">parse.gr</a></td>
+<td>parse.gr</td></tr>
+<tr><td style="width: 25%;"><a href="parse.grl.html">parse.grl</a></td>
+<td>parse.grl</td></tr>
+<tr><td style="width: 25%;"><a href="ra.dedup.html">ra.dedup</a></td>
+<td>Deduplicates rearrangements represented by 'GRangesList' objects</td></tr>
+<tr><td style="width: 25%;"><a href="ra.duplicated.html">ra.duplicated</a></td>
+<td>Show if junctions are Deduplicated</td></tr>
+<tr><td style="width: 25%;"><a href="ra.merge.html">ra.merge</a></td>
+<td>Merges rearrangements represented by 'GRangesList' objects</td></tr>
+<tr><td style="width: 25%;"><a href="ra.overlaps.html">ra.overlaps</a></td>
+<td>ra.overlaps</td></tr>
+<tr><td style="width: 25%;"><a href="rle.query.html">rle.query</a></td>
+<td>Queries an 'RleList' representing genomic data</td></tr>
+<tr><td style="width: 25%;"><a href="rrbind.html">rrbind</a></td>
+<td>Improved 'rbind' for intersecting/union columns of 'data.frames' or 'data.tables'</td></tr>
+<tr><td style="width: 25%;"><a href="seg2gr.html">seg2gr</a></td>
+<td>Convert GRange like data.frames into GRanges</td></tr>
+<tr><td style="width: 25%;"><a href="si.html">si</a></td>
+<td>'Seqinfo' object for hg19</td></tr>
+<tr><td style="width: 25%;"><a href="si2gr.html">si2gr</a></td>
+<td>Create 'GRanges' from 'Seqinfo' or 'BSgenome'</td></tr>
+<tr><td style="width: 25%;"><a href="seg2gr.html">standardize_segs</a></td>
+<td>Convert GRange like data.frames into GRanges</td></tr>
+<tr><td style="width: 25%;"><a href="streduce.html">streduce</a></td>
+<td>Reduce 'GRanges' and 'GRangesList' to miminal footprint</td></tr>
+</table>
+</body></html>

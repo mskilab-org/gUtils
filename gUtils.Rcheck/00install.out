@@ -1,0 +1,12 @@
+* installing *source* package ‘gUtils’ ...
+** R
+** data
+*** moving datasets to lazyload DB
+** preparing package for lazy loading
+Creating a new generic function for ‘%o%’ in package ‘gUtils’
+Creating a new generic function for ‘%^%’ in package ‘gUtils’
+** help
+*** installing help indices
+** building package indices
+** testing if installed package can be loaded
+* DONE (gUtils)
