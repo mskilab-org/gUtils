@@ -16,7 +16,8 @@ install:
   - ./travis-tool.sh install_deps
  
 script: 
-  - ./travis-tool.sh run_tests
+  - R CMD build .
+  - R CMD check *tar.gz
   - cat /home/travis/build/mskilab/gUtils/gUtils.Rcheck/00check.log 
 
 after_failure:
