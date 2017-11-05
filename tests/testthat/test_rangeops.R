@@ -20,27 +20,35 @@ test_that("test hg_seqlengths()", {
 })
 
 test_that("gr.start ", {
-
-    gr  <- GRanges(1, IRanges(c(3,7,13), c(5,9,16)), strand=c('+','-','-'), seqinfo=Seqinfo("1", 25), name=c("A","B","C"))
+    
+    gr = GRanges(1, IRanges(c(3,7,13), c(5,9,16)), strand=c('+','-','-'), seqinfo=Seqinfo("1", 25), name=c("A","B","C"))
     expect_identical(start(gr.start(gr)), c(3L,7L,13L))
     expect_identical(end(gr.start(gr)),   c(3L,7L,13L))
-    expect_identical(end(gr.start(gr, width=100)),   c(25L,25L,25L))
-    expect_identical(suppressWarnings(end(gr.start(gr, width=100, force=TRUE))),   c(102L,106L,112L))
-    expect_identical(end(gr.start(gr, width=100, ignore.strand=FALSE)),   c(25L,9L,16L))
-    expect_identical(suppressWarnings(start(gr.start(gr, width=100, ignore.strand=FALSE, force=TRUE))),   c(3L,-90L,-83L))
-    expect_identical(suppressWarnings(end(gr.start(gr, width=100, force=TRUE))),   c(102L,106L,112L))
-    expect_identical(end(gr.start(gr, width=10000, clip=TRUE)), c(5L, 9L, 16L))
-
+    expect_identical(end(gr.start(gr, width=100)),   c(5L,9L,16L))
+    expect_identical(end(gr.start(gr, width=100, clip=FALSE)),   c(25L,25L,25L))
+    expect_identical(suppressWarnings(end(gr.start(gr, width=100, force=TRUE))),   c(5L,9L,16L))
+    expect_identical(suppressWarnings(end(gr.start(gr, width=100, force=TRUE, clip=FALSE))),   c(102L,106L,112L))
+    expect_identical(end(gr.start(gr, width=100, ignore.strand=FALSE)),   c(5L,9L,16L))
+    expect_identical(end(gr.start(gr, width=100, ignore.strand=FALSE, clip=FALSE)),   c(25L,9L,16L))
+    expect_identical(suppressWarnings(start(gr.start(gr, width=100, ignore.strand=FALSE, force=TRUE))),   c(3L,7L,13L))
+    expect_identical(suppressWarnings(start(gr.start(gr, width=100, ignore.strand=FALSE, force=TRUE, clip=FALSE))),   c(3L,-90L,-83L))
+    expect_identical(suppressWarnings(end(gr.start(gr, width=100, force=TRUE))),   c(5L, 9L,16L))
+    expect_identical(suppressWarnings(end(gr.start(gr, width=100, force=TRUE, clip=FALSE))),   c(102L,106L,112L))
+    expect_identical(end(gr.start(gr, width=10000)), c(5L, 9L, 16L))  ## default clip=TRUE
+    
 })
 
 test_that("gr.end", {
 
-    gr  <- GRanges(1, IRanges(c(3,7,13), c(5,9,16)), strand=c('+','-','-'), seqinfo=Seqinfo("1", 25), name=c("A","B","C"))
+    gr = GRanges(1, IRanges(c(3,7,13), c(5,9,16)), strand=c('+','-','-'), seqinfo=Seqinfo("1", 25), name=c("A","B","C"))
     expect_identical(start(gr.end(gr)), c(5L,9L,16L))
-    expect_identical(start(gr.end(gr, width=100)),   c(1L,1L,1L))
-    expect_identical(suppressWarnings(start(gr.end(gr, width=100, force=TRUE))),   c(-94L,-90L,-83L))
-    expect_identical(start(gr.end(gr, width=100, ignore.strand=FALSE)),   c(1L,7L,13L))
-    expect_identical(suppressWarnings(start(gr.end(gr, width=100, ignore.strand=FALSE, force=TRUE))),   c(-94L,7L,13L))
+    expect_identical(start(gr.end(gr, width=100)),   c(3L,7L,13L))
+    expect_identical(start(gr.end(gr, width=100, clip=FALSE)),   c(1L,1L,1L))
+    expect_identical(suppressWarnings(start(gr.end(gr, width=100, force=TRUE))),   c(3L,7L,13L))
+    expect_identical(suppressWarnings(start(gr.end(gr, width=100, force=TRUE, clip=FALSE))),   c(-94L,-90L,-83L))
+    expect_identical(start(gr.end(gr, width=100, ignore.strand=FALSE)),   c(3L,7L,13L))
+    expect_identical(start(gr.end(gr, width=100, ignore.strand=FALSE, clip=FALSE)),   c(1L,7L,13L))
+    expect_identical(suppressWarnings(start(gr.end(gr, width=100, ignore.strand=FALSE, force=TRUE, clip=FALSE))),   c(-94L,7L,13L))
 
 })
 
