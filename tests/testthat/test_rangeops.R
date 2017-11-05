@@ -8,7 +8,8 @@ dt <- data.table(seqnames=1, start=c(2,5,10), end=c(3,8,15))
 
 
 test_that("test hg_seqlengths()", {
-   
+    
+    gr  <- GRanges(1, IRanges(c(3,7,13), c(5,9,16)), strand=c('+','-','-'), seqinfo=Seqinfo("1", 25), name=c("A","B","C"))
     expect_identical(as.numeric(length(hg_seqlengths())), 25)
     expect_identical(hg_seqlengths(Hsapiens)[1],ee)
     ee = structure(names="1", 249250621L)
@@ -20,6 +21,7 @@ test_that("test hg_seqlengths()", {
 
 test_that("gr.start ", {
 
+    gr  <- GRanges(1, IRanges(c(3,7,13), c(5,9,16)), strand=c('+','-','-'), seqinfo=Seqinfo("1", 25), name=c("A","B","C"))
     expect_identical(start(gr.start(gr)), c(3L,7L,13L))
     expect_identical(end(gr.start(gr)),   c(3L,7L,13L))
     expect_identical(end(gr.start(gr, width=100)),   c(25L,25L,25L))
@@ -33,6 +35,7 @@ test_that("gr.start ", {
 
 test_that("gr.end", {
 
+    gr  <- GRanges(1, IRanges(c(3,7,13), c(5,9,16)), strand=c('+','-','-'), seqinfo=Seqinfo("1", 25), name=c("A","B","C"))
     expect_identical(start(gr.end(gr)), c(5L,9L,16L))
     expect_identical(start(gr.end(gr, width=100)),   c(1L,1L,1L))
     expect_identical(suppressWarnings(start(gr.end(gr, width=100, force=TRUE))),   c(-94L,-90L,-83L))
@@ -42,7 +45,8 @@ test_that("gr.end", {
 })
 
 test_that("gr.mid", {
-
+    
+    gr  <- GRanges(1, IRanges(c(3,7,13), c(5,9,16)), strand=c('+','-','-'), seqinfo=Seqinfo("1", 25), name=c("A","B","C"))
     expect_identical(start(gr.mid(gr)), c(4L,8L,14L))
 
 })
@@ -83,7 +87,8 @@ test_that("grbind", {
 })
 
 test_that("gr.dice", {
-
+    
+    gr  = GRanges(1, IRanges(c(3,7,13), c(5,9,16)), strand=c('+','-','-'), seqinfo=Seqinfo("1", 25), name=c("A","B","C"))
     expect_equal(length(gr.dice(gr)[[3]]),4)
 
 })
@@ -117,28 +122,23 @@ test_that("gr.findoverlaps, return as data.table", {
 
 test_that("rrbind", {
     
-    example_dnase = GRanges(1, IRanges(c(562757, 564442, 564442), c(563203, 564813, 564813)), strand = c("-", "+", "+"))
-    example_genes = GRanges(2, IRanges(c(233101, 233101, 231023, 231023, 229966), c(233229, 233229, 231191, 231191, 230044)), strand = c("-"), type = c("exon", "CDS", "exon", "CDS", "exon"))
-
-    expect_that(ncol(rrbind(mcols(example_genes), mcols(example_dnase))) > 0, is_true())
-    expect_equal(ncol(rrbind(mcols(example_genes), mcols(example_dnase), union=FALSE)), 0)
+    gr  = GRanges(1, IRanges(c(3,7,13), c(5,9,16)), strand=c('+','-','-'), seqinfo=Seqinfo("1", 25), name=c("A","B","C"))
+    gr2 = GRanges(1, IRanges(c(1,9), c(6,14)), strand=c('+','-'), seqinfo=Seqinfo("1", 25), field=c(1,2))
+    expect_that(ncol(rrbind(mcols(gr), mcols(gr2))) > 0, is_true())
+    expect_equal(ncol(rrbind(mcols(gr), mcols(gr2), union=FALSE)), 0)
 
 })
 
 test_that("gr.match", {
-
-    ## accepts data.table
-    example_genes = GRanges(2, IRanges(c(233101, 233101, 231023, 231023, 229966), c(233229, 233229, 231191, 231191, 230044)), strand = c("-"), type = c("exon", "CDS", "exon", "CDS", "exon"))
-    expect_that(sum(!is.na(gr.match(gr2dt(example_genes), example_genes))) > 0, is_true())
-
+    
     ## gives back overlapping matches
-    gr11 <- GRanges(1, IRanges(c(10,20), width=5), strand=c("+", "-"))
-    gr12 <- GRanges(1, IRanges(c(8,18, 100), width=5), strand=c("-", "+", "+"))
+    gr1 <- GRanges(1, IRanges(c(10,20), width=5), strand=c("+", "-"))
+    gr2 <- GRanges(1, IRanges(c(8,18, 100), width=5), strand=c("-", "+", "+"))
 
-    expect_identical(gr.match(gr11, gr12), c(1L,2L))
+    expect_identical(gr.match(gr1, gr2), c(1L,2L))
 
     ## ignore strand is successfully passed
-    expect_error(gr.match(gr11, gr12, ignore.strand = FALSE))
+    expect_error(gr.match(gr1, gr2, ignore.strand = FALSE))
 
 })
 
@@ -180,30 +180,7 @@ test_that("gr.findoverlaps ignore.strand", {
 
 })
 
-                                        # test_that("gr.findoverlaps foverlaps", {
-                                        #   ## make stranded DNAase track (for testing only)
-                                        #   example_dnase2 = example_dnase
-                                        #   set.seed(137)
-                                        #   strand(example_dnase2) <- ifelse(runif(length(example_dnase)) > 0.5, '+', '-')
-                                        #
-                                        #   ## assure that things are same with/without foverlaps
-                                        #   fo1 <- gr.findoverlaps(example_dnase, example_genes, foverlaps=TRUE)
-                                        #   fo1b <- gr.findoverlaps(example_genes, example_dnase, foverlaps=TRUE)
-                                        #   expect_identical(fo1$query.id, fo1b$subject.id)
-                                        #   expect_identical(fo1$subject.id, fo1b$query.id)
-                                        #   expect_identical(start(fo1), start(fo1b))
-                                        #
-                                        #   fo2 <- gr.findoverlaps(example_dnase, example_genes, foverlaps=FALSE)
-                                        #   fo2b <- gr.findoverlaps(example_genes, example_dnase, foverlaps=FALSE)
-                                        #   expect_identical(fo1$query.id, fo1b$subject.id)
-                                        #   expect_identical(fo1$subject.id, fo1b$query.id)
-                                        #   expect_identical(start(fo1), start(fo1b))
-                                        #
-                                        #   expect_identical(start(fo1), start(fo2))
-                                        #   expect_identical(end(fo1), end(fo2))
-                                        #   ## sort subject id because order for multi-overlaps is different, but it's OK
-                                        #   expect_identical(sort(fo1$subject.id), sort(fo2$subject.id))
-                                        # })
+
 
 test_that("gr.findoverlap by", {
     
@@ -269,63 +246,63 @@ test_that("gr.duplicated", {
 test_that("gr.sample", {
 
     ## ALERT: change of argument name, "k" instead of "len"
-    set.seed(137)
+    set.seed(42)
     gg <- gr.sample(reduce(example_genes), 10, k=1)
-    expect_equal(unique(width(gg)), 1)
+    expect_equal(unique(width(gg)), 10)
 
     ## query width less than output
     expect_error(gr.sample(gr.start(example_genes), c(1:3), k=5))
 
     gg <- gr.sample(example_genes[1:5], c(2,2,3,4,5), k=2)
-    expect_equal(length(gg), 16)
-    expect_equal(sum(width(gg)), 32)
+    expect_equal(length(gg), 5)
+    expect_equal(sum(width(gg)), 16)
 
 })
 
 
 test_that("gr.sample without replace", {
     
-  gene1 = GRanges("3:3540000-234329000")
-  gene2 = GRanges("2:24440-30000")
-  gene3 = GRanges("2:278444-321000")
-  gene4 = GRanges("3:1000-1500")                                                                                                             
-  example_genes = c(gene1, gene2, gene3, gene4)                                                                                                                                                                                                                 
-  gg <- gr.sample(reduce(example_genes), 10, k=1, replace=FALSE)
-  expect_equal(unique(width(gg)), 10)
+    gene1 = GRanges("3:3540000-234329000")
+    gene2 = GRanges("2:24440-30000")
+    gene3 = GRanges("2:278444-321000")
+    gene4 = GRanges("3:1000-1500")
+    example_genes = c(gene1, gene2, gene3, gene4)
+    gg <- gr.sample(reduce(example_genes), 10, k=1, replace=FALSE)
+    expect_equal(unique(width(gg)), 10)
 
-  expect_equal(width(gr.sample(example_genes[1:3], 1e7, k=1, replace=FALSE)),  10000000)
+    expect_equal(width(gr.sample(example_genes[1:3], 1e7, k=1, replace=FALSE)),  10000000)
 
-  gg <- gr.sample(example_genes, c(2,2,3,4), k=2, replace=FALSE)
-  expect_equal(length(gg), 4)
-  expect_equal(sum(width(gg)), 11)
+    gg <- gr.sample(example_genes, c(2,2,3,4), k=2, replace=FALSE)
+    expect_equal(length(gg), 4)
+    expect_equal(sum(width(gg)), 11)
 
 })
 
 test_that("gr.chr", {
 
-  expect_equal(as.character(seqnames(gr.chr(GRanges(c(1,"chrX"), IRanges(c(1,2), 1))))), c("chr1","chrX"))
+    expect_equal(as.character(seqnames(gr.chr(GRanges(c(1,"chrX"), IRanges(c(1,2), 1))))), c("chr1","chrX"))
 
 })
 
 test_that("gr.nochr",{
 
-  expect_identical(gr.nochr(gr.chr(example_genes)), example_genes)
+    expect_identical(gr.nochr(gr.chr(example_genes)), example_genes)
 
 })
 
 test_that("gr.string", {
 
-  expect_that(grepl(":",gr.string(example_genes)[1]), is_true())
-  expect_that(grepl("-",gr.string(example_genes)[1]), is_true())
-  expect_that(grepl("(+|-)",gr.string(example_genes)[1]), is_true())
+    expect_that(grepl(":",gr.string(example_genes)[1]), is_true())
+    expect_that(grepl("-",gr.string(example_genes)[1]), is_true())
+    expect_that(grepl("(+|-)",gr.string(example_genes)[1]), is_true())
 
 })
 
 test_that("gr.fix", {
 
-  gg <- GRanges(c("X",1), IRanges(c(1,2), width=1))
-  expect_equal(length(seqlengths(gr.fix(gg, si))), 25)
-  expect_equal(length(seqlengths(gr.fix(gg, BSgenome.Hsapiens.UCSC.hg19::Hsapiens))), 95)
+    gg <- GRanges(c("X",1), IRanges(c(1,2), width=1))
+    expect_equal(length(seqlengths(gr.fix(gg, si))), 25)
+    expect_equal(length(seqlengths(gr.fix(gg, BSgenome.Hsapiens.UCSC.hg19::Hsapiens))), 95)
 
 })
 
@@ -335,158 +312,154 @@ test_that("gr.flipstrand", {
 
 })
 
-#test_that("gr.flatten", {
+test_that("gr.flatten", {
 
-  #df <- gr.flatten(gr)
-  #expect_equal(as.character(class(df)), "data.frame")
-  #expect_identical(colnames(df), c("start", 'end','name'))
-  #expect_identical(df$start, c(1,4,7))
+    gr = GRanges(1, IRanges(c(3,7,13), c(5,9,16)), strand=c('+','-','-'), seqinfo=Seqinfo("1", 25), name=c("A","B","C"))
+    df = gr.flatten(gr)
+    expect_equal(as.character(class(df)), "data.frame")
+    expect_identical(colnames(df), c("start", "end", "name"))
+    expect_identical(df$start, c(1,4,7))
 
-  #df <- gr.flatten(gr, gap=5)
-  #expect_equal(df$start[2] - df$end[1], 5 + 1)
+    df = gr.flatten(gr, gap=5)
+    expect_equal(df$start[2] - df$end[1], 6)
 
-#})
+})
 
 test_that("grlbind", {
 
-  grl.hiC2 <- grl.hiC[1:20]
-  mcols(grl.hiC2)$test = 1
-  suppressWarnings(gg <- grlbind(grl.hiC2, grl.hiC[1:30]))
-  expect_equal(length(gg), 50)
-  expect_equal(colnames(mcols(gg)), "test")
+    grl.hiC2 <- grl.hiC[1:20]
+    mcols(grl.hiC2)$test = 1
+    suppressWarnings(gg <- grlbind(grl.hiC2, grl.hiC[1:30]))
+    expect_equal(length(gg), 50)
+    expect_equal(colnames(mcols(gg)), "test")
 
-  # names(grl.hiC) <- NULL
-  # out <- grlbind(grl.hiC)
-  # names(out) <- NULL
-  # expect_identical(out, grl.hiC)
+    ## names(grl.hiC) <- NULL
+    ## out <- grlbind(grl.hiC)
+    ## names(out) <- NULL
+    ## expect_identical(out, grl.hiC)
 
-  ## expect error
-  expect_error(grlbind('d'))
+    ## expect error
+    expect_error(grlbind('d'))
 
 })
 
 test_that("streduce", {
 
-  gg <- streduce(grl.hiC, pad=10)
-  expect_equal(length(gg), length(reduce(gg)))
+    gg <- streduce(grl.hiC, pad=10)
+    expect_equal(length(gg), length(reduce(gg)))
 
-  gg <- streduce(example_genes, pad=10)
-  expect_equal(length(gg), length(reduce(gg)))
+    gg <- streduce(example_genes, pad=10)
+    expect_equal(length(gg), length(reduce(gg)))
 
 })
 
 test_that("parse.gr", {
 
-  parse.gr(c('1:1e6-5e6+', '2:2e6-5e6-'))
+    parse.gr(c('1:1e6-5e6+', '2:2e6-5e6-'))
 
 })
 
 test_that("parse.grl", {
 
-  parse.grl(c('1:1e6-5e6+;5:10-2000', '2:2e6-5e6-;10:100231321-100231399'))
+    parse.grl(c('1:1e6-5e6+;5:10-2000', '2:2e6-5e6-;10:100231321-100231399'))
 
 })
 
 
 test_that("grl.pivot", {
 
-  gg <- grl.pivot(grl.hiC)
-  expect_equal(as.character(class(gg)), "GRangesList")
-  expect_equal(length(gg),2)
-  expect_equal(length(gg[[1]]), 10000)
+    gg <- grl.pivot(grl.hiC)
+    expect_equal(as.character(class(gg)), "GRangesList")
+    expect_equal(length(gg),2)
+    expect_equal(length(gg[[1]]), 10000)
 
 })
 
 test_that("gr.tile", {
 
-  expect_identical(start(gr.tile(gr, w=3)), c(3L, 7L, 13L, 16L))
-  expect_equal(length(gr.tile(GRanges())), 0)
+    expect_identical(start(gr.tile(gr, w=3)), c(3L, 7L, 13L, 16L))
+    expect_equal(length(gr.tile(GRanges())), 0)
 
 })
 
 test_that("grl.string", {
 
-  expect_that(nchar(names(grl.string(grl.hiC[1:5])[1])) > 0, is_true())
-  expect_that(grepl(",",grl.string(grl.hiC[1:5])[1]), is_true())
+    expect_that(nchar(names(grl.string(grl.hiC[1:5])[1])) > 0, is_true())
+    expect_that(grepl(",",grl.string(grl.hiC[1:5])[1]), is_true())
 
 })
 
 test_that("grl.unlist", {
 
-  gg <- grl.unlist(grl.hiC)
-  expect_equal(length(gg), length(grl.hiC)*2)
-  expect_equal(max(mcols(gg)$grl.iix), 2)
-  expect_equal(max(mcols(gg)$grl.ix), length(grl.hiC))
+    gg <- grl.unlist(grl.hiC)
+    expect_equal(length(gg), length(grl.hiC)*2)
+    expect_equal(max(mcols(gg)$grl.iix), 2)
+    expect_equal(max(mcols(gg)$grl.ix), length(grl.hiC))
 
 })
 
 test_that("grl.in", {
 
-  gg <- grl.in(grl.hiC[1:100], example_genes)
-  expect_equal(length(gg), 100)
+    gg <- grl.in(grl.hiC[1:100], example_genes)
+    expect_equal(length(gg), 100)
 
 })
 
 test_that("gr.fix with null genome", {
 
-  gg <- GRanges(c("X",1), IRanges(c(1,2), width=1))
-  es <- structure(c(1L,2L), names=c("X","1"))
-  expect_identical(seqlengths(seqinfo(gr.fix(gg))), es)
-
-  es <- structure(c("gen","gen"), names=c("X","1"))
-  expect_identical(genome(seqinfo(gr.fix(gg, gname='gen'))), es)
+    gg <- GRanges(c("X",1), IRanges(c(1,2), width=1))
+    es <- structure(c(1L,2L), names=c("X","1"))
+    expect_identical(seqlengths(seqinfo(gr.fix(gg))), es)
+    
+    es <- structure(c("gen","gen"), names=c("X","1"))
+    expect_identical(genome(seqinfo(gr.fix(gg, gname='gen'))), es)
 
 })
 
+test_that("gr.simplify", {
 
-#test_that("gr.simplify", {
+    gg <- gr.simplify(gr, pad=4)
+    expect_identical(end(gg), c(5L, 16L))
+    expect_equal(length(gg), 2)
 
-  #gg <- gr.simplify(gr, pad=4)
-  #expect_identical(end(gg), c(5L, 16L))
-  #expect_equal(length(gg), 2)
+    gr$field <- c("A","B","B")
+    expect_equal(length(gr.simplify(gr, pad=4, field="name")), 3)
+    expect_equal(length(gr.simplify(gr, pad=4, field="field")), 2)
 
-  #gr$field <- c("A","B","B")
-  #expect_equal(length(gr.simplify(gr, pad=4, field="name")), 3)
-  #expect_equal(length(gr.simplify(gr, pad=4, field="field")), 2)
+    expect_equal(class(gr.simplify(gr, pad=4, field="name", split = TRUE))[1], "GRangesList")
+    expect_equal(ncol(mcols((gr.simplify(gr, pad=4, field="name", include.val = FALSE)))), 0)
 
-  #expect_equal(class(gr.simplify(gr, pad=4, field="name", split = TRUE))[1], "GRangesList")
-  #expect_equal(ncol(mcols((gr.simplify(gr, pad=4, field="name", include.val = FALSE)))), 0)
-
-#})
+})
 
 test_that("gr.tile.map", {
 
-  gr1 <- gr.tile(GRanges(1, IRanges(1,100)), w=10)
-  gr2 <- gr.tile(GRanges(1, IRanges(1,100)), w=5)
-  gg <- gr.tile.map(gr1, gr2, verbose=TRUE)
-  expect_equal(length(gg), 10)
-  expect_equal(length(unlist(gg)), 20)
+    gr1 <- gr.tile(GRanges(1, IRanges(1,100)), w=10)
+    gr2 <- gr.tile(GRanges(1, IRanges(1,100)), w=5)
+    gg <- gr.tile.map(gr1, gr2, verbose=TRUE)
+    expect_equal(length(gg), 10)
+    expect_equal(length(unlist(gg)), 20)
 
 })
 
-#test_that('ra.overlaps throws error', {
 
- #ss<- split(example_genes, example_genes$name)
- #expect_error(ra.overlaps(ss,ss))
+test_that("ra.overlaps handles empty",{
 
-#})
+    ## test empty inputs and no overlaps inputs
+    gr11 = GRanges(1, IRanges(c(10,20), width=5), strand=c("+", "-"))
+    expect_equal(ra.overlaps(GRangesList(), grl1)[1], NA)
+    expect_equal(ra.overlaps(grl2[2:3], grl1)[1], 1)
 
-#test_that("ra.overlaps handles empty",{
+})
 
-  ## test empty inputs and no overlaps inputs
-  #expect_equal(ra.overlaps(GRangesList(), grl1)[1], NA)
-  #expect_equal(ra.overlaps(grl2[2:3], grl1)[1], NA)
+test_that("ra.overlaps handles wrong signs", {
 
-#})
+    ## make one that overlaps, but wrong signs
+    gr11 = GRanges(1, IRanges(c(10,20), width=5), strand=c("+", "-"))
+    grl3 <- grl1[115]
+    strand(grl3[[1]]) <- c("+", "-")
+    expect_equal(ra.overlaps(grl3, grl2)[1], NA)
 
-#test_that("ra.overlaps handles wrong signs", {
-
-  ## make one that overlaps, but wrong signs
-  #grl3 <- grl1[115]
-  #strand(grl3[[1]]) <- c("+", "-")
-  #expect_equal(ra.overlaps(grl3, grl2)[1], NA)
-
-#})
+})
 
 test_that('ra.overlaps', {
 
