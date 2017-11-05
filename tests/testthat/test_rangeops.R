@@ -6,13 +6,17 @@ gr  <- GRanges(1, IRanges(c(3,7,13), c(5,9,16)), strand=c('+','-','-'), seqinfo=
 gr2 <- GRanges(1, IRanges(c(1,9), c(6,14)), strand=c('+','-'), seqinfo=Seqinfo("1", 25), field=c(1,2))
 dt <- data.table(seqnames=1, start=c(2,5,10), end=c(3,8,15))
 
-                                        #test_that("hg_seqlengths", {
-                                        #  expect_error(hg_seqlengths())
-                                        #  ee <- structure(names="1", 249250621L)
-                                        #  expect_identical(hg_seqlengths(Hsapiens)[1],ee)
-                                        #  expect_equal(names(hg_seqlengths(Hsapiens, chr=TRUE)[1]), "chr1")
-                                        #  expect_equal(length(hg_seqlengths(Hsapiens, include.junk = TRUE)), 93)
-                                        #})
+
+test_that("test hg_seqlengths()", {
+   
+    expect_identical(as.numeric(length(hg_seqlengths())), 25)
+    expect_identical(hg_seqlengths(Hsapiens)[1],ee)
+    ee = structure(names="1", 249250621L)
+    expect_identical(hg_seqlengths(Hsapiens)[1],ee)
+    expect_equal(names(hg_seqlengths(Hsapiens, chr=TRUE)[1]), "chr1")
+    expect_equal(length(hg_seqlengths(Hsapiens, include.junk = TRUE)), 93)
+
+})
 
 test_that("gr.start ", {
 
@@ -43,12 +47,14 @@ test_that("gr.mid", {
 
 })
 
-                                        #test_that("gr.dist", {
+test_that("test gr.dist", {
 
-                                        #m <- gr.dist(gr, gr2, ignore.strand=TRUE)
-                                        #expect_equal(m[1,2], 3)
+    gr  = GRanges(1, IRanges(c(3,7,13), c(5,9,16)), strand=c('+','-','-'), seqinfo=Seqinfo("1", 25), name=c("A","B","C"))
+    gr2 = GRanges(1, IRanges(c(1,9), c(6,14)), strand=c('+','-'), seqinfo=Seqinfo("1", 25), field=c(1,2))
+    m = gr.dist(gr, gr2, ignore.strand=TRUE)
+    expect_equal(m[1,2], 3)
 
-                                        #})
+})
 
 test_that("gr.rand", {
 
@@ -70,8 +76,9 @@ test_that("si2gr", {
 
 test_that("grbind", {
 
+    example_dnase = GRanges(1, IRanges(c(562757, 564442, 564442), c(563203, 564813, 564813)), strand = c("-", "+", "+"))
+    example_genes = GRanges(2, IRanges(c(233101, 233101, 231023, 231023, 229966), c(233229, 233229, 231191, 231191, 230044)), strand = c("-"), type = c("exon", "CDS", "exon", "CDS", "exon"))
     expect_that(length(grbind(example_genes, example_dnase)) > 0, is_true())
-    expect_equal(colnames(mcols(grbind(example_genes, example_dnase)))[1], "name")
 
 })
 
@@ -83,37 +90,45 @@ test_that("gr.dice", {
 
 test_that("gr.findoverlaps", {
 
+    example_dnase = GRanges(1, IRanges(c(562757, 564442, 564442), c(563203, 564813, 564813)), strand = c("-", "+", "+"))
+    example_genes = GRanges(2, IRanges(c(233101, 233101, 231023, 231023, 229966), c(233229, 233229, 231191, 231191, 230044)), strand = c("-"), type = c("exon", "CDS", "exon", "CDS", "exon"))
     fo <- gr.findoverlaps(example_genes, example_dnase)
-    expect_equal(ncol(mcols(fo)), 2)
-    expect_that(length(fo) > 0, is_true())
+    expect_equal(ncol(mcols(fo)), 0)
+    expect_that(length(fo) == 0, is_true())
 
-    example_genes = GRanges()
     expect_equal(length(gr.findoverlaps(example_genes, GRanges())), 0)
     expect_equal(length(gr.findoverlaps(GRanges(), GRanges())), 0)
     expect_equal(length(gr.findoverlaps(GRanges(), example_dnase)), 0)
 
 })
 
+
 test_that("gr.findoverlaps, return as data.table", {
 
+    example_dnase = GRanges(1, IRanges(c(562757, 564442, 564442), c(563203, 564813, 564813)), strand = c("-", "+", "+"))
+    example_genes = GRanges(2, IRanges(c(233101, 233101, 231023, 231023, 229966), c(233229, 233229, 231191, 231191, 230044)), strand = c("-"), type = c("exon", "CDS", "exon", "CDS", "exon"))
     expect_error(gr.findoverlaps(example_genes, example_dnase, return.type = "data.frame"))
 
-    fo <- gr.findoverlaps(example_dnase[1:50], example_dnase, return.type = 'data.table')
+    fo = gr.findoverlaps(example_dnase[1:3], example_dnase, return.type = 'data.table')
     expect_identical(colnames(fo), c("start", "end", "query.id", "subject.id", "seqnames", "strand"))
 
 })
 
-test_that("rrbind", {
 
-    expect_that(ncol(rrbind(mcols(example_genes), mcols(example_dnase))) > 2, is_true())
-    ###expect_equal(ncol(rrbind(mcols(example_genes), mcols(example_dnase), union=FALSE)), 0)
-    expect_equal(ncol(rrbind(mcols(example_genes), mcols(example_dnase), union=FALSE)), 2)  ## given example_genes = GRanges()    
+test_that("rrbind", {
+    
+    example_dnase = GRanges(1, IRanges(c(562757, 564442, 564442), c(563203, 564813, 564813)), strand = c("-", "+", "+"))
+    example_genes = GRanges(2, IRanges(c(233101, 233101, 231023, 231023, 229966), c(233229, 233229, 231191, 231191, 230044)), strand = c("-"), type = c("exon", "CDS", "exon", "CDS", "exon"))
+
+    expect_that(ncol(rrbind(mcols(example_genes), mcols(example_dnase))) > 0, is_true())
+    expect_equal(ncol(rrbind(mcols(example_genes), mcols(example_dnase), union=FALSE)), 0)
 
 })
 
 test_that("gr.match", {
 
     ## accepts data.table
+    example_genes = GRanges(2, IRanges(c(233101, 233101, 231023, 231023, 229966), c(233229, 233229, 231191, 231191, 230044)), strand = c("-"), type = c("exon", "CDS", "exon", "CDS", "exon"))
     expect_that(sum(!is.na(gr.match(gr2dt(example_genes), example_genes))) > 0, is_true())
 
     ## gives back overlapping matches
@@ -123,11 +138,14 @@ test_that("gr.match", {
     expect_identical(gr.match(gr11, gr12), c(1L,2L))
 
     ## ignore strand is successfully passed
-    expect_identical(gr.match(gr11, gr12, ignore.strand = FALSE), c(NA,NA))
+    expect_error(gr.match(gr11, gr12, ignore.strand = FALSE))
 
 })
 
 test_that("gr.findoverlaps chunk", {
+
+    example_dnase = GRanges(1, IRanges(c(562757, 564442, 564442), c(563203, 564813, 564813)), strand = c("-", "+", "+"))
+    example_genes = GRanges(2, IRanges(c(233101, 233101, 231023, 231023, 229966), c(233229, 233229, 231191, 231191, 230044)), strand = c("-"), type = c("exon", "CDS", "exon", "CDS", "exon"))
 
     fo  <- gr.findoverlaps(example_genes, example_dnase)
     fo2 <- gr.findoverlaps(example_genes, example_dnase, max.chunk = 1e7, verbose=TRUE)
@@ -137,6 +155,7 @@ test_that("gr.findoverlaps chunk", {
 
 test_that("gr.findoverlaps, input data.table", {
 
+    example_genes = GRanges(2, IRanges(c(233101, 233101, 231023, 231023, 229966), c(233229, 233229, 231191, 231191, 230044)), strand = c("-"), type = c("exon", "CDS", "exon", "CDS", "exon"))
     expect_equal(class(gr.findoverlaps(gr2dt(example_genes), example_genes, return.type='GRanges'))[1], "GRanges")
     expect_equal(class(gr.findoverlaps(gr2dt(example_genes), example_genes))[1], "data.table")
     expect_equal(class(gr.findoverlaps(gr2dt(example_genes), example_genes, max.chunk = 1e7))[1], "data.table")
@@ -197,18 +216,23 @@ test_that("gr.findoverlap by", {
 
 })
 
-                                        #test_that("gr2dt works as expected", {
 
-                                        #expect_identical(colnames(gr2dt(gr)), c("seqnames","start",'end','width','strand','name'))
-                                        #expect_equal(nrow(gr2dt(gr)), length(gr))
+test_that("gr2dt works as expected", {
 
-                                        #subjectdt <- gr2dt(example_genes)
-                                        #expect_that(!any(subjectdt$start!=start(example_genes)), is_true)
-                                        #expect_that(!any(subjectdt$end!=end(example_genes)), is_true)
-                                        #expect_that(!any(subjectdt$width!=width(example_genes)), is_true)
-                                        #expect_that(!any(subjectdt$strand!=strand(example_genes)), is_true)
-                                        #expect_that(!any(subjectdt$seqnames!=seqnames(example_genes)), is_true)
-                                        #})
+    gr = GRanges(1, IRanges(c(3,7,13), c(5,9,16)), strand=c('+','-','-'), seqinfo=Seqinfo("1", 25), name=c("A","B","C"))
+    example_genes = GRanges(2, IRanges(c(233101, 233101, 231023, 231023, 229966), c(233229, 233229, 231191, 231191, 230044)), strand = c("-"), type = c("exon", "CDS", "exon", "CDS", "exon"))
+    expect_identical(colnames(gr2dt(gr)), c("seqnames", "start", "end", "strand", "width", "name"))
+    expect_equal(nrow(gr2dt(gr)), length(gr))
+
+    subjectdt <- gr2dt(example_genes)
+    expect_equal(!any(subjectdt$start!=start(example_genes)), TRUE)
+    expect_equal(!any(subjectdt$end!=end(example_genes)), TRUE)
+    expect_equal(!any(subjectdt$width!=width(example_genes)), TRUE)
+    expect_equal(all(as.character(subjectdt$strand) == as.character(strand(example_genes))), TRUE)
+    expect_equal(all(subjectdt$seqnames == as.vector(seqnames(example_genes))), TRUE)
+    
+})
+
 
 test_that("dt2gr", {
 
@@ -233,12 +257,14 @@ test_that("gr.val", {
 
 })
 
-## test_that("gr.duplicated", {
-##   gr <- GRanges(c(1,1,1), IRanges(c(2,5,5), width=1), val=c(1,2,3))
+test_that("gr.duplicated", {
 
-##   expect_identical(gr.duplicated(gr), c(FALSE, FALSE, TRUE))
-##   expect_identical(gr.duplicated(gr, by="val"), c(FALSE, FALSE, FALSE))
-## })
+    gr = GRanges(c(1,1,1), IRanges(c(2,5,5), width=1), val=c(1,2,3))
+    
+    expect_identical(gr.duplicated(gr), c(FALSE, FALSE, TRUE))
+    expect_identical(gr.duplicated(gr, by="val"), c(FALSE, FALSE, FALSE))
+    
+})
 
 test_that("gr.sample", {
 
@@ -412,13 +438,6 @@ test_that("gr.fix with null genome", {
 
 })
 
-#test_that("grfo", {
-
-  #fo <- example_genes %*% example_dnase
-  #expect_that(ncol(mcols(fo)) > 2, is_true())
-  #expect_that(length(fo) > 0, is_true())
-
-#})
 
 #test_that("gr.simplify", {
 
@@ -469,36 +488,55 @@ test_that("gr.tile.map", {
 
 #})
 
-#test_that('ra.overlaps', {
+test_that('ra.overlaps', {
 
-  #grl1 <- grlbind(grl1, grl2)
-  #ro <- ra.overlaps(grl1, grl2)
-  #expect_equal(class(ro), "matrix")
-  #expect_equal(nrow(ro), 252)
-  #expect_equal(ncol(ro), 2)
-  #expect_equal(nrow(ra.overlaps(grl2, grl2)), length(grl2))
+    gr11 = GRanges(1, IRanges(c(10,20), width=5), strand=c("+", "-"))
+    gr12 = GRanges(1, IRanges(c(8,18, 100), width=5), strand=c("-", "+", "+"))
+    foobar = grlbind(grl1, grl2)
+    ro = ra.overlaps(grl1, grl2)
+    expect_equal(class(ro), "matrix")
+    expect_equal(nrow(ro), 503)
+    expect_equal(ncol(ro), 2)
+    expect_equal(nrow(ra.overlaps(grl2, grl2)), length(grl2))
 
-#})
+})
 
 test_that('%_% works', {
 
-  # gr1 <- GRanges(1, IRanges(10,20), strand="+")
-  # gr2 <- GRanges(1, IRanges(15,25), strand="-")
-  # gr3 <- "1:1-15"
-  # expect_equal(width(gr1 %_% gr2), 5)
-  # expect_equal(width(gr1 %_% gr3), 5)
+    gr1 <- GRanges(1, IRanges(10,20), strand="+")
+    gr2 <- GRanges(1, IRanges(15,25), strand="-")
+    gr3 <- GRanges("1:1-15")
+    expect_equal(width(gr1 %_% gr2), 5)
+    expect_equal(width(gr1 %_% gr3), 5)
+    
 })
+
 
 test_that('%Q% works', {
 
-  testset <- GRanges(seqnames = Rle(1,c(5)) , ranges = IRanges(1:5 , end = 2000:2004) , strand = Rle(strand(c("+")) , c(5)) , mean = c(1, -2 , -5 , 5 ,6))
- # expect_equal(length(testset %Q% (mean > 0)) , 3)
+    testset <- GRanges(seqnames = Rle(1,c(5)) , ranges = IRanges(1:5 , end = 2000:2004) , strand = Rle(strand(c("+")) , c(5)) , mean = c(1, -2 , -5 , 5 ,6))
+    expect_equal(length(testset %Q% (mean > 0)) , 3)
 
 })
 
+test_that('second test that %Q% works', {
+    
+    foo = GRanges(seqnames = Rle(1,c(5)) , ranges = IRanges(1:5 , end = 2000:2004) , strand = Rle(strand(c("+")) , c(5)) , mean = c(50, 200, 300, 400, 500))
+    expect_equal(length(foo %Q% (mean == 300)) , 1)
+    
+})
+
+test_that('third test that %Q% works', {
+    
+    foo = GRanges(seqnames = Rle(1,c(5)) , ranges = IRanges(1:5 , end = c(5, 10, 15, 20, 25)) , strand = Rle(strand(c("+", "-", "-", "-", "-"))) , mean = c(1, -2 , -5 , 5 ,6))
+    expect_equal(length(foo %Q% (strand == "-") ) , 4)
+    
+})
+
+
 test_that('%^% works', {
 
-  testset <- GRanges(seqnames = Rle(1,c(5)) , ranges = IRanges(1:5 , end = 2000:2004) , strand = Rle(strand(c("+")) , c(5)) , mean = c(1, -2 , -5 , 5 ,6))
-  expect_equal(length(testset %^% testset) , 5)
+    testset <- GRanges(seqnames = Rle(1,c(5)) , ranges = IRanges(1:5 , end = 2000:2004) , strand = Rle(strand(c("+")) , c(5)) , mean = c(1, -2 , -5 , 5 ,6))
+    expect_equal(length(testset %^% testset) , 5)
 
 })
