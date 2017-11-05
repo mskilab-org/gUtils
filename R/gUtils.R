@@ -1577,11 +1577,14 @@ gr.val = function(query, target,
     return(query)
 }
 
-                                        # gr.duplicated
-                                        #
-                                        # More flexible version of gr.duplicated that allows to restrict duplicates
-                                        # using "by" columns and allows in exact matching
-                                        #
+
+#' Allows to restrict duplicates using "by" columns and allows in exact matching
+#'
+#' @param query  query ranges
+#' @name gr.duplicated
+#' @examples
+#' gr.duplicated(GRanges(c(1,1,1), IRanges(c(2,5,5), width=1)))
+#' @export
 gr.duplicated = function(query, by = NULL, type = 'any')
 {
     return(duplicated(gr.match(query, query, by = by , type = type)))
