@@ -1582,8 +1582,8 @@ gr.val = function(query, target,
 #'
 #' @param query  query ranges
 #' @name gr.duplicated
-#' @examples
-#' gr.duplicated(GRanges(c(1,1,1), IRanges(c(2,5,5), width=1)))
+#' @examples gr.duplicated(GRanges(c(1,1,1), IRanges(c(2,5,5), width=1)))
+#' 
 #' @export
 gr.duplicated = function(query, by = NULL, type = 'any')
 {
