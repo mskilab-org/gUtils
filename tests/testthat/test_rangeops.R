@@ -165,8 +165,11 @@ test_that("gr.findoverlaps chunk", {
 test_that("gr.findoverlaps, input data.table", {
 
     example_genes = GRanges(2, IRanges(c(233101, 233101, 231023, 231023, 229966), c(233229, 233229, 231191, 231191, 230044)), strand = c("-"), type = c("exon", "CDS", "exon", "CDS", "exon"))
-    expect_equal(class(suppressWarnings(gr.findoverlaps(gr2dt(example_genes), example_genes, return.type='GRanges'))[1], "GRanges")
+    
+    expect_equal(class(suppressWarnings(gr.findoverlaps(gr2dt(example_genes), example_genes, return.type='GRanges')))[1], "GRanges")
+    
     expect_equal(class(suppressWarnings(gr.findoverlaps(gr2dt(example_genes), example_genes)))[1], "data.table")
+    
     expect_equal(class(suppressWarnings(gr.findoverlaps(gr2dt(example_genes), example_genes, max.chunk = 1e7)))[1], "data.table")
 
 })
