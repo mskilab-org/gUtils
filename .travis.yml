@@ -20,7 +20,7 @@ script:
   - cat /home/travis/build/mskilab/gUtils/gUtils.Rcheck/00check.log 
 
 after_failure:
-  - ./travis-tool.sh dump_logs_by_extension
+  - ./travis-tool.sh dump_logs
 
 notifications:
   email:
