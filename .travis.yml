@@ -14,10 +14,11 @@ before_install:
 install:
   - ./travis-tool.sh install_bioc_deps
   - ./travis-tool.sh install_deps
-  
-before_script: cat /home/travis/build/mskilab/gUtils/gUtils.Rcheck/00check.log 
  
 script: ./travis-tool.sh run_tests
+
+after_script: 
+  - cat /home/travis/build/mskilab/gUtils/gUtils.Rcheck/00check.log 
 
 after_failure:
   - ./travis-tool.sh dump_logs_by_extension
