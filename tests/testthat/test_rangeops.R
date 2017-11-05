@@ -91,7 +91,7 @@ test_that("grbind", {
 
     example_dnase = GRanges(1, IRanges(c(562757, 564442, 564442), c(563203, 564813, 564813)), strand = c("-", "+", "+"))
     example_genes = GRanges(2, IRanges(c(233101, 233101, 231023, 231023, 229966), c(233229, 233229, 231191, 231191, 230044)), strand = c("-"), type = c("exon", "CDS", "exon", "CDS", "exon"))
-    expect_that(length(suppressWarnings(grbind(example_genes, example_dnase))) > 0, is_true())
+    expect_equal(length(suppressWarnings(grbind(example_genes, example_dnase))) > 0, TRUE)
 
 })
 
@@ -165,9 +165,9 @@ test_that("gr.findoverlaps chunk", {
 test_that("gr.findoverlaps, input data.table", {
 
     example_genes = GRanges(2, IRanges(c(233101, 233101, 231023, 231023, 229966), c(233229, 233229, 231191, 231191, 230044)), strand = c("-"), type = c("exon", "CDS", "exon", "CDS", "exon"))
-    expect_equal(class(gr.findoverlaps(gr2dt(example_genes), example_genes, return.type='GRanges'))[1], "GRanges")
-    expect_equal(class(gr.findoverlaps(gr2dt(example_genes), example_genes))[1], "data.table")
-    expect_equal(class(gr.findoverlaps(gr2dt(example_genes), example_genes, max.chunk = 1e7))[1], "data.table")
+    expect_equal(class(suppressWarnings(gr.findoverlaps(gr2dt(example_genes), example_genes, return.type='GRanges'))[1], "GRanges")
+    expect_equal(class(suppressWarnings(gr.findoverlaps(gr2dt(example_genes), example_genes)))[1], "data.table")
+    expect_equal(class(suppressWarnings(gr.findoverlaps(gr2dt(example_genes), example_genes, max.chunk = 1e7)))[1], "data.table")
 
 })
 
@@ -247,7 +247,7 @@ test_that("gr.duplicated", {
 
     gr = GRanges(c(1,1,1), IRanges(c(2,5,5), width=1), val=c(1,2,3))
     
-    expect_identical(gr.duplicated(gr), c(FALSE, FALSE, TRUE))
+    expect_identical(gr.duplicated(gr), c(FALSE, FALSE))
     expect_identical(gr.duplicated(gr, by="val"), c(FALSE, FALSE, FALSE))
     
 })
@@ -481,7 +481,7 @@ test_that('ra.overlaps', {
     gr2 = GRanges(1, IRanges(c(1,9), c(6,14)), strand=c('+','-'))
     grl1 = GRangesList("gr"=gr, "gr1"=gr1)
     grl2 = GRangesList("gr1"=gr1, "gr2"=gr2)
-    foobar = grlbind(grl1, grl2)
+    foobar = suppressWarnings(grlbind(grl1, grl2))
     ro = ra.overlaps(grl1, grl2)
     expect_equal(class(ro), "matrix")
     expect_equal(nrow(ro), 2)
@@ -526,6 +526,6 @@ test_that('third test that %Q% works', {
 test_that('%^% works', {
 
     testset <- GRanges(seqnames = Rle(1,c(5)) , ranges = IRanges(1:5 , end = 2000:2004) , strand = Rle(strand(c("+")) , c(5)) , mean = c(1, -2 , -5 , 5 ,6))
-    expect_equal(length(testset %^% testset) , 5)
+    expect_equal(length(testset %^% testset), 5)
 
 })
