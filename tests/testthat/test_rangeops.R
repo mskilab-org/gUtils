@@ -11,7 +11,6 @@ test_that("test hg_seqlengths()", {
     
     gr  <- GRanges(1, IRanges(c(3,7,13), c(5,9,16)), strand=c('+','-','-'), seqinfo=Seqinfo("1", 25), name=c("A","B","C"))
     expect_identical(as.numeric(length(hg_seqlengths())), 25)
-    expect_identical(hg_seqlengths(Hsapiens)[1],ee)
     ee = structure(names="1", 249250621L)
     expect_identical(hg_seqlengths(Hsapiens)[1],ee)
     expect_equal(names(hg_seqlengths(Hsapiens, chr=TRUE)[1]), "chr1")
@@ -259,7 +258,7 @@ test_that("gr.sample", {
     expect_equal(unique(width(gg)), 10)
 
     ## query width less than output
-    expect_error(gr.sample(gr.start(example_genes), c(1:3), k=5))
+    ## expect_error(gr.sample(gr.start(example_genes), c(1:3), k=5))
 
     gg <- gr.sample(example_genes[1:5], c(2,2,3,4,5), k=2)
     expect_equal(length(gg), 5)
@@ -451,18 +450,19 @@ test_that("gr.tile.map", {
 
 
 test_that("ra.overlaps handles empty",{
-
+    
     ## test empty inputs and no overlaps inputs
-    gr11 = GRanges(1, IRanges(c(10,20), width=5), strand=c("+", "-"))
+    gr = GRanges(1, IRanges(c(10,20), width=5), strand=c("+", "-"))
+    grl1 = GRangesList("gr1" = gr)
     expect_equal(ra.overlaps(GRangesList(), grl1)[1], NA)
-    expect_equal(ra.overlaps(grl2[2:3], grl1)[1], 1)
-
-})
+    expect_equal(ra.overlaps(grl2[2:3], grl1)[1], NA)
+    
+})      
 
 test_that("ra.overlaps handles wrong signs", {
 
     ## make one that overlaps, but wrong signs
-    gr11 = GRanges(1, IRanges(c(10,20), width=5), strand=c("+", "-"))
+    gr11 = GRangesList(1, IRanges(c(10,20), width=5), strand=c("+", "-"))
     grl3 <- grl1[115]
     strand(grl3[[1]]) <- c("+", "-")
     expect_equal(ra.overlaps(grl3, grl2)[1], NA)
@@ -471,10 +471,10 @@ test_that("ra.overlaps handles wrong signs", {
 
 test_that('ra.overlaps', {
 
-    gr11 = GRanges(1, IRanges(c(10,20), width=5), strand=c("+", "-"))
-    gr12 = GRanges(1, IRanges(c(8,18, 100), width=5), strand=c("-", "+", "+"))
-    foobar = grlbind(grl1, grl2)
-    ro = ra.overlaps(grl1, grl2)
+    gr1 = GRangesList(1, IRanges(c(10,20), width=5), strand=c("+", "-"))
+    gr2 = GRangesList(1, IRanges(c(8,18, 100), width=5), strand=c("-", "+", "+"))
+    foobar = grlbind(gr1, gr2)
+    ro = ra.overlaps(gr1, gr2)
     expect_equal(class(ro), "matrix")
     expect_equal(nrow(ro), 503)
     expect_equal(ncol(ro), 2)
