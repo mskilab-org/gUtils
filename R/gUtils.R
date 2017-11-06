@@ -1062,7 +1062,7 @@ gr.fix = function(gr, genome = NULL, gname = NULL,  drop = FALSE)
                                         #       lens = lens[names(genome)]
                                         #   }
 
-        seqlevels(gr, force = TRUE) = names(lens)
+        seqlevels(gr) = names(lens)
         seqlengths(gr) = lens;
     }
     else
