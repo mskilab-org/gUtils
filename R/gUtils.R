@@ -933,7 +933,7 @@ gr.string = function(gr, add.chr = FALSE, mb = FALSE, round = 3, other.cols = c(
 #' @param grl \code{GRangesList} 
 #' @param pad padding to add to ranges inside grl before reduing
 #' 
-#' @returns \code{GRangesList} with reduced intervals
+#' @return \code{GRangesList} with reduced intervals
 #' @examples
 #'
 #' grl.reduce(grl, 1000)
