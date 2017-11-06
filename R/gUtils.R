@@ -532,7 +532,7 @@ gr.trim = function(gr, starts=1, ends=1)
 #' @return GRanges of max length sum(k) [if k is vector) or k*length(gr) (if k is scalar) with labels indicating the originating range.
 #'
 #' ## sample 5 \code{GRanges} of length 10 each from territory of RefSeq genes
-#' gr.sample(reduce(example_genes), k=5, len=10)
+#' gr.sample(reduce(example_genes), k=5, wid=10)
 #' @note This is different from \code{GenomicRanges::sample} function, which just samples from a pile of \code{GRanges}
 #' @author Marcin Imielinski
 #' @export
