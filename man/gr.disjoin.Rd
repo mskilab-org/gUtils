@@ -15,8 +15,3 @@ gr.disjoin(x, ..., ignore.strand = TRUE)
 
 \item{ignore.strand}{logical scalar, default TRUE}
 }
-\description{
-GenomicRanges disjoin with some spice
-
-Identical to GRanges disjoin, except outputs inherit metadata from first overlapping parent instance on input
-}

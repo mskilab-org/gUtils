@@ -140,23 +140,6 @@ gr.rand(rep(10,5), BSgenome.Hsapiens.UCSC.hg19::Hsapiens)
 
 
 cleanEx()
-nameEx("gr.sample")
-### * gr.sample
-
-flush(stderr()); flush(stdout())
-
-### Name: gr.sample
-### Title: Randomly sample 'GRanges' intervals within territory
-### Aliases: gr.sample
-
-### ** Examples
-
-## sample 5 \code{GRanges} of length 10 each from territory of RefSeq genes
-gr.sample(reduce(example_genes), k=5, len=10)
-
-
-
-cleanEx()
 nameEx("gr.start")
 ### * gr.start
 

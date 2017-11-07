@@ -15,7 +15,7 @@ BugReports: http://github.com/mskilab/gUtils/issues
 LazyData: true
 RoxygenNote: 6.0.1.9000
 NeedsCompilation: no
-Packaged: 2017-11-05 13:48:05 UTC; ebiederstedt
+Packaged: 2017-11-07 00:19:11 UTC; evanbiederstedt
 Author: Jeremiah Wala [aut],
   Marcin Imielinski [aut, cre]
 Maintainer: Marcin Imielinski <mimielinski@nygenome.org>

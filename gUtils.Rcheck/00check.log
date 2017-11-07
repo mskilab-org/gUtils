@@ -1,5 +1,5 @@
-* using log directory ‘/Users/ebiederstedt/gUtils/gUtils.Rcheck’
-* using R version 3.3.3 (2017-03-06)
+* using log directory ‘/Users/evanbiederstedt/gUtils/gUtils.Rcheck’
+* using R version 3.3.2 (2016-10-31)
 * using platform: x86_64-apple-darwin13.4.0 (64-bit)
 * using session charset: UTF-8
 * checking for file ‘gUtils/DESCRIPTION’ ... OK
@@ -12,7 +12,12 @@
 * checking for hidden files and directories ... OK
 * checking for portable file names ... OK
 * checking for sufficient/correct file permissions ... OK
-* checking whether package ‘gUtils’ can be installed ... OK
+* checking whether package ‘gUtils’ can be installed ... WARNING
+Found the following significant warnings:
+  Warning: package ‘GenomicRanges’ was built under R version 3.3.3
+  Warning: package ‘S4Vectors’ was built under R version 3.3.3
+  Warning: package ‘IRanges’ was built under R version 3.3.3
+See ‘/Users/evanbiederstedt/gUtils/gUtils.Rcheck/00install.out’ for details.
 * checking installed package size ... OK
 * checking package directory ... OK
 * checking DESCRIPTION meta-information ... OK
@@ -116,8 +121,9 @@ Consider adding
   importFrom("stats", "setNames")
 to your NAMESPACE file (and ensure that your DESCRIPTION Imports field
 contains 'methods').
-* checking Rd files ... NOTE
+* checking Rd files ... WARNING
 prepare_Rd: gr.breaks.Rd:22-25: Dropping empty section \examples
+checkRd: (5) gr.disjoin.Rd:0-18: Must have a \description
 prepare_Rd: ra.dedup.Rd:25-27: Dropping empty section \examples
 prepare_Rd: ra.duplicated.Rd:25-27: Dropping empty section \examples
 * checking Rd metadata ... OK
@@ -195,41 +201,20 @@ Extensions’ manual.
 Running examples in ‘gUtils-Ex.R’ failed
 The error most likely occurred in:
 
-> ### Name: gr.sample
-> ### Title: Randomly sample 'GRanges' intervals within territory
-> ### Aliases: gr.sample
+> ### Name: grl.reduce
+> ### Title: grl.reduce
+> ### Aliases: grl.reduce
 > 
 > ### ** Examples
 > 
-> ## sample 5 \code{GRanges} of length 10 each from territory of RefSeq genes
-> gr.sample(reduce(example_genes), k=5, len=10)
-Error in gr.sample(reduce(example_genes), k = 5, len = 10) : 
-  unused argument (len = 10)
+> 
+> grl.reduce(grl, 1000)
+Error in seqlevels(grl) : object 'grl' not found
+Calls: grl.reduce -> data.table -> seqlevels
 Execution halted
 * checking for unstated dependencies in ‘tests’ ... OK
-* checking tests ... ERROR
+* checking tests ... OK
   Running ‘testthat.R’
-Running the tests in ‘tests/testthat.R’ failed.
-Last 13 lines of output:
-      %o%
-  
-  > 
-  > test_check("gUtils")
-  [1] 59221325 43702116
-  ── 1. Failure: gr.duplicated (@test_rangeops.R#253)  ───────────────────────────
-  gr.duplicated(gr) not identical to c(FALSE, FALSE).
-  Lengths (3, 2) differ (comparison on first 2 components)
-  
-  ══ testthat results  ═══════════════════════════════════════════════════════════
-  OK: 130 SKIPPED: 2 FAILED: 1
-  1. Failure: gr.duplicated (@test_rangeops.R#253) 
-  
-  Error: testthat unit tests failed
-  Execution halted
-* checking PDF version of manual ... WARNING
-LaTeX errors when creating PDF version.
-This typically indicates Rd problems.
-* checking PDF version of manual without hyperrefs or index ... ERROR
-Re-running with no redirection of stdout/stderr.
+* checking PDF version of manual ... OK
 * DONE
-Status: 3 ERRORs, 4 WARNINGs, 3 NOTEs
+Status: 1 ERROR, 5 WARNINGs, 2 NOTEs

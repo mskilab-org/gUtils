@@ -531,9 +531,8 @@ gr.trim = function(gr, starts=1, ends=1)
 #' @param replace If TRUE, will bootstrap, otherwise will sample without replacement. [TRUE]
 #' @return GRanges of max length sum(k) [if k is vector) or k*length(gr) (if k is scalar) with labels indicating the originating range.
 #'
-#' @examples
 #' ## sample 5 \code{GRanges} of length 10 each from territory of RefSeq genes
-#' gr.sample(reduce(example_genes), k=5, len=10)
+#' gr.sample(reduce(example_genes), k=5, wid=10)
 #' @note This is different from \code{GenomicRanges::sample} function, which just samples from a pile of \code{GRanges}
 #' @author Marcin Imielinski
 #' @export
@@ -924,6 +923,12 @@ gr.string = function(gr, add.chr = FALSE, mb = FALSE, round = 3, other.cols = c(
 }
 
 
+gr1 = GRanges(seqnames = "chr2", ranges = IRanges(3, 6), strand = "+", score = 5L, GC = 0.45)
+gr2 = GRanges(seqnames = c("chr1", "chr1"), ranges = IRanges(c(7,13), width = 3), strand = c("+", "-"), score = 3:4, GC = c(0.3, 0.5))
+gr3 = GRanges(seqnames = c("chr1", "chr2"), ranges = IRanges(c(1, 4), c(3, 9)), strand = c("-", "-"), score = c(6L, 2L), GC = c(0.4, 0.1))
+grl = GRangesList("gr1" = gr1, "gr2" = gr2, "gr3" = gr3)
+
+
 #' @name grl.reduce
 #' @title grl.reduce
 #' @description
@@ -934,9 +939,12 @@ gr.string = function(gr, add.chr = FALSE, mb = FALSE, round = 3, other.cols = c(
 #' @param grl \code{GRangesList} 
 #' @param pad padding to add to ranges inside grl before reduing
 #' 
-#' @returns \code{GRangesList} with reduced intervals
+#' @return \code{GRangesList} with reduced intervals
 #' @examples
-#'
+#' gr1 = GRanges(seqnames = "chr2", ranges = IRanges(3, 6), strand = "+", score = 5L, GC = 0.45)
+#' gr2 = GRanges(seqnames = c("chr1", "chr1"), ranges = IRanges(c(7,13), width = 3), strand = c("+", "-"), score = 3:4, GC = c(0.3, 0.5))
+#' gr3 = GRanges(seqnames = c("chr1", "chr2"), ranges = IRanges(c(1, 4), c(3, 9)), strand = c("-", "-"), score = c(6L, 2L), GC = c(0.4, 0.1))
+#' grl = GRangesList("gr1" = gr1, "gr2" = gr2, "gr3" = gr3)
 #' grl.reduce(grl, 1000)
 #' 
 #' unlist(grl.reduce(split(reads+10000, reads$BX)))
@@ -1063,7 +1071,7 @@ gr.fix = function(gr, genome = NULL, gname = NULL,  drop = FALSE)
                                         #       lens = lens[names(genome)]
                                         #   }
 
-        seqlevels(gr, force = TRUE) = names(lens)
+        seqlevels(gr) = names(lens)
         seqlengths(gr) = lens;
     }
     else

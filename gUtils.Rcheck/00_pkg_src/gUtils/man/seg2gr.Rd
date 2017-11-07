@@ -2,6 +2,7 @@
 % Please edit documentation in R/gUtils.R
 \name{seg2gr}
 \alias{seg2gr}
+\alias{seg2gr}
 \alias{standardize_segs}
 \title{Convert GRange like data.frames into GRanges}
 \usage{

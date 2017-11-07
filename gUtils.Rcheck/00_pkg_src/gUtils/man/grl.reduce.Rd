@@ -11,6 +11,9 @@ grl.reduce(grl, pad = 0, clip = FALSE)
 
 \item{pad}{padding to add to ranges inside grl before reduing}
 }
+\value{
+\code{GRangesList} with reduced intervals
+}
 \description{
 Quickly ranges inside grl +/- pad
 Can use with split / unlist

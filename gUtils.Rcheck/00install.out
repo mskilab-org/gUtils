@@ -3,10 +3,16 @@
 ** data
 *** moving datasets to lazyload DB
 ** preparing package for lazy loading
+Warning: package ‘GenomicRanges’ was built under R version 3.3.3
+Warning: package ‘S4Vectors’ was built under R version 3.3.3
+Warning: package ‘IRanges’ was built under R version 3.3.3
 Creating a new generic function for ‘%o%’ in package ‘gUtils’
 Creating a new generic function for ‘%^%’ in package ‘gUtils’
 ** help
 *** installing help indices
 ** building package indices
 ** testing if installed package can be loaded
+Warning: package ‘GenomicRanges’ was built under R version 3.3.3
+Warning: package ‘S4Vectors’ was built under R version 3.3.3
+Warning: package ‘IRanges’ was built under R version 3.3.3
 * DONE (gUtils)

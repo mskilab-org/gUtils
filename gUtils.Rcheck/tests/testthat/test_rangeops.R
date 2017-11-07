@@ -106,7 +106,7 @@ test_that("gr.findoverlaps", {
 
     example_dnase = GRanges(1, IRanges(c(562757, 564442, 564442), c(563203, 564813, 564813)), strand = c("-", "+", "+"))
     example_genes = GRanges(2, IRanges(c(233101, 233101, 231023, 231023, 229966), c(233229, 233229, 231191, 231191, 230044)), strand = c("-"), type = c("exon", "CDS", "exon", "CDS", "exon"))
-    fo <- gr.findoverlaps(example_genes, example_dnase)
+    fo <- suppressWarnings(gr.findoverlaps(example_genes, example_dnase))   ## The 2 combined objects have no sequence levels in common. (Use suppressWarnings() to suppress this warning.)
     expect_equal(ncol(mcols(fo)), 0)
     expect_that(length(fo) == 0, is_true())
 
@@ -235,7 +235,7 @@ test_that("dt2gr", {
     expect_error(suppressWarnings(dt2gr(1)))
 
     dt <- data.table(sdf=1, start=1, end=10, strand='+', name="A")
-    expect_error(dt2gr(dt))
+    expect_error(suppressWarnings(dt2gr(dt)))    ### warning within error---warning: coercing to GRanges via non-standard columns
 })
 
 test_that("gr.val", {
@@ -250,7 +250,7 @@ test_that("gr.duplicated", {
 
     gr = GRanges(c(1,1,1), IRanges(c(2,5,5), width=1), val=c(1,2,3))
     
-    expect_identical(gr.duplicated(gr), c(FALSE, FALSE))
+    expect_identical(gr.duplicated(gr), c(FALSE, FALSE, TRUE))
     expect_identical(gr.duplicated(gr, by="val"), c(FALSE, FALSE, FALSE))
     
 })
@@ -265,7 +265,7 @@ test_that("gr.sample", {
     ## query width less than output
     ## expect_error(gr.sample(gr.start(example_genes), c(1:3), k=5))
 
-    gg <- gr.sample(example_genes[1:5], c(2,2,3,4,5), k=2)
+    gg <- suppressWarnings(gr.sample(example_genes[1:5], c(2,2,3,4,5), k=2))    ### expect warning: longer object length is not a multiple of shorter object length
     expect_equal(length(gg), 5)
     expect_equal(sum(width(gg)), 16)
 
@@ -278,7 +278,7 @@ test_that("gr.sample without replace", {
     gene2 = GRanges("2:24440-30000")
     gene3 = GRanges("2:278444-321000")
     gene4 = GRanges("3:1000-1500")
-    example_genes = c(gene1, gene2, gene3, gene4)
+    example_genes = suppressWarnings(c(gene1, gene2, gene3, gene4))  ##  The 2 combined objects have no sequence levels in common. (Use suppressWarnings() to suppress this warning
     gg <- gr.sample(reduce(example_genes), 10, k=1, replace=FALSE)
     expect_equal(unique(width(gg)), 10)
 
@@ -367,13 +367,19 @@ test_that("streduce", {
 
 test_that("parse.gr", {
 
-    parse.gr(c('1:1e6-5e6+', '2:2e6-5e6-'))
+    gr_example = parse.gr(c('1:1e6-5e6+', '2:2e6-5e6-'))
+    expect_equal(width(gr_example[1]), 4000001)
+    expect_equal(width(gr_example[2]), 3000001)
 
 })
 
 test_that("parse.grl", {
 
-    parse.grl(c('1:1e6-5e6+;5:10-2000', '2:2e6-5e6-;10:100231321-100231399'))
+    grl_example = parse.grl(c('1:1e6-5e6+;5:10-2000', '2:2e6-5e6-;10:100231321-100231399'))
+    expect_equal(width(grl_example[[1]][1]), 4000001)
+    expect_equal(width(grl_example[[1]][2]), 1991)
+    expect_equal(width(grl_example[[2]][1]), 3000001)
+    expect_equal(width(grl_example[[2]][2]), 79)
 
 })
 

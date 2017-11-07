@@ -1,6 +1,6 @@
 
-R version 3.3.3 (2017-03-06) -- "Another Canoe"
-Copyright (C) 2017 The R Foundation for Statistical Computing
+R version 3.3.2 (2016-10-31) -- "Sincere Pumpkin Patch"
+Copyright (C) 2016 The R Foundation for Statistical Computing
 Platform: x86_64-apple-darwin13.4.0 (64-bit)
 
 R is free software and comes with ABSOLUTELY NO WARRANTY.
@@ -80,16 +80,22 @@ The following object is masked from 'package:base':
 
     %o%
 
+Warning messages:
+1: package 'GenomicRanges' was built under R version 3.3.3 
+2: package 'S4Vectors' was built under R version 3.3.3 
+3: package 'IRanges' was built under R version 3.3.3 
 > 
 > test_check("gUtils")
+Loading required package: BSgenome
+Loading required package: Biostrings
+Loading required package: XVector
+Loading required package: rtracklayer
 [1] 59221325 43702116
-── 1. Failure: gr.duplicated (@test_rangeops.R#253)  ───────────────────────────
-gr.duplicated(gr) not identical to c(FALSE, FALSE).
-Lengths (3, 2) differ (comparison on first 2 components)
-
-══ testthat results  ═══════════════════════════════════════════════════════════
-OK: 130 SKIPPED: 2 FAILED: 1
-1. Failure: gr.duplicated (@test_rangeops.R#253) 
-
-Error: testthat unit tests failed
-Execution halted
+testthat results ================================================================
+OK: 132 SKIPPED: 0 FAILED: 0
+Warning message:
+package 'XVector' was built under R version 3.3.3 
+> 
+> proc.time()
+   user  system elapsed 
+ 12.717   0.437  13.328 
