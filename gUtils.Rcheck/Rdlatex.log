@@ -1,0 +1,668 @@
+Hmm ... looks like a package
+
+This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016) (preloaded format=pdflatex)
+ restricted \write18 enabled.
+entering extended mode
+LaTeX2e <2016/03/31>
+Babel <3.9r> and hyphenation patterns for 83 language(s) loaded.
+(./Rd2.tex
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/book.cls
+Document Class: book 2014/09/29 v1.4h Standard LaTeX document class
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/bk10.clo))
+(/Library/Frameworks/R.framework/Resources/share/texmf/tex/latex/Rd.sty
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/ifthen.sty)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/tools/longtable.sty)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/tools/bm.sty)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/alltt.sty)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/tools/verbatim.sty)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/url/url.sty)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/textcomp.sty
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/ts1enc.def))
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/fontenc.sty
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/t1enc.def))
+(/usr/local/texlive/2016/texmf-dist/tex/latex/psnfss/times.sty)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/inconsolata/zi4.sty
+`inconsolata-zi4' v1.10, 2016/02/22 Text macros for Inconsolata (msharpe)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/graphics/keyval.sty))
+(/usr/local/texlive/2016/texmf-dist/tex/latex/graphics/color.sty
+(/usr/local/texlive/2016/texmf-dist/tex/latex/graphics-cfg/color.cfg)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/pdftex-def/pdftex.def
+(/usr/local/texlive/2016/texmf-dist/tex/generic/oberdiek/infwarerr.sty)
+(/usr/local/texlive/2016/texmf-dist/tex/generic/oberdiek/ltxcmds.sty)))
+(/usr/local/texlive/2016/texmf-dist/tex/latex/hyperref/hyperref.sty
+(/usr/local/texlive/2016/texmf-dist/tex/generic/oberdiek/hobsub-hyperref.sty
+(/usr/local/texlive/2016/texmf-dist/tex/generic/oberdiek/hobsub-generic.sty))
+(/usr/local/texlive/2016/texmf-dist/tex/generic/ifxetex/ifxetex.sty)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/oberdiek/auxhook.sty)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/oberdiek/kvoptions.sty)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/hyperref/pd1enc.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/latexconfig/hyperref.cfg))
+
+Package hyperref Message: Driver (autodetected): hpdftex.
+
+(/usr/local/texlive/2016/texmf-dist/tex/latex/hyperref/hpdftex.def
+(/usr/local/texlive/2016/texmf-dist/tex/latex/oberdiek/rerunfilecheck.sty))
+
+Package hyperref Warning: Option `hyperindex' has already been used,
+(hyperref)                setting the option has no effect on input line 366.
+
+
+Package hyperref Warning: Option `pagebackref' has already been used,
+(hyperref)                setting the option has no effect on input line 366.
+
+) (/usr/local/texlive/2016/texmf-dist/tex/latex/base/makeidx.sty)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/inputenc.sty
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/t1enc.dfu)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/ot1enc.dfu)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/omsenc.dfu)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/ts1enc.dfu))
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/latin1.def))
+Writing index file Rd2.idx
+No file Rd2.aux.
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/ts1cmr.fd)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/psnfss/t1ptm.fd)
+(/usr/local/texlive/2016/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
+[Loading MPS to PDF converter (version 2006.09.02).]
+) (/usr/local/texlive/2016/texmf-dist/tex/latex/hyperref/nameref.sty
+(/usr/local/texlive/2016/texmf-dist/tex/generic/oberdiek/gettitlestring.sty))
+(/usr/local/texlive/2016/texmf-dist/tex/latex/inconsolata/t1zi4.fd)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/psnfss/t1phv.fd)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [1{/usr/local/texl
+ive/2016/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/inconsolata/ts1zi4.fd)
+Overfull \hbox (24.18094pt too wide) in paragraph at lines 100--100
+ []\T1/zi4/m/n/9 gr <- dt2gr(data.table(start=c(1,2), seqnames=c("X", "1"), end
+=c(10,20), strand = c(\TS1/zi4/m/n/9 '\T1/zi4/m/n/9 +\TS1/zi4/m/n/9 '\T1/zi4/m/
+n/9 , \TS1/zi4/m/n/9 '\T1/zi4/m/n/9 -\TS1/zi4/m/n/9 '\T1/zi4/m/n/9 )))[] 
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [2]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [3]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [4]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [5]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/psnfss/ts1ptm.fd) [6]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+Overfull \hbox (1.37921pt too wide) in paragraph at lines 385--386
+[]\T1/ptm/m/n/10 Allows re-turned \T1/zi4/m/n/10 GRanges \T1/ptm/m/n/10 to have
+ ranges out-side of its \T1/zi4/m/n/10 Seqinfo \T1/ptm/m/n/10 bounds. \T1/zi4/m
+/n/10 [FALSE] 
+[7] (/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+Overfull \hbox (3.68036pt too wide) in paragraph at lines 446--447
+[]\T1/zi4/m/n/10 type \T1/ptm/m/n/10 ar-gu-ment as de-fined by \T1/zi4/m/n/10 I
+Ranges::findOverlaps \T1/ptm/m/n/10 (\T1/zi4/m/n/10 "any"\T1/ptm/m/n/10 , \T1/z
+i4/m/n/10 "start"\T1/ptm/m/n/10 , \T1/zi4/m/n/10 "end"\T1/ptm/m/n/10 ,
+
+Overfull \hbox (15.71907pt too wide) in paragraph at lines 452--453
+\T1/ptm/m/n/10 ber in-creases run-time but de-creased mem-ory. If \T1/zi4/m/n/1
+0 length(query)*length(subject)
+[8] (/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [9]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+Underfull \hbox (badness 10000) in paragraph at lines 576--576
+[]\T1/ptm/m/it/10 Alternative \T1/zi4/m/n/10 GenomicRanges::match \T1/ptm/m/it/
+10 that ac-cepts ad-di-tional
+[10] (/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+Overfull \hbox (1.9172pt too wide) in paragraph at lines 617--619
+[]\T1/ptm/m/n/10 Uses gr.findoverlaps to en-able in-ter-nal and ex-ter-nal join
+s of GRanges us-ing syn-tax sim-i-lar to "merge"
+[11] (/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [12]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [13]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+Overfull \hbox (21.4577pt too wide) in paragraph at lines 795--797
+[]\T1/ptm/m/n/10 ## sam-ple 5 \T1/zi4/m/n/10 GRanges \T1/ptm/m/n/10 of length 1
+0 each from ter-ri-tory of Ref-Seq genes gr.sample(reduce(example_genes),
+
+Overfull \hbox (1.81813pt too wide) in paragraph at lines 800--801
+[]\T1/ptm/m/n/10 This is dif-fer-ent from \T1/zi4/m/n/10 GenomicRanges::sample 
+\T1/ptm/m/n/10 func-tion, which just sam-ples from a pile of \T1/zi4/m/n/10 GRa
+nges 
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [14]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [15]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [16]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [17]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+Overfull \hbox (6.79726pt too wide) in paragraph at lines 991--994
+[]\T1/ptm/m/n/10 Given two tilings of the genome (e.g. at dif-fer-ent res-o-lu-
+tion) query and sub-ject out-puts a length(query)
+[18] (/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [19] [20]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [21]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [22]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [23]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [24]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [25]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [26]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+Overfull \hbox (28.38948pt too wide) in paragraph at lines 1506--1508
+\T1/ptm/m/n/10 the full names-pace of the genome e.g.: \T1/zi4/m/n/10 DEFAULT_B
+SGENOME=BSgenome.Hsapiens.UCSC.hg19::Hsapiens
+
+Overfull \hbox (76.12497pt too wide) in paragraph at lines 1506--1508
+\T1/ptm/m/n/10 OR a URL / file path point-ing to a chrom.sizes text file (e.g. 
+http://genome.ucsc.edu/goldenpath/help/hg19.chrom.sizes)
+[27] (/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+Overfull \hbox (15.03638pt too wide) in paragraph at lines 1550--1551
+[]\T1/ptm/m/n/10 character vec-tor rep-re-sent-ing a GRanges-List with UCSC sty
+le co-or-di-nates (chr:start-
+[28] (/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [29]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [30]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [31]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [32]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [33]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [34]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [35]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [36]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [37]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [38]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [39]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [40]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [41]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [42]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+Underfull \hbox (badness 10000) in paragraph at lines 2371--2371
+[]\T1/ptm/m/it/10 Metadata join with co-or-di-nates as keys (wrap-per to
+[43]
+No file Rd2.ind.
+[44] (./Rd2.aux)
+
+Package rerunfilecheck Warning: File `Rd2.out' has changed.
+(rerunfilecheck)                Rerun to get outlines right
+(rerunfilecheck)                or use package `bookmark'.
+
+ )
+(see the transcript file for additional information)pdfTeX warning (dest): name
+{Rfn.RleList} has been referenced but does not exist, replaced by a fixed one
+
+{/usr/local/texlive/2016/texmf-dist/fonts/enc/dvips/inconsolata/i4-ts1.enc}{/us
+r/local/texlive/2016/texmf-dist/fonts/enc/dvips/base/8r.enc}{/usr/local/texlive
+/2016/texmf-dist/fonts/enc/dvips/inconsolata/i4-t1-0.enc}</usr/local/texlive/20
+16/texmf-dist/fonts/type1/public/inconsolata/Inconsolata-zi4r.pfb></usr/local/t
+exlive/2016/texmf-dist/fonts/type1/urw/helvetic/uhvr8a.pfb></usr/local/texlive/
+2016/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/local/texlive/2016/texmf
+-dist/fonts/type1/urw/times/utmr8a.pfb></usr/local/texlive/2016/texmf-dist/font
+s/type1/urw/times/utmr8a.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/ur
+w/times/utmri8a.pfb>
+Output written on Rd2.pdf (44 pages, 164536 bytes).
+Transcript written on Rd2.log.
+This is makeindex, version 2.15 [TeX Live 2016] (kpathsea + Thai support).
+Scanning input file Rd2.idx....done (134 entries accepted, 0 rejected).
+Sorting entries....done (980 comparisons).
+Generating output file Rd2.ind....done (163 lines written, 0 warnings).
+Output written in Rd2.ind.
+Transcript written in Rd2.ilg.
+This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016) (preloaded format=pdflatex)
+ restricted \write18 enabled.
+entering extended mode
+LaTeX2e <2016/03/31>
+Babel <3.9r> and hyphenation patterns for 83 language(s) loaded.
+(./Rd2.tex
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/book.cls
+Document Class: book 2014/09/29 v1.4h Standard LaTeX document class
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/bk10.clo))
+(/Library/Frameworks/R.framework/Resources/share/texmf/tex/latex/Rd.sty
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/ifthen.sty)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/tools/longtable.sty)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/tools/bm.sty)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/alltt.sty)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/tools/verbatim.sty)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/url/url.sty)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/textcomp.sty
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/ts1enc.def))
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/fontenc.sty
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/t1enc.def))
+(/usr/local/texlive/2016/texmf-dist/tex/latex/psnfss/times.sty)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/inconsolata/zi4.sty
+`inconsolata-zi4' v1.10, 2016/02/22 Text macros for Inconsolata (msharpe)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/graphics/keyval.sty))
+(/usr/local/texlive/2016/texmf-dist/tex/latex/graphics/color.sty
+(/usr/local/texlive/2016/texmf-dist/tex/latex/graphics-cfg/color.cfg)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/pdftex-def/pdftex.def
+(/usr/local/texlive/2016/texmf-dist/tex/generic/oberdiek/infwarerr.sty)
+(/usr/local/texlive/2016/texmf-dist/tex/generic/oberdiek/ltxcmds.sty)))
+(/usr/local/texlive/2016/texmf-dist/tex/latex/hyperref/hyperref.sty
+(/usr/local/texlive/2016/texmf-dist/tex/generic/oberdiek/hobsub-hyperref.sty
+(/usr/local/texlive/2016/texmf-dist/tex/generic/oberdiek/hobsub-generic.sty))
+(/usr/local/texlive/2016/texmf-dist/tex/generic/ifxetex/ifxetex.sty)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/oberdiek/auxhook.sty)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/oberdiek/kvoptions.sty)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/hyperref/pd1enc.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/latexconfig/hyperref.cfg))
+
+Package hyperref Message: Driver (autodetected): hpdftex.
+
+(/usr/local/texlive/2016/texmf-dist/tex/latex/hyperref/hpdftex.def
+(/usr/local/texlive/2016/texmf-dist/tex/latex/oberdiek/rerunfilecheck.sty))
+
+Package hyperref Warning: Option `hyperindex' has already been used,
+(hyperref)                setting the option has no effect on input line 366.
+
+
+Package hyperref Warning: Option `pagebackref' has already been used,
+(hyperref)                setting the option has no effect on input line 366.
+
+) (/usr/local/texlive/2016/texmf-dist/tex/latex/base/makeidx.sty)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/inputenc.sty
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/t1enc.dfu)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/ot1enc.dfu)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/omsenc.dfu)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/ts1enc.dfu))
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/latin1.def))
+Writing index file Rd2.idx
+(./Rd2.aux) (/usr/local/texlive/2016/texmf-dist/tex/latex/base/ts1cmr.fd)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/psnfss/t1ptm.fd)
+(/usr/local/texlive/2016/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
+[Loading MPS to PDF converter (version 2006.09.02).]
+) (/usr/local/texlive/2016/texmf-dist/tex/latex/hyperref/nameref.sty
+(/usr/local/texlive/2016/texmf-dist/tex/generic/oberdiek/gettitlestring.sty))
+(./Rd2.out) (./Rd2.out)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/inconsolata/t1zi4.fd)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/psnfss/t1phv.fd) (./Rd2.toc
+[1{/usr/local/texlive/2016/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]
+[2]) (/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [3]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/inconsolata/ts1zi4.fd)
+Overfull \hbox (24.18094pt too wide) in paragraph at lines 100--100
+ []\T1/zi4/m/n/9 gr <- dt2gr(data.table(start=c(1,2), seqnames=c("X", "1"), end
+=c(10,20), strand = c(\TS1/zi4/m/n/9 '\T1/zi4/m/n/9 +\TS1/zi4/m/n/9 '\T1/zi4/m/
+n/9 , \TS1/zi4/m/n/9 '\T1/zi4/m/n/9 -\TS1/zi4/m/n/9 '\T1/zi4/m/n/9 )))[] 
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [4]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [5]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [6]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [7]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/psnfss/ts1ptm.fd)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [8]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+Overfull \hbox (1.37921pt too wide) in paragraph at lines 385--386
+[]\T1/ptm/m/n/10 Allows re-turned \T1/zi4/m/n/10 GRanges \T1/ptm/m/n/10 to have
+ ranges out-side of its \T1/zi4/m/n/10 Seqinfo \T1/ptm/m/n/10 bounds. \T1/zi4/m
+/n/10 [FALSE] 
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [9]
+Overfull \hbox (3.68036pt too wide) in paragraph at lines 446--447
+[]\T1/zi4/m/n/10 type \T1/ptm/m/n/10 ar-gu-ment as de-fined by \T1/zi4/m/n/10 I
+Ranges::findOverlaps \T1/ptm/m/n/10 (\T1/zi4/m/n/10 "any"\T1/ptm/m/n/10 , \T1/z
+i4/m/n/10 "start"\T1/ptm/m/n/10 , \T1/zi4/m/n/10 "end"\T1/ptm/m/n/10 ,
+
+Overfull \hbox (15.71907pt too wide) in paragraph at lines 452--453
+\T1/ptm/m/n/10 ber in-creases run-time but de-creased mem-ory. If \T1/zi4/m/n/1
+0 length(query)*length(subject)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [10]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [11]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+Underfull \hbox (badness 10000) in paragraph at lines 576--576
+[]\T1/ptm/m/it/10 Alternative \T1/zi4/m/n/10 GenomicRanges::match \T1/ptm/m/it/
+10 that ac-cepts ad-di-tional
+[12] (/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+Overfull \hbox (1.9172pt too wide) in paragraph at lines 617--619
+[]\T1/ptm/m/n/10 Uses gr.findoverlaps to en-able in-ter-nal and ex-ter-nal join
+s of GRanges us-ing syn-tax sim-i-lar to "merge"
+[13] (/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [14]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [15]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+Overfull \hbox (21.4577pt too wide) in paragraph at lines 795--797
+[]\T1/ptm/m/n/10 ## sam-ple 5 \T1/zi4/m/n/10 GRanges \T1/ptm/m/n/10 of length 1
+0 each from ter-ri-tory of Ref-Seq genes gr.sample(reduce(example_genes),
+
+Overfull \hbox (1.81813pt too wide) in paragraph at lines 800--801
+[]\T1/ptm/m/n/10 This is dif-fer-ent from \T1/zi4/m/n/10 GenomicRanges::sample 
+\T1/ptm/m/n/10 func-tion, which just sam-ples from a pile of \T1/zi4/m/n/10 GRa
+nges 
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [16]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [17]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [18]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [19]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+Overfull \hbox (6.79726pt too wide) in paragraph at lines 991--994
+[]\T1/ptm/m/n/10 Given two tilings of the genome (e.g. at dif-fer-ent res-o-lu-
+tion) query and sub-ject out-puts a length(query)
+[20] (/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [21] [22]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [23]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [24]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [25]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [26]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [27]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [28]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+Overfull \hbox (28.38948pt too wide) in paragraph at lines 1506--1508
+\T1/ptm/m/n/10 the full names-pace of the genome e.g.: \T1/zi4/m/n/10 DEFAULT_B
+SGENOME=BSgenome.Hsapiens.UCSC.hg19::Hsapiens
+
+Overfull \hbox (76.12497pt too wide) in paragraph at lines 1506--1508
+\T1/ptm/m/n/10 OR a URL / file path point-ing to a chrom.sizes text file (e.g. 
+http://genome.ucsc.edu/goldenpath/help/hg19.chrom.sizes)
+[29] (/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+Overfull \hbox (15.03638pt too wide) in paragraph at lines 1550--1551
+[]\T1/ptm/m/n/10 character vec-tor rep-re-sent-ing a GRanges-List with UCSC sty
+le co-or-di-nates (chr:start-
+[30] (/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [31]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [32]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [33]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [34]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [35]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [36]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [37]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [38]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [39]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [40]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [41]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [42]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [43]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [44]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+Underfull \hbox (badness 10000) in paragraph at lines 2371--2371
+[]\T1/ptm/m/it/10 Metadata join with co-or-di-nates as keys (wrap-per to
+[45] (./Rd2.ind [46]
+
+LaTeX Font Warning: Font shape `T1/zi4/m/it' undefined
+(Font)              using `T1/zi4/m/n' instead on input line 10.
+
+[47] [48]) (./Rd2.aux)
+
+Package rerunfilecheck Warning: File `Rd2.out' has changed.
+(rerunfilecheck)                Rerun to get outlines right
+(rerunfilecheck)                or use package `bookmark'.
+
+
+LaTeX Font Warning: Some font shapes were not available, defaults substituted.
+
+ )
+(see the transcript file for additional information)pdfTeX warning (dest): name
+{Rfn.RleList} has been referenced but does not exist, replaced by a fixed one
+
+{/usr/local/texlive/2016/texmf-dist/fonts/enc/dvips/inconsolata/i4-ts1.enc}{/us
+r/local/texlive/2016/texmf-dist/fonts/enc/dvips/base/8r.enc}{/usr/local/texlive
+/2016/texmf-dist/fonts/enc/dvips/inconsolata/i4-t1-0.enc}</usr/local/texlive/20
+16/texmf-dist/fonts/type1/public/inconsolata/Inconsolata-zi4r.pfb></usr/local/t
+exlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/te
+xlive/2016/texmf-dist/fonts/type1/urw/helvetic/uhvr8a.pfb></usr/local/texlive/2
+016/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/local/texlive/2016/texmf-
+dist/fonts/type1/urw/times/utmr8a.pfb></usr/local/texlive/2016/texmf-dist/fonts
+/type1/urw/times/utmr8a.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/urw
+/times/utmri8a.pfb>
+Output written on Rd2.pdf (48 pages, 187601 bytes).
+Transcript written on Rd2.log.
+This is makeindex, version 2.15 [TeX Live 2016] (kpathsea + Thai support).
+Scanning input file Rd2.idx....done (134 entries accepted, 0 rejected).
+Sorting entries....done (980 comparisons).
+Generating output file Rd2.ind....done (163 lines written, 0 warnings).
+Output written in Rd2.ind.
+Transcript written in Rd2.ilg.
+This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016) (preloaded format=pdflatex)
+ restricted \write18 enabled.
+entering extended mode
+LaTeX2e <2016/03/31>
+Babel <3.9r> and hyphenation patterns for 83 language(s) loaded.
+(./Rd2.tex
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/book.cls
+Document Class: book 2014/09/29 v1.4h Standard LaTeX document class
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/bk10.clo))
+(/Library/Frameworks/R.framework/Resources/share/texmf/tex/latex/Rd.sty
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/ifthen.sty)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/tools/longtable.sty)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/tools/bm.sty)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/alltt.sty)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/tools/verbatim.sty)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/url/url.sty)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/textcomp.sty
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/ts1enc.def))
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/fontenc.sty
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/t1enc.def))
+(/usr/local/texlive/2016/texmf-dist/tex/latex/psnfss/times.sty)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/inconsolata/zi4.sty
+`inconsolata-zi4' v1.10, 2016/02/22 Text macros for Inconsolata (msharpe)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/graphics/keyval.sty))
+(/usr/local/texlive/2016/texmf-dist/tex/latex/graphics/color.sty
+(/usr/local/texlive/2016/texmf-dist/tex/latex/graphics-cfg/color.cfg)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/pdftex-def/pdftex.def
+(/usr/local/texlive/2016/texmf-dist/tex/generic/oberdiek/infwarerr.sty)
+(/usr/local/texlive/2016/texmf-dist/tex/generic/oberdiek/ltxcmds.sty)))
+(/usr/local/texlive/2016/texmf-dist/tex/latex/hyperref/hyperref.sty
+(/usr/local/texlive/2016/texmf-dist/tex/generic/oberdiek/hobsub-hyperref.sty
+(/usr/local/texlive/2016/texmf-dist/tex/generic/oberdiek/hobsub-generic.sty))
+(/usr/local/texlive/2016/texmf-dist/tex/generic/ifxetex/ifxetex.sty)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/oberdiek/auxhook.sty)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/oberdiek/kvoptions.sty)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/hyperref/pd1enc.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/latexconfig/hyperref.cfg))
+
+Package hyperref Message: Driver (autodetected): hpdftex.
+
+(/usr/local/texlive/2016/texmf-dist/tex/latex/hyperref/hpdftex.def
+(/usr/local/texlive/2016/texmf-dist/tex/latex/oberdiek/rerunfilecheck.sty))
+
+Package hyperref Warning: Option `hyperindex' has already been used,
+(hyperref)                setting the option has no effect on input line 366.
+
+
+Package hyperref Warning: Option `pagebackref' has already been used,
+(hyperref)                setting the option has no effect on input line 366.
+
+) (/usr/local/texlive/2016/texmf-dist/tex/latex/base/makeidx.sty)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/inputenc.sty
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/t1enc.dfu)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/ot1enc.dfu)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/omsenc.dfu)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/ts1enc.dfu))
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/latin1.def))
+Writing index file Rd2.idx
+(./Rd2.aux) (/usr/local/texlive/2016/texmf-dist/tex/latex/base/ts1cmr.fd)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/psnfss/t1ptm.fd)
+(/usr/local/texlive/2016/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
+[Loading MPS to PDF converter (version 2006.09.02).]
+) (/usr/local/texlive/2016/texmf-dist/tex/latex/hyperref/nameref.sty
+(/usr/local/texlive/2016/texmf-dist/tex/generic/oberdiek/gettitlestring.sty))
+(./Rd2.out) (./Rd2.out)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/inconsolata/t1zi4.fd)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/psnfss/t1phv.fd) (./Rd2.toc
+[1{/usr/local/texlive/2016/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]
+[2]) (/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [3]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/inconsolata/ts1zi4.fd)
+Overfull \hbox (24.18094pt too wide) in paragraph at lines 100--100
+ []\T1/zi4/m/n/9 gr <- dt2gr(data.table(start=c(1,2), seqnames=c("X", "1"), end
+=c(10,20), strand = c(\TS1/zi4/m/n/9 '\T1/zi4/m/n/9 +\TS1/zi4/m/n/9 '\T1/zi4/m/
+n/9 , \TS1/zi4/m/n/9 '\T1/zi4/m/n/9 -\TS1/zi4/m/n/9 '\T1/zi4/m/n/9 )))[] 
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [4]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [5]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [6]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [7]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/psnfss/ts1ptm.fd)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [8]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+Overfull \hbox (1.37921pt too wide) in paragraph at lines 385--386
+[]\T1/ptm/m/n/10 Allows re-turned \T1/zi4/m/n/10 GRanges \T1/ptm/m/n/10 to have
+ ranges out-side of its \T1/zi4/m/n/10 Seqinfo \T1/ptm/m/n/10 bounds. \T1/zi4/m
+/n/10 [FALSE] 
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [9]
+Overfull \hbox (3.68036pt too wide) in paragraph at lines 446--447
+[]\T1/zi4/m/n/10 type \T1/ptm/m/n/10 ar-gu-ment as de-fined by \T1/zi4/m/n/10 I
+Ranges::findOverlaps \T1/ptm/m/n/10 (\T1/zi4/m/n/10 "any"\T1/ptm/m/n/10 , \T1/z
+i4/m/n/10 "start"\T1/ptm/m/n/10 , \T1/zi4/m/n/10 "end"\T1/ptm/m/n/10 ,
+
+Overfull \hbox (15.71907pt too wide) in paragraph at lines 452--453
+\T1/ptm/m/n/10 ber in-creases run-time but de-creased mem-ory. If \T1/zi4/m/n/1
+0 length(query)*length(subject)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [10]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [11]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+Underfull \hbox (badness 10000) in paragraph at lines 576--576
+[]\T1/ptm/m/it/10 Alternative \T1/zi4/m/n/10 GenomicRanges::match \T1/ptm/m/it/
+10 that ac-cepts ad-di-tional
+[12] (/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+Overfull \hbox (1.9172pt too wide) in paragraph at lines 617--619
+[]\T1/ptm/m/n/10 Uses gr.findoverlaps to en-able in-ter-nal and ex-ter-nal join
+s of GRanges us-ing syn-tax sim-i-lar to "merge"
+[13] (/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [14]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [15]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+Overfull \hbox (21.4577pt too wide) in paragraph at lines 795--797
+[]\T1/ptm/m/n/10 ## sam-ple 5 \T1/zi4/m/n/10 GRanges \T1/ptm/m/n/10 of length 1
+0 each from ter-ri-tory of Ref-Seq genes gr.sample(reduce(example_genes),
+
+Overfull \hbox (1.81813pt too wide) in paragraph at lines 800--801
+[]\T1/ptm/m/n/10 This is dif-fer-ent from \T1/zi4/m/n/10 GenomicRanges::sample 
+\T1/ptm/m/n/10 func-tion, which just sam-ples from a pile of \T1/zi4/m/n/10 GRa
+nges 
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [16]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [17]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [18]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [19]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+Overfull \hbox (6.79726pt too wide) in paragraph at lines 991--994
+[]\T1/ptm/m/n/10 Given two tilings of the genome (e.g. at dif-fer-ent res-o-lu-
+tion) query and sub-ject out-puts a length(query)
+[20] (/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [21] [22]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [23]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [24]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [25]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [26]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [27]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [28]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+Overfull \hbox (28.38948pt too wide) in paragraph at lines 1506--1508
+\T1/ptm/m/n/10 the full names-pace of the genome e.g.: \T1/zi4/m/n/10 DEFAULT_B
+SGENOME=BSgenome.Hsapiens.UCSC.hg19::Hsapiens
+
+Overfull \hbox (76.12497pt too wide) in paragraph at lines 1506--1508
+\T1/ptm/m/n/10 OR a URL / file path point-ing to a chrom.sizes text file (e.g. 
+http://genome.ucsc.edu/goldenpath/help/hg19.chrom.sizes)
+[29] (/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+Overfull \hbox (15.03638pt too wide) in paragraph at lines 1550--1551
+[]\T1/ptm/m/n/10 character vec-tor rep-re-sent-ing a GRanges-List with UCSC sty
+le co-or-di-nates (chr:start-
+[30] (/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [31]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [32]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [33]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [34]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [35]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [36]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [37]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [38]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [39]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [40]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [41]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [42]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [43]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def) [44]
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/utf8.def)
+Underfull \hbox (badness 10000) in paragraph at lines 2371--2371
+[]\T1/ptm/m/it/10 Metadata join with co-or-di-nates as keys (wrap-per to
+[45] (./Rd2.ind [46]
+
+LaTeX Font Warning: Font shape `T1/zi4/m/it' undefined
+(Font)              using `T1/zi4/m/n' instead on input line 10.
+
+[47] [48]) (./Rd2.aux)
+
+LaTeX Font Warning: Some font shapes were not available, defaults substituted.
+
+ )
+(see the transcript file for additional information)pdfTeX warning (dest): name
+{Rfn.RleList} has been referenced but does not exist, replaced by a fixed one
+
+{/usr/local/texlive/2016/texmf-dist/fonts/enc/dvips/inconsolata/i4-ts1.enc}{/us
+r/local/texlive/2016/texmf-dist/fonts/enc/dvips/base/8r.enc}{/usr/local/texlive
+/2016/texmf-dist/fonts/enc/dvips/inconsolata/i4-t1-0.enc}</usr/local/texlive/20
+16/texmf-dist/fonts/type1/public/inconsolata/Inconsolata-zi4r.pfb></usr/local/t
+exlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/te
+xlive/2016/texmf-dist/fonts/type1/urw/helvetic/uhvr8a.pfb></usr/local/texlive/2
+016/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/local/texlive/2016/texmf-
+dist/fonts/type1/urw/times/utmr8a.pfb></usr/local/texlive/2016/texmf-dist/fonts
+/type1/urw/times/utmr8a.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/urw
+/times/utmri8a.pfb>
+Output written on Rd2.pdf (48 pages, 188667 bytes).
+Transcript written on Rd2.log.
+Saving output to 'gUtils-manual.pdf' ...
+Done
+You may want to clean up by 'rm -rf /var/folders/t7/qvfkrtw91jl5v0sx7smfs1400000gn/T//Rtmpejy9sf/Rd2pdf3a727785bdd7'

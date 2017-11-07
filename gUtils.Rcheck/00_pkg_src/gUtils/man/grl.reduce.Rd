@@ -18,6 +18,13 @@ grl.reduce(grl, pad = 0, clip = FALSE)
 Quickly ranges inside grl +/- pad
 Can use with split / unlist
 }
+\examples{
+
+grl.reduce(grl, 1000)
+
+unlist(grl.reduce(split(reads+10000, reads$BX)))
+
+}
 \author{
 Marcin Imielinski
 }
