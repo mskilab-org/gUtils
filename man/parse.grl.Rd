@@ -12,7 +12,7 @@ parse.grl(x, seqlengths = hg_seqlengths())
 \item{seqlengths}{named integer vector representing genome (hg_seqlengths() by default)}
 }
 \description{
-quick function to parse \code{GRangesList} from character vector IGV / UCSC style strings of format gr1;gr2;gr3 where each gr is of format chr:start-end[+/-]
+Quick function to parse \code{GRangesList} from character vector IGV / UCSC style strings of format gr1;gr2;gr3 where each gr is of format chr:start-end[+/-]
 }
 \author{
 Marcin Imielinski

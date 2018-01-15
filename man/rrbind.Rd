@@ -17,6 +17,8 @@ rrbind(..., union = TRUE, as.data.table = FALSE)
 \code{data.frame} or \code{data.table} of the \code{rbind} operation
 }
 \description{
+Improved \code{rbind} for intersecting/union columns of \code{data.frames} or \code{data.tables}
+
 Like \code{rbind}, but takes the intersecting columns of the data.
 }
 \author{

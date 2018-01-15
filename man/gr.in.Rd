@@ -14,5 +14,7 @@ gr.in(query, subject, ...)
 \item{...}{Argument to be sent to \code{\link{gr.findoverlaps}} (e.g. \code{by})}
 }
 \description{
+Versatile implementation of \code{GenomicRanges::over}
+
 returns T / F vector if query range i is found in any range in subject
 }

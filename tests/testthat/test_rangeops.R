@@ -20,6 +20,24 @@ test_that("test hg_seqlengths()", {
 
 })
 
+
+test_that("gr2dt", {
+
+    gr = GRanges(1, IRanges(c(3,7,13), c(5,9,16)), strand=c('+','-','-'), seqinfo=Seqinfo("1", 25), name=c("A","B","C"))
+    example_genes = GRanges(2, IRanges(c(233101, 233101, 231023, 231023, 229966), c(233229, 233229, 231191, 231191, 230044)), strand = c("-"), type = c("exon", "CDS", "exon", "CDS", "exon"))
+    expect_identical(colnames(gr2dt(gr)), c("seqnames", "start", "end", "strand", "width", "name"))
+    expect_equal(nrow(gr2dt(gr)), length(gr))
+
+    subjectdt <- gr2dt(example_genes)
+    expect_equal(!any(subjectdt$start!=start(example_genes)), TRUE)
+    expect_equal(!any(subjectdt$end!=end(example_genes)), TRUE)
+    expect_equal(!any(subjectdt$width!=width(example_genes)), TRUE)
+    expect_equal(all(as.character(subjectdt$strand) == as.character(strand(example_genes))), TRUE)
+    expect_equal(all(subjectdt$seqnames == as.vector(seqnames(example_genes))), TRUE)
+    
+})
+
+
 test_that("gr.start ", {
     
     gr = GRanges(1, IRanges(c(3,7,13), c(5,9,16)), strand=c('+','-','-'), seqinfo=Seqinfo("1", 25), name=c("A","B","C"))
@@ -38,6 +56,23 @@ test_that("gr.start ", {
     expect_identical(end(gr.start(gr, width=10000)), c(5L, 9L, 16L))  ## default clip=TRUE
     
 })
+
+
+test_that("dt2gr", {
+
+    Sys.setenv(DEFAULT_BSGENOME = "BSgenome.Hsapiens.UCSC.hg19::Hsapiens")
+    dt <- data.table(seqnames=1, start=1, end=10, strand='+', name="A")
+    expect_equal(as.character(strand(dt2gr(dt))), '+')
+    expect_equal(start(dt2gr(dt)), 1)
+    expect_equal(dt2gr(dt)$name, "A")
+
+    expect_equal(start(dt2gr(as.data.frame(dt)))[1], 1)
+    expect_error(suppressWarnings(dt2gr(1)))
+
+    dt <- data.table(sdf=1, start=1, end=10, strand='+', name="A")
+    expect_error(suppressWarnings(dt2gr(dt)))    ### warning within error---warning: coercing to GRanges via non-standard columns
+})
+
 
 test_that("gr.end", {
 
@@ -60,7 +95,7 @@ test_that("gr.mid", {
 
 })
 
-test_that("test gr.dist", {
+test_that("gr.dist", {
 
     gr  = GRanges(1, IRanges(c(3,7,13), c(5,9,16)), strand=c('+','-','-'), seqinfo=Seqinfo("1", 25), name=c("A","B","C"))
     gr2 = GRanges(1, IRanges(c(1,9), c(6,14)), strand=c('+','-'), seqinfo=Seqinfo("1", 25), field=c(1,2))
@@ -206,37 +241,9 @@ test_that("gr.findoverlap by", {
 })
 
 
-test_that("gr2dt works as expected", {
-
-    gr = GRanges(1, IRanges(c(3,7,13), c(5,9,16)), strand=c('+','-','-'), seqinfo=Seqinfo("1", 25), name=c("A","B","C"))
-    example_genes = GRanges(2, IRanges(c(233101, 233101, 231023, 231023, 229966), c(233229, 233229, 231191, 231191, 230044)), strand = c("-"), type = c("exon", "CDS", "exon", "CDS", "exon"))
-    expect_identical(colnames(gr2dt(gr)), c("seqnames", "start", "end", "strand", "width", "name"))
-    expect_equal(nrow(gr2dt(gr)), length(gr))
-
-    subjectdt <- gr2dt(example_genes)
-    expect_equal(!any(subjectdt$start!=start(example_genes)), TRUE)
-    expect_equal(!any(subjectdt$end!=end(example_genes)), TRUE)
-    expect_equal(!any(subjectdt$width!=width(example_genes)), TRUE)
-    expect_equal(all(as.character(subjectdt$strand) == as.character(strand(example_genes))), TRUE)
-    expect_equal(all(subjectdt$seqnames == as.vector(seqnames(example_genes))), TRUE)
-    
-})
 
 
-test_that("dt2gr", {
 
-    Sys.setenv(DEFAULT_BSGENOME = "BSgenome.Hsapiens.UCSC.hg19::Hsapiens")
-    dt <- data.table(seqnames=1, start=1, end=10, strand='+', name="A")
-    expect_equal(as.character(strand(dt2gr(dt))), '+')
-    expect_equal(start(dt2gr(dt)), 1)
-    expect_equal(dt2gr(dt)$name, "A")
-
-    expect_equal(start(dt2gr(as.data.frame(dt)))[1], 1)
-    expect_error(suppressWarnings(dt2gr(1)))
-
-    dt <- data.table(sdf=1, start=1, end=10, strand='+', name="A")
-    expect_error(suppressWarnings(dt2gr(dt)))    ### warning within error---warning: coercing to GRanges via non-standard columns
-})
 
 test_that("gr.val", {
 

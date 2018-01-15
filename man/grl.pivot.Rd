@@ -14,8 +14,7 @@ grl.pivot(x)
 kth item is gr object of ranges x[[i]][k] for all i in 1:length(x)
 e.g. If \code{length(grl)} is 50 and length of each \code{GRanges} element inside is 2, then \code{grl.pivot}
 will produce a length 3 \code{GRangesList} with 50 elements per \code{GRanges}
-}
-\details{
+
 Assumes all grs in "x" are of equal length
 }
 \examples{

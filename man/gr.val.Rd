@@ -7,7 +7,7 @@
 gr.val(query, target, val = NULL, mean = TRUE, weighted = mean,
   na.rm = FALSE, by = NULL, by.prefix = val, merge = FALSE,
   verbose = FALSE, FUN = NULL, default.val = NA, max.slice = Inf,
-  mc.cores = 1, ..., sep = ", ")
+  mc.cores = 1, sep = ", ", ...)
 }
 \arguments{
 \item{query}{\code{GRanges} of query ranges whose \code{val} column we will populate with aggregated values of \code{target}}
@@ -38,9 +38,9 @@ gr.val(query, target, val = NULL, mean = TRUE, weighted = mean,
 
 \item{mc.cores}{Number of cores to use when running in chunked mode}
 
-\item{...}{Additional arguments to be sent to \code{\link{gr.findoverlaps}}.}
-
 \item{sep}{scalar character, specifies character to use as separator when aggregating character "vals" from target, only applies if target is character}
+
+\item{...}{Additional arguments to be sent to \code{\link{gr.findoverlaps}}.}
 }
 \value{
 \code{query} with the \code{val} field populated
@@ -51,8 +51,7 @@ If \code{val} is numeric: given \code{target} with value column \code{target} re
 (i.e. segment intensities), thn computes the value
 in each \code{query} \code{GRanges} as the weighted mean of its intersection with target
 (ie the target values weighted by the width of the intersections).
-}
-\details{
+
 Applications include (among others):
 \itemize{
 \item Querying the average value of target across a given query interval (e.g. exon to gene pileup)

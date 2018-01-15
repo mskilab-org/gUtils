@@ -2,8 +2,7 @@
 % Please edit documentation in R/gUtils.R
 \name{gr.simplify}
 \alias{gr.simplify}
-\title{Simplify granges by collapsing all non-overlapping adjacent ranges that share a given "field" value
-(adjacent == adjacent in the input GRanges object)}
+\title{Calc pairwise distance for rearrangements represented by \code{GRangesList} objects}
 \usage{
 gr.simplify(gr, field = NULL, val = NULL, include.val = TRUE,
   split = FALSE, pad = 1)

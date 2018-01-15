@@ -6,7 +6,7 @@
 \alias{\%Q\%,GRanges-method}
 \title{query ranges by applying an expression to ranges metadata}
 \usage{
-\S4method{\%Q\%}{GRanges}(x, y)
+x \%Q\% ...
 }
 \arguments{
 \item{x}{\code{GRanges} to match against a query \code{GRanges}}

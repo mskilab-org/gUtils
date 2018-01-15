@@ -13,10 +13,11 @@ grl.unlist(grl)
 \code{GRanges} with added metadata fields \code{grl.ix} and \code{grl.iix}.
 }
 \description{
+Robust unlisting of \code{GRangesList} that keeps track of origin
+
 Does a "nice" unlist of a \code{GRangesList} object adding a field \code{grl.ix} denoting which element of the \code{GRangesList}
 each \code{GRanges} corresponds to and a field \code{grl.iix} which saves the (local) index that that gr was in its corresponding \code{GRangesList} item
-}
-\details{
+
 In this way, \code{grl.unlist} is reversible, while \code{BiocGenerics::unlist} is not.
 }
 \examples{

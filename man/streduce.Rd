@@ -17,6 +17,8 @@ streduce(gr, pad = 0, sort = TRUE)
 \code{GRanges} object with no strand information, representing a minimal footprint
 }
 \description{
+Reduce \code{GRanges} and \code{GRangesList} to miminal footprint
+
 Shortcut for \code{reduce(sort(gr.stripstrand(unlist(x))))}
 }
 \examples{

@@ -12,9 +12,3 @@ gr.duplicated(query, by = NULL, type = "any")
 \description{
 Allows to restrict duplicates using "by" columns and allows in exact matching
 }
-\examples{
-gr.duplicated(GRanges(c(1,1,1), IRanges(c(2,5,5), width=1)))
-
-gr.duplicated(GRanges(c(1,1,1), IRanges(c(2,5,5), width=1)))
-
-}

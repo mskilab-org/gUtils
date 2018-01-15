@@ -4,26 +4,26 @@
 \name{\%&\%}
 \alias{\%&\%}
 \alias{\%&\%,GRanges-method}
-\alias{\%^^\%}
-\alias{\%^^\%,GRanges-method}
 \alias{\%^\%}
 \alias{\%^\%,GRanges-method}
+\alias{\%^^\%}
+\alias{\%^^\%,GRanges-method}
 \title{subset x on y ranges wise ignoring strand}
 \usage{
 x \%&\% ...
 
-x \%^^\% ...
-
 x \%^\% ...
+
+x \%^^\% ...
 }
 \arguments{
-\item{x}{See \link{gr.in}}
-
-\item{...}{See \link{gr.in}}
-
 \item{x}{\code{GRanges} object}
 
 \item{...}{additional arguments to gr.in}
+
+\item{x}{See \link{gr.in}}
+
+\item{...}{See \link{gr.in}}
 
 \item{x}{See \link{gr.in}}
 
@@ -32,22 +32,22 @@ x \%^\% ...
 \value{
 subset of gr1 that overlaps gr2f
 
-logical vector of length gr1 which is TRUE at entry i only if gr1[i] intersects at least one interval in gr2
-
 logical vector of length gr1 which is TRUE at entry i only if gr1[i] intersects at least one interval in gr2 (strand agnostic)
+
+logical vector of length gr1 which is TRUE at entry i only if gr1[i] intersects at least one interval in gr2
 }
 \description{
 shortcut for x[gr.in(x,y)]
 
 gr1 %&% gr2 returns the subsets of gr1 that overlaps gr2
 
-Shortcut for gr.in
-
-gr1 %^^% gr2
-
 Shortcut for gr.in (standard arguments)
 
 gr1 %^% gr2
+
+Shortcut for gr.in
+
+gr1 %^^% gr2
 }
 \author{
 Marcin Imielinski

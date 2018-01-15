@@ -2,7 +2,7 @@
 % Please edit documentation in R/gUtils.R
 \name{gr.breaks}
 \alias{gr.breaks}
-\title{Break GRanges at given breakpoints into disjoint gr}
+\title{gr.breaks}
 \usage{
 gr.breaks(bps = NULL, query = NULL)
 }
@@ -18,10 +18,6 @@ with a metadata column \code{qid} indicating input index where new segment is fr
 }
 \description{
 Break GRanges at given breakpoints into disjoint gr
-}
-\examples{
-
-
 }
 \author{
 Xiaotong Yao

@@ -22,7 +22,9 @@ rle.query(subject.rle, query.gr, verbose = FALSE, mc.cores = 1,
 Rle representing the (concatenated) vector of data (reversing order in case of negative strand input)
 }
 \description{
-(ie a list whose names represent seqnames ie chromosomes, and lengths represent seqlengths)
+Queries an \code{\link{RleList}} representing genomic data
+
+(i.e. a list whose names represent seqnames ie chromosomes, and lengths represent seqlengths)
 via \code{GRanges} object
 }
 \note{

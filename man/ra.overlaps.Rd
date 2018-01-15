@@ -22,8 +22,7 @@ ra.overlaps(ra1, ra2, pad = 0, arr.ind = TRUE, ignore.strand = FALSE, ...)
 \description{
 Determines overlaps between two piles of rearrangement junctions ra1 and ra2 (each GRangesLists of signed locus pairs)
 against each other, returning a sparseMatrix that is T at entry ij if junction i overlaps junction j.
-}
-\details{
+
 if argument pad = 0 (default) then only perfect overlap will validate, otherwise if pad>0 is given, then
 padded overlap is allowed
 o

@@ -21,8 +21,7 @@ gr.fix(gr, genome = NULL, gname = NULL, drop = FALSE)
 \description{
 If "genome" not specified will replace \code{NA} \code{seqlengths} in GRanges to reflect largest coordinate per \code{seqlevel}
 and removes all \code{NA seqlevels} after this fix.
-}
-\details{
-if "genome" defined (i.e. as \code{Seqinfo} object, or a \code{BSgenome}, \code{GRanges}, \code{GRangesList} object with populated \code{seqlengths}),
+
+If "genome" defined (i.e. as \code{Seqinfo} object, or a \code{BSgenome}, \code{GRanges}, \code{GRangesList} object with populated \code{seqlengths}),
 then will replace \code{seqlengths} in \code{gr} with those for that genome
 }

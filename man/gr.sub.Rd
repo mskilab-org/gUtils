@@ -14,5 +14,7 @@ gr.sub(gr, a = c("(^chr)(\\\\.1$)", "MT"), b = c("", "M"))
 \item{b}{Vector of values to sub in}
 }
 \description{
+Apply \code{gsub} to seqlevels of a \code{GRanges}
+
 Apply gsub to seqlevels of gr, by default removing 'chr', and "0.1" suffixes, and replacing "MT" with "M"
 }

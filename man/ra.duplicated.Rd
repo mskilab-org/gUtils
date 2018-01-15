@@ -2,7 +2,7 @@
 % Please edit documentation in R/gUtils.R
 \name{ra.duplicated}
 \alias{ra.duplicated}
-\title{Show if junctions are Deduplicated}
+\title{Show if junctions are deduplicated}
 \usage{
 ra.duplicated(grl, pad = 500, ignore.strand = FALSE)
 }

@@ -10,5 +10,6 @@ gr2dt(x)
 \item{x}{\code{GRanges} to convert}
 }
 \description{
+Converts \code{GRanges} to \code{data.table}
 and a field grl.iix which saves the (local) index that that gr was in its corresponding grl item
 }

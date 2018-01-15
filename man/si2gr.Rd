@@ -16,7 +16,7 @@ si2gr(si, strip.empty = FALSE)
 }
 \description{
 Creates a genomic ranges from seqinfo object
-ie a pile of ranges spanning the genome
+i.e. a pile of ranges spanning the genome
 }
 \examples{
 si2gr(BSgenome.Hsapiens.UCSC.hg19::Hsapiens)

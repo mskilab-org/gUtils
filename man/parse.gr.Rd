@@ -10,7 +10,7 @@ parse.gr(...)
 \item{...}{arguments to parse.grl i.e. character strings in UCSC style chr:start-end[+-]}
 }
 \description{
-quick function to parse gr from character vector IGV / UCSC style strings of format gr1;gr2;gr3 wohere each gr is of format chr:start-end[+/-]
+Quick function to parse gr from character vector IGV / UCSC style strings of format gr1;gr2;gr3 wohere each gr is of format chr:start-end[+/-]
 }
 \author{
 Marcin Imielinski

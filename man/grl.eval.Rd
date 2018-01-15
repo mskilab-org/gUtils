@@ -2,7 +2,7 @@
 % Please edit documentation in R/gUtils.R
 \name{grl.eval}
 \alias{grl.eval}
-\title{evaluate and aggregate expression on GRanges column in GRangesList}
+\title{Evaluate and aggregate expression on GRanges column in GRangesList}
 \usage{
 grl.eval(grl, expr, condition = NULL)
 }

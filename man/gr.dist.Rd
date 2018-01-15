@@ -20,8 +20,7 @@ gr.dist(gr1, gr2 = NULL, ignore.strand = FALSE, ...)
 }
 \description{
 Computes matrix of pairwise distance between elements of two \code{GRanges} objects of length \code{n} and \code{m}.
-}
-\details{
+
 Distances are computed as follows:
 \itemize{
 \item NA for ranges on different seqnames

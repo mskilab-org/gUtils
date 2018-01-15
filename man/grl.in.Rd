@@ -21,9 +21,10 @@ grl.in(grl, windows, some = FALSE, only = FALSE, logical = TRUE,
 \item{...}{Additional parameters to be passed on to \code{GenomicRanges::findOverlaps}}
 }
 \description{
+Check intersection of \code{GRangesList} with windows on genome
+
 Like %in% for grl but now will return a logical vector that is true at position if i
 only if the ranges in grl[i] intersect <<all>>, <<some>>, <<only>>  windows in the subject
-}
-\details{
-eg can use to identify read pairs whose ends are contained inside two genes)
+
+e.g. can use to identify read pairs whose ends are contained inside two genes)
 }

@@ -2,9 +2,7 @@
 % Please edit documentation in R/gUtils.R
 \name{gr.disjoin}
 \alias{gr.disjoin}
-\title{GenomicRanges disjoin with some spice
-
-Identical to GRanges disjoin, except outputs inherit metadata from first overlapping parent instance on input}
+\title{GenomicRanges disjoin with some additional functionality}
 \usage{
 gr.disjoin(x, ..., ignore.strand = TRUE)
 }
@@ -14,4 +12,7 @@ gr.disjoin(x, ..., ignore.strand = TRUE)
 \item{...}{arguments to disjoin}
 
 \item{ignore.strand}{logical scalar, default TRUE}
+}
+\description{
+Identical to GRanges disjoin, except outputs inherit metadata from first overlapping parent instance on input
 }

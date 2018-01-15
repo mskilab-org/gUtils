@@ -40,6 +40,8 @@ gr.findoverlaps(query, subject, ignore.strand = TRUE, first = FALSE,
 \code{GRanges} pile of the intersection regions, with \code{query.id} and \code{subject.id} marking sources
 }
 \description{
+Wrapper to \code{GenomicRanges::findOverlaps} with added functionality
+
 Returns \code{GRanges} of matches with two additional fields:
 \itemize{
 \code{$query.id} - index of matching query

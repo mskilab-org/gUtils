@@ -17,8 +17,7 @@ gr.trim(gr, starts = 1, ends = 1)
 Example: \code{GRanges} with genomic coordinates 1:1,000,000-1,001,000 can get the first 20 and last 50 bases trimmed off with
 \code{start = 20, end = 950}.
 if end is larger than the width of the corresponding gr, then the corresponding output will only have \code{end(gr)} as its coordinate.
-}
-\details{
+
 This is a role not currently provided by the standard \code{GenomicRanges} functions
 (e.g. \code{shift}, \code{reduce}, \code{restrict}, \code{shift}, \code{resize}, \code{flank})
 }
