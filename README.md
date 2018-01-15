@@ -13,28 +13,20 @@ Installation
 ------------
 
 1. Install dependent packages and latest Bioconductor (if you haven't already)
-  ```source("http://bioconductor.org/biocLite.R") 
-     bioclite()
-     biocLite(c("`GenomicRanges`"))
-  ```
+
+    source("https://bioconductor.org/biocLite.R")
+    biocLite("GenomicRanges")
+
 
 2. Install devtools from CRAN (if you don't have it already)
 
-  ```
-  install.packages('devtools')
-  ```
+    install.packages('devtools')
 
-3. Load devtools
 
-  ```
-  library(devtools)
-  ````
+3. Install gUtils
 
-4. Install gUtils
+    devtools::install_github('mskilab/gUtils')
 
-  ```
-  install_github('mskilab/gUtils')
-  ````
 
 gUtils cheat sheet 
 -----
