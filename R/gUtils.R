@@ -315,7 +315,7 @@ gr.start = function(x, width = 1, force = FALSE, ignore.strand = TRUE, clip = TR
 #' @examples
 #' gr <- dt2gr(data.table(start=c(1,2), seqnames=c("X", "1"), end=c(10,20), strand = c('+', '-')))
 #' @export
-dt2gr <- function(dt, key = NULL, seqlengths = hg_seqlengths(), seqinfo = Seqinfo()) {
+dt2gr = function(dt, key = NULL, seqlengths = hg_seqlengths(), seqinfo = Seqinfo()) {
     out = tryCatch({
         rr <- IRanges(dt$start, dt$end)
         if (!'strand' %in% colnames(dt)){
@@ -713,7 +713,7 @@ gr.sample = function(gr, k, wid = 100, replace = TRUE)
 #' @examples
 #' si2gr(BSgenome.Hsapiens.UCSC.hg19::Hsapiens)
 #' @export
-si2gr <- function(si, strip.empty = FALSE)
+si2gr = function(si, strip.empty = FALSE)
 {
     if (is(si, "BSgenome")){
         si <- Seqinfo(names(seqlengths(si)), seqlengths(si))
@@ -745,7 +745,7 @@ si2gr <- function(si, strip.empty = FALSE)
 
 
 
-#' @name grbind
+#' @name gr.bind
 #' @title Concatenate \code{GRanges}, robust to different \code{mcols}
 #' @description
 #'
@@ -755,9 +755,9 @@ si2gr <- function(si, strip.empty = FALSE)
 #' @param ... additional \code{GRanges}
 #' @note Does not fill in the \code{Seqinfo} for the output \code{GRanges}
 #' @return Concatenated \code{GRanges}
-#' grbind(example_genes, example_dnase)
+#' gr.bind(example_genes, example_dnase)
 #' @export
-grbind = function(x, ...)
+gr.bind = function(x, ...)
 {
     if (missing('x')){
         grs = list(...)
@@ -836,7 +836,7 @@ grbind = function(x, ...)
 
 
 
-#' @name grlbind
+#' @name grl.bind
 #' @title Concatenate \code{GRangesList} objects.
 #' @description
 #'
@@ -849,11 +849,11 @@ grbind = function(x, ...)
 #' ## Concatenate
 #' grl.hiC2 <- grl.hiC[1:20]
 #' mcols(grl.hiC2)$test = 1
-#' grlbind(grl.hiC2, grl.hiC[1:30])
+#' grl.bind(grl.hiC2, grl.hiC[1:30])
 #' @export
 #' @author Marcin Imielinski
 #' @importFrom GenomicRanges mcols<- mcols split
-grlbind = function(...)
+grl.bind = function(...)
 {
     ## TODO: make this work for when underlying grs do not have matching features
     ## currently will loose gr level features
@@ -866,7 +866,7 @@ grlbind = function(...)
 
     ## annoying acrobatics to reconcile gr and grl level features for heterogenous input gr / grls
     grls.ul = lapply(grls, grl.unlist)
-    grls.ul.rb = do.call('grbind', grls.ul)
+    grls.ul.rb = do.call('gr.bind', grls.ul)
     sp = base::unlist(lapply(1:length(grls), function(x) rep(x, length(grls.ul[[x]]))))
     gix = base::split(grls.ul.rb$grl.ix, sp)
     gjx = base::split(1:length(grls.ul.rb), sp)
@@ -1282,7 +1282,7 @@ gr.pairflip = function(gr)
 #' @examples
 #' gr.flipstrand(GRanges(1, IRanges(c(10,10,10),20), strand=c("+","*","-")))
 #' @export
-gr.flipstrand = gr.flip = function(gr)
+gr.flipstrand = function(gr)
                  {
                      if (!is(gr, 'GRanges')){
                          stop('Warning: GRanges input only')
@@ -1550,7 +1550,7 @@ gr.val = function(query, target, val = NULL, mean = TRUE, weighted = mean, na.rm
     {
         verbose = TRUE
         ix.l = split(1:length(query), ceiling(as.numeric((1:length(query)/max.slice))))
-        return(do.call('grbind', parallel::mclapply(ix.l, function(ix) {
+        return(do.call('gr.bind', parallel::mclapply(ix.l, function(ix) {
             if (verbose){
                 cat(sprintf('Processing %s to %s of %s\n', min(ix), max(ix), length(query)))
             }
@@ -2877,7 +2877,7 @@ gr.merge = function(query, subject, by = NULL, all = FALSE, all.query = all, all
             message('left join yields ', length(ov.left), ' overlaps')
         }
 
-        ov = grbind(ov, ov.left)
+        ov = gr.bind(ov, ov.left)
     }
 
     if (all.subject)
@@ -2917,7 +2917,7 @@ gr.merge = function(query, subject, by = NULL, all = FALSE, all.query = all, all
         if (verbose){
             message('right join yields ', length(ov.right), ' overlaps')
         }
-        ov = grbind(ov, ov.right)
+        ov = gr.bind(ov, ov.right)
     }
 
     return(ov)
@@ -2972,8 +2972,8 @@ gr.in = function(query, subject, ...)
 
 
 
-#' @name gr.cov
-#' @title gr.cov
+#' @name gr.sum
+#' @title gr.sum
 #' @description
 #'
 #' Sums granges either by doing coverage and either weighting them equally
@@ -3500,49 +3500,6 @@ setMethod("%$%", signature(x = "GRanges"), function(x, y) {
 
 
 
-#' @name gr.setdiff
-#' @title gr.setdiff
-#' @description
-#'
-#' More robust and faster implementation of GenomicRangs::setdiff
-#'
-#' Robust to common edge cases of setdiff(gr1, gr2)  where gr2 ranges are contained inside gr1's (yieldings
-#' setdiffs yield two output ranges for some of the input gr1 intervals.
-#'
-#' @param query \code{GRanges} object as query
-#' @param subject \code{GRanges} object as subject
-#' @param max.slice Default Inf. If query is bigger than this, chunk into smaller on different cores
-#' @param verbose Default FALSE
-#' @param mc.cores Default 1. Only works if exceeded max.slice
-#' @param ... arguments to be passed to \link{gr.findoverlaps}
-#' @return returns indices of query in subject or NA if none found
-#' @export
-gr.setdiff = function(query, subject, ignore.strand = TRUE, by = NULL,  ...)
-{
-    ## in this case need to be careful about setdiffing only within the "by" level
-    if (!is.null(by)){
-        tmp = gr2dt(subject)
-        tmp$strand = factor(tmp$strand, c('+', '-', '*'))
-        sl = seqlengths(subject)
-        gp = seg2gr(tmp[, as.data.frame(gaps(IRanges(start, end), 1, sl[seqnames][1])), by = c('seqnames', 'strand', by)], seqinfo = seqinfo(subject))
-    }
-    ## otherwise easier
-    else {
-        if (ignore.strand){
-            gp = gaps(gr.stripstrand(subject)) %Q% (strand == '*')
-        }
-        else{
-            gp = gaps(subject)
-        }
-    }
-
-    out = gr.findoverlaps(query, gp, qcol = names(values(query)), ignore.strand = ignore.strand, by = by, ...)
-    return(out)
-}
-
-
-
-
 #' @name %*%
 #' @title Metadata join with coordinates as keys (wrapper to \code{\link{gr.findoverlaps}})
 #' @description
@@ -3570,6 +3527,8 @@ setMethod("%*%", signature(x = "GRanges"), function(x, y) {
     gr = gr.findoverlaps(x, y, qcol = names(values(x)), scol = names(values(y)))
     return(gr)
 })
+
+
 
 
 #' @name %**%
@@ -3645,6 +3604,49 @@ setMethod("%$$%", signature(x = "GRanges"), function(x, y) {
         y = parse.gr(y)
     return(gr.val(x, y, val = names(values(y)), ignore.strand = FALSE))
 })
+
+
+
+
+#' @name gr.setdiff
+#' @title gr.setdiff
+#' @description
+#'
+#' More robust and faster implementation of GenomicRangs::setdiff
+#'
+#' Robust to common edge cases of setdiff(gr1, gr2)  where gr2 ranges are contained inside gr1's (yieldings
+#' setdiffs yield two output ranges for some of the input gr1 intervals.
+#'
+#' @param query \code{GRanges} object as query
+#' @param subject \code{GRanges} object as subject
+#' @param max.slice Default Inf. If query is bigger than this, chunk into smaller on different cores
+#' @param verbose Default FALSE
+#' @param mc.cores Default 1. Only works if exceeded max.slice
+#' @param ... arguments to be passed to \link{gr.findoverlaps}
+#' @return returns indices of query in subject or NA if none found
+#' @export
+gr.setdiff = function(query, subject, ignore.strand = TRUE, by = NULL,  ...)
+{
+    ## in this case need to be careful about setdiffing only within the "by" level
+    if (!is.null(by)){
+        tmp = gr2dt(subject)
+        tmp$strand = factor(tmp$strand, c('+', '-', '*'))
+        sl = seqlengths(subject)
+        gp = seg2gr(tmp[, as.data.frame(gaps(IRanges(start, end), 1, sl[seqnames][1])), by = c('seqnames', 'strand', by)], seqinfo = seqinfo(subject))
+    }
+    ## otherwise easier
+    else {
+        if (ignore.strand){
+            gp = gaps(gr.stripstrand(subject)) %Q% (strand == '*')
+        }
+        else{
+            gp = gaps(subject)
+        }
+    }
+
+    out = gr.findoverlaps(query, gp, qcol = names(values(query)), ignore.strand = ignore.strand, by = by, ...)
+    return(out)
+}
 
 
 
@@ -3824,7 +3826,7 @@ ra.merge = function(..., pad = 0, ind = FALSE, ignore.strand = FALSE){
                     }
                     values(out) = NULL
                     values(this.ra) = NULL
-                    out = grlbind(out, this.ra[nix])
+                    out = grl.bind(out, this.ra[nix])
                     values(out) = rrbind(val1, val2[nix, ])
                 }
             }
@@ -4032,6 +4034,23 @@ gr.simplify = function(gr, field = NULL, val = NULL, include.val = TRUE, split =
 
 
 
+#' @name parse.gr
+#' @title parse.gr 
+#' @description
+#'
+#' Quick function to parse gr from character vector IGV / UCSC style strings of format gr1;gr2;gr3 wohere each gr is of format chr:start-end[+/-]
+#'
+#' @param ... arguments to parse.grl i.e. character strings in UCSC style chr:start-end[+-]
+#' @export
+#' @author Marcin Imielinski
+parse.gr = function(...)
+{
+    return(unlist(parse.grl(...)))
+}
+
+
+
+
 #' @name parse.grl
 #' @title parse.grl
 #' @description
@@ -4122,24 +4141,6 @@ anchorlift = function(query, subject, window = 1e9, by = NULL, seqname = "Anchor
     }
     return(out)
 }
-
-
-
-
-#' @name parse.gr
-#' @title parse.gr 
-#' @description
-#'
-#' Quick function to parse gr from character vector IGV / UCSC style strings of format gr1;gr2;gr3 wohere each gr is of format chr:start-end[+/-]
-#'
-#' @param ... arguments to parse.grl i.e. character strings in UCSC style chr:start-end[+-]
-#' @export
-#' @author Marcin Imielinski
-parse.gr = function(...)
-{
-    return(unlist(parse.grl(...)))
-}
-
 
 
 
