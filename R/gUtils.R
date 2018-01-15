@@ -1369,6 +1369,52 @@ gr.tile = function(gr, w = 1e3)
 #' @export
 gr.tile.map = function(query, subject, verbose = FALSE)
 {
+
+    # munlist (also in skitools, but added here to uncouple from this dependency)
+    #
+    # unlists a list of vectors, matrices, data frames into a n x k matrix
+    # whose first column specifies the list item index of the entry
+    # and second column specifies the sublist item index of the entry
+    # and the remaining columns specifies the value(s) of the vector
+    # or matrices.
+    #
+    # force.cbind = T will force concatenation via 'cbind'
+    # force.rbind = T will force concatenation via 'rxsbind'
+    munlist = function(x, force.rbind = FALSE, force.cbind = FALSE, force.list = FALSE){
+        if (!any(c(force.list, force.cbind, force.rbind)))
+        {
+            if (any(sapply(x, function(y) is.null(dim(y))))){
+                force.list = TRUE
+            }
+            if (length(unique(sapply(x, function(y) dim(y)[2]))) == 1){
+                force.rbind = TRUE
+            }
+            if ((length(unique(sapply(x, function(y) dim(y)[1]))) == 1)){
+                force.cbind = TRUE
+            }
+        }
+        else{
+            force.list = TRUE
+        }
+
+        if (force.list){
+            return(cbind(ix = unlist(lapply(1:length(x), function(y) rep(y, length(x[[y]])))),
+                iix = unlist(lapply(1:length(x), function(y) if (length(x[[y]])>0) 1:length(x[[y]]) else NULL)),
+                unlist(x)))
+        }
+        else if (force.rbind){
+            return(cbind(ix = unlist(lapply(1:length(x), function(y) rep(y, nrow(x[[y]])))),
+                iix = unlist(lapply(1:length(x), function(y) if (nrow(x[[y]])>0) 1:nrow(x[[y]]) else NULL)),
+                do.call('rbind', x)))
+        }
+        else if (force.cbind){
+            return(t(rbind(ix = unlist(lapply(1:length(x), function(y) rep(y, ncol(x[[y]])))),
+                iix = unlist(lapply(1:length(x), function(y) if (ncol(x[[y]])>0) 1:ncol(x[[y]]) else NULL)),
+                do.call('cbind', x))))
+        }
+    }
+
+
     mc.cores =1 ## multicore not supported now
     if (length(GenomicRanges::gaps(query)) > 0){
         warning("Warning: Query GRanges has gaps. Unexpected behavior may follow")
@@ -3519,8 +3565,7 @@ gr.setdiff = function(query, subject, ignore.strand = TRUE, by = NULL,  ...)
 #' @aliases %*%,GRanges-method
 #' @examples
 #' example_genes %*% example_dnase
-#setGeneric('%*%', function(...) standardGeneric('%*%'))
-
+## setGeneric('%*%', function(...) standardGeneric('%*%'))
 setMethod("%*%", signature(x = "GRanges"), function(x, y) {
     gr = gr.findoverlaps(x, y, qcol = names(values(x)), scol = names(values(y)))
     return(gr)
