@@ -1038,6 +1038,11 @@ gr.string = function(gr, add.chr = FALSE, mb = FALSE, round = 3, other.cols = c(
 #' @author Marcin Imielinski
 grl.reduce = function(grl, pad =0, clip = FALSE)
 {
+    ## function also in skitools
+    label.runs = function(x){
+        as.integer(ifelse(x, cumsum(diff(as.numeric(c(FALSE, x))) > 0), NA)) 
+    }
+
     sl = data.table(lev = seqlevels(grl), len = seqlengths(grl))
     setkey(sl, lev)
     gr = grl.unlist(grl)
