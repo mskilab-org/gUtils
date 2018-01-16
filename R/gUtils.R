@@ -570,9 +570,10 @@ gr.trim = function(gr, starts=1, ends=1)
     st = start(gr)+starts-1;
     st = pmin(st, en);
 
-    out = GRanges(seqnames(gr), IRanges(st, en),
-                  seqlengths = seqlengths(gr), strand = strand(gr))
+    out = GRanges(seqnames(gr), IRanges(st, en), seqlengths = seqlengths(gr), strand = strand(gr))
+
     values(out) = values(gr)
+
     return(out)
 }
 
@@ -1030,13 +1031,13 @@ gr.string = function(gr, add.chr = FALSE, mb = FALSE, round = 3, other.cols = c(
 #' Can use with split / unlist
 #'
 #' @param grl \code{GRangesList} 
-#' @param pad padding to add to ranges inside grl before reduing
+#' @param pad padding to add to ranges inside grl before reducing
 #' 
 #' @return \code{GRangesList} with reduced intervals
 #'
 #' @export
 #' @author Marcin Imielinski
-grl.reduce = function(grl, pad =0, clip = FALSE)
+grl.reduce = function(grl, pad=0, clip = FALSE)
 {
     sl = data.table(lev = seqlevels(grl), len = seqlengths(grl))
     setkey(sl, lev)
@@ -1282,24 +1283,24 @@ gr.pairflip = function(gr)
 #' @examples
 #' gr.flipstrand(GRanges(1, IRanges(c(10,10,10),20), strand=c("+","*","-")))
 #' @export
-gr.flipstrand = function(gr)
-                 {
-                     if (!is(gr, 'GRanges')){
-                         stop('Warning: GRanges input only')
-                     }
+gr.flipstrand = function(gr){
 
-                     if (length(gr)==0){
-                         return(gr)
-                     }
+    if (!is(gr, 'GRanges')){
+        stop('Warning: GRanges input only')
+    }
 
-                     which = cbind(1:length(gr), TRUE)[,2] == 1
+    if (length(gr)==0){
+        return(gr)
+    }
 
-                     if (any(which)){
-                         strand(gr)[which] = c('*'='*', '+'='-', '-'='+')[as.character(strand(gr))][which]
-                     }
+    which = cbind(1:length(gr), TRUE)[,2] == 1
 
-                     return(gr)
-                 }
+    if (any(which)){
+        strand(gr)[which] = c('*'='*', '+'='-', '-'='+')[as.character(strand(gr))][which]
+    }
+
+    return(gr)
+}
 
 
 
@@ -1919,7 +1920,7 @@ gr.dist = function(gr1, gr2 = NULL, ignore.strand = FALSE, ...)
 #' 
 #' @param grl \code{GRangesList} with names elements
 #' @return \code{GRangesList} where \code{GRanges} have no names
-#' @name grl.stripnames
+#' @export
 grl.stripnames = function(grl)
 {
     ele = tryCatch(as.data.frame(grl)$element, error = function(e) e)

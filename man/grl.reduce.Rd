@@ -9,7 +9,7 @@ grl.reduce(grl, pad = 0, clip = FALSE)
 \arguments{
 \item{grl}{\code{GRangesList}}
 
-\item{pad}{padding to add to ranges inside grl before reduing}
+\item{pad}{padding to add to ranges inside grl before reducing}
 }
 \value{
 \code{GRangesList} with reduced intervals

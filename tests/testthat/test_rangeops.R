@@ -107,7 +107,15 @@ test_that("gr.rand", {
 })
 
 
-## gr.trim
+test_that('gr.trim', {
+
+    ## from example
+    ## trim the first 20 and last 50 bases
+    ## gr.trim(GRanges(1, IRanges(1e6, width=1000)), starts=20, ends=950)
+    ## return value: GRanges on 1:1,000,019-1,000,949
+    expect_equal(width(gr.trim(GRanges(1, IRanges(1e6, width=1000)), starts=20, ends=950)), 931)
+
+})
 
 
 test_that("gr.sample", {
@@ -212,6 +220,11 @@ test_that("gr.string", {
 
 
 ## grl.reduce
+##    gr = GRanges(1, IRanges(c(3,7), c(5,9)), strand=c('+','-'))
+##    gr1 = GRanges(1, IRanges(c(10,20), width=5), strand=c("+", "-"))
+##    gr2 = GRanges(1, IRanges(c(1,9), c(6,14)), strand=c('+','-'))
+##    grl1 = GRangesList("gr"=gr, "gr1"=gr1)
+##    grl2 = GRangesList("gr1"=gr1, "gr2"=gr2)
 
 
 test_that("grl.string", {
@@ -257,15 +270,25 @@ test_that("gr.flatten", {
 })
 
 
-## gr.stripstrand
+test_that('gr.stripstrand', {
+
+    expect_identical(as.character(strand(gr.stripstrand(gr))), c('*', '*', '*'))
+
+})
 
 
-## gr.pairflip
+test_that('gr.pairflip', {
+
+    expect_identical(as.character(strand(gr.pairflip(gr)[[1]])), c('+', '-'))
+    expect_identical(as.character(strand(gr.pairflip(gr)[[2]])), c('-', '+'))
+    expect_identical(as.character(strand(gr.pairflip(gr)[[3]])), c('-', '+'))
+
+})
 
 
 test_that("gr.flipstrand", {
 
-  expect_identical(as.character(strand(gr.flipstrand(gr))), c("-","+","+"))
+    expect_identical(as.character(strand(gr.flipstrand(gr))), c("-","+","+"))
 
 })
 
