@@ -1283,7 +1283,7 @@ gr.pairflip = function(gr)
 #' @examples
 #' gr.flipstrand(GRanges(1, IRanges(c(10,10,10),20), strand=c("+","*","-")))
 #' @export
-gr.flipstrand = function(gr){
+gr.flipstrand <- gr.flip <- function(gr){
 
     if (!is(gr, 'GRanges')){
         stop('Warning: GRanges input only')
