@@ -292,9 +292,9 @@ test_that('gr.pairflip', {
 })
 
 
-test_that("gr.flipstrand", {
+test_that('gr.strandflip', {
 
-    expect_identical(as.character(strand(gr.flipstrand(gr))), c("-","+","+"))
+    expect_identical(as.character(strand(gr.strandflip(gr))), c("-","+","+"))
 
 })
 

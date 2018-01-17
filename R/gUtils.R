@@ -1257,27 +1257,7 @@ gr.stripstrand = function(gr)
 
 
 
-#' @name gr.pairflip
-#' @title Create pairs of ranges and their strand-inverse
-#' @description
-#'
-#' From a \code{GRanges} returns a \code{GRangesList} with each item consisting
-#' of the original \code{GRanges} and its strand flip
-#'
-#' @name gr.pairflip
-#' @param gr \code{GRanges}
-#' @return \code{GRangesList} with each element of length 2
-#' @export
-gr.pairflip = function(gr)
-{
-    strand(gr)[strand(gr) =='*'] = '+';
-    return(split(c(gr, gr.flip(gr)), rep(c(1:length(gr)), 2)))
-}
-
-
-
-
-#' @name gr.flipstrand
+#' @name gr.strandflip
 #' @title Flip strand on \code{GRanges}
 #' @description
 #'
@@ -1286,9 +1266,10 @@ gr.pairflip = function(gr)
 #' @param gr \code{GRanges} pile with strands to be flipped
 #' @return \code{GRanges} with flipped strands (+ to -, * to *, - to *)
 #' @examples
-#' gr.flipstrand(GRanges(1, IRanges(c(10,10,10),20), strand=c("+","*","-")))
+#' gr.strandflip(GRanges(1, IRanges(c(10,10,10),20), strand=c("+","*","-")))
 #' @export
-gr.flipstrand <- gr.flip <- function(gr){
+gr.strandflip = function(gr)
+{
 
     if (!is(gr, 'GRanges')){
         stop('Warning: GRanges input only')
@@ -1305,6 +1286,26 @@ gr.flipstrand <- gr.flip <- function(gr){
     }
 
     return(gr)
+}
+
+
+
+
+#' @name gr.pairflip
+#' @title Create pairs of ranges and their strand-inverse
+#' @description
+#'
+#' From a \code{GRanges} returns a \code{GRangesList} with each item consisting
+#' of the original \code{GRanges} and its strand flip
+#'
+#' @name gr.pairflip
+#' @param gr \code{GRanges}
+#' @return \code{GRangesList} with each element of length 2
+#' @export
+gr.pairflip = function(gr)
+{
+    strand(gr)[strand(gr) =='*'] = '+';
+    return(split(c(gr, gr.strandflip(gr)), rep(c(1:length(gr)), 2)))
 }
 
 
@@ -3667,7 +3668,7 @@ gr.setdiff = function(query, subject, ignore.strand = TRUE, by = NULL,  ...)
 #' if argument pad = 0 (default) then only perfect overlap will validate, otherwise if pad>0 is given, then
 #' padded overlap is allowed
 #'o
-#' strand matters, though we test overlap of both ra1[i] vs ra2[j] and gr.flip(ra2[j])
+#' strand matters, though we test overlap of both ra1[i] vs ra2[j] and gr.strandflip(ra2[j])
 #'
 #' @param ra1 \code{GRangesList} with rearrangement set 1
 #' @param ra2 \code{GRangesList} with rearrangement set 2
