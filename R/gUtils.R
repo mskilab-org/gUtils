@@ -1673,8 +1673,8 @@ gr.dist = function(gr1, gr2 = NULL, ignore.strand = FALSE, ...)
 #' @name grl.stripnames
 grl.stripnames = function(grl)
 {
-    ele = tryCatch(as.data.frame(grl)$element, error = function(e) e)
-    if (inherits(ele, 'error'))
+    ele = tryCatch(as.data.frame(grl)$element, error = function(e) NULL)
+    if (is.null(ele))
         ele = unlist(lapply(1:length(grl), function(x) rep(x, length(grl[[x]]))))
 
     gr = unlist(grl);
@@ -3283,7 +3283,7 @@ ra.merge = function(..., pad = 0, ind = FALSE, ignore.strand = FALSE)
     nm = names(ra)
     if (is.null(nm))
         nm = paste('ra', 1:length(ra), sep = '')
-    nm = paste('seen.by', nm, sep = '.')
+    nm = gsub('\\W+', '\\.', paste('seen.by', nm, sep = '.'))
     if (length(nm)==0)
         return(NULL)
     out = ra[[1]]
