@@ -1918,19 +1918,20 @@ gr.dist = function(gr1, gr2 = NULL, ignore.strand = FALSE, ...)
 
 
 
-#' @name grl.stripnames
-#' @title Remove \code{GRanges} names inside a \code{GRangesList}
-#' @description
-#' 
-#' Remove \code{GRanges} names inside a \code{GRangesList}
-#' 
-#' @param grl \code{GRangesList} with names elements
-#' @return \code{GRangesList} where \code{GRanges} have no names
-#' @export
+# #' @name grl.stripnames
+# # ' @title Remove \code{GRanges} names inside a \code{GRangesList}
+# #' @description
+# #'
+# #' Remove \code{GRanges} names inside a \code{GRangesList}
+# #'
+# #' @param grl \code{GRangesList} with names elements
+# #' @return \code{GRangesList} where \code{GRanges} have no names
+
 grl.stripnames = function(grl)
 {
     ele = tryCatch(as.data.frame(grl)$element, error = function(e) NULL)
     if (is.null(ele))
+    {
         ele = unlist(lapply(1:length(grl), function(x) rep(x, length(grl[[x]]))))
     }
 
