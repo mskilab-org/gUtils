@@ -2,12 +2,10 @@ Package: gUtils
 Title: R Package Providing Additional Capabilities and Speed for GenomicRanges
     Operations
 Version: 0.2.0
-Authors@R: c(person(given = "Jeremiah", family = "Wala", role = c("aut"), email = "jwala@broadinstitute.org"),
-    person(given = "Marcin",
-    family = "Imielinski", role = c("aut", "cre"), email =
-    "marcin@broadinstitute.org"))
-Description: R package providing additional capabilities and speed for
-    GenomicRanges operations.
+Authors@R: c(
+    person("Jeremiah", "Wala", role = "aut", email = "jwala@broadinstitute.org"),
+    person("Marcin", "Imielinski", role = c("aut", "cre"), email = "mimielinski@nygenome.org"))
+Description: R package providing additional capabilities and speed for GenomicRanges operations.
 Depends:
     R (>= 3.1.0),
     GenomicRanges (>= 1.18),
@@ -24,9 +22,8 @@ Imports:
 Suggests:
     BSgenome.Hsapiens.UCSC.hg19,
     testthat,
-    covr,
     rtracklayer
 License: GPL-2
 BugReports: http://github.com/mskilab/gUtils/issues
 LazyData: true
-RoxygenNote: 6.0.1
+RoxygenNote: 6.0.1.9000

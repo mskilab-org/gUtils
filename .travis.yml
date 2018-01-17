@@ -14,6 +14,8 @@ before_install:
 install:
   - ./travis-tool.sh install_bioc_deps
   - ./travis-tool.sh install_deps
+  - ./travis-tool.sh install_github r-lib/testthat
+
 script: ./travis-tool.sh run_tests
 
 after_failure:

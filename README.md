@@ -1,6 +1,5 @@
 [![Build Status](https://travis-ci.org/mskilab/gUtils.svg?branch=master)](https://travis-ci.org/mskilab/gUtils)
 [![Documentation Status](https://readthedocs.org/projects/gutils/badge/?version=latest)](https://readthedocs.org/projects/gutils/?badge=latest)
-[![Coverage Status](https://coveralls.io/repos/github/mskilab/gUtils/badge.svg?branch=master)](https://coveralls.io/github/mskilab/gUtils?branch=master)
 
 
 gUtils
@@ -14,28 +13,23 @@ Installation
 ------------
 
 1. Install dependent packages and latest Bioconductor (if you haven't already)
-  ```source("http://bioconductor.org/biocLite.R") 
-     bioclite()
-     biocLite(c("`GenomicRanges`"))
-  ```
+
+```{r}
+source("https://bioconductor.org/biocLite.R")
+biocLite("GenomicRanges")
+```
 
 2. Install devtools from CRAN (if you don't have it already)
 
-  ```
-  install.packages('devtools')
-  ```
+```{r}
+install.packages('devtools')
+```
 
-3. Load devtools
+3. Install gUtils
 
-  ```
-  library(devtools)
-  ````
-
-4. Install gUtils
-
-  ```
-  install_github('mskilab/gUtils')
-  ````
+```{r}
+devtools::install_github('mskilab/gUtils')
+```
 
 gUtils cheat sheet 
 -----
