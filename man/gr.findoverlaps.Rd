@@ -14,9 +14,9 @@ gr.findoverlaps(query, subject, ignore.strand = TRUE, first = FALSE,
 
 \item{subject}{Subject \code{GRanges} pile}
 
-\item{ignore.strand}{Don't consider strand information during overlaps. \code{[TRUE]}}
+\item{ignore.strand}{Don't consider strand information during overlaps. (default == TRUE)}
 
-\item{first}{Restrict to only the first match of the subject (default is to return all matches). \code{[FALSE]}}
+\item{first}{Restrict to only the first match of the subject (default is to return all matches). (first == FALSE)}
 
 \item{qcol}{\code{character} vector of query meta-data columns to add to results}
 
@@ -30,9 +30,9 @@ gr.findoverlaps(query, subject, ignore.strand = TRUE, first = FALSE,
 
 \item{max.chunk}{Maximum number of \code{query*subject} ranges to consider at once. Lower number increases runtime but decreased memory. If \code{length(query)*length(subject)} is less than \code{max.chunk}, overlaps will run in one batch.\code{[1e13]}}
 
-\item{verbose}{Increase the verbosity. \code{[FALSE]}}
+\item{verbose}{Increase the verbosity. (default == FALSE)}
 
-\item{mc.cores}{Number of cores to use when running in chunked mode}
+\item{mc.cores}{Number of cores to use when running in chunked mode (default == 1)}
 
 \item{...}{Additional arguments sent to \code{IRanges::findOverlaps}.}
 }

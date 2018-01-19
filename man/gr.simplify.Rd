@@ -10,20 +10,19 @@ gr.simplify(gr, field = NULL, val = NULL, include.val = TRUE,
 \arguments{
 \item{gr}{takes in gr or grl}
 
-\item{field}{character scalar, corresponding to value field of gr. \code{[NULL]}}
+\item{field}{character scalar, corresponding to value field of gr. (default == NULL)}
 
 \item{val}{\code{[NULL]}}
 
-\item{include.val}{scalar logical, will include in out gr values field of first matching record in input gr. \code{[TRUE]}}
+\item{include.val}{boolean Flag will include in out gr values field of first matching record in input gr. \code{[TRUE]}}
 
-\item{split}{Split the output into \code{GRangesList} split by \code{"field"}. \code{[FALSE]}}
+\item{split}{boolean Flag to split the output into \code{GRangesList} split by \code{"field"}. \code{[FALSE]}}
 
-\item{pad}{Pad ranges by this amount before doing merge. [1], which merges contiguous but non-overlapping ranges.}
+\item{pad}{integer Pad ranges by this amount before doing merge. [1], which merges contiguous but non-overlapping ranges.}
 }
 \value{
 Simplified GRanges with "field" populated with uniquely contiguous values
 }
 \description{
-Simplify granges by collapsing all non-overlapping adjacent ranges that share a given "field" value
-(adjacent == adjacent in the input GRanges object)
+Calc pairwise distance for rearrangements represented by \code{GRangesList} objects
 }

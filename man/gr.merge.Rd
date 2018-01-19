@@ -5,20 +5,20 @@
 \title{merge GRanges using coordinates as primary key}
 \usage{
 gr.merge(query, subject, by = NULL, all = FALSE, all.query = all,
-  all.subject = all, verbose = FALSE, ignore.strand = TRUE, ...)
+  all.subject = all, ignore.strand = TRUE, verbose = FALSE, ...)
 }
 \arguments{
-\item{query}{query ranges}
+\item{query}{Query \code{GRanges} pile}
 
-\item{subject}{subject}
+\item{subject}{Subject \code{GRanges} pile}
 
-\item{by}{additional metadata fields to join on}
+\item{by}{vector Additional metadata fields to join on}
 
-\item{all}{whether to include left and right joins}
+\item{all}{boolean Flag whether to include left and right joins}
 
-\item{all.query}{whether to do a left join}
+\item{all.query}{whether to do a left join (default==all)}
 
-\item{all.subject}{whether to do a right join}
+\item{all.subject}{whether to do a right join (default==all)}
 }
 \description{
 Uses gr.findoverlaps to enable internal and external joins of GRanges using

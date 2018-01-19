@@ -9,7 +9,7 @@ gr.flatten(gr, gap = 0)
 \arguments{
 \item{gr}{\code{GRanges} to flatten}
 
-\item{gap}{Number of bases between ranges on the new chromosome \code{[0]}}
+\item{gap}{integer Number of bases between ranges on the new chromosome (default = 0)}
 }
 \value{
 \code{data.frame} with start and end coordinates, and all of the original metadata

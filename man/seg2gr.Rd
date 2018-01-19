@@ -2,19 +2,23 @@
 % Please edit documentation in R/gUtils.R
 \name{seg2gr}
 \alias{seg2gr}
-\title{Convert GRange like data.frames into GRanges}
+\title{Convert GRanges-like data.frame into GRanges}
 \usage{
 seg2gr(segs, seqlengths = NULL, seqinfo = Seqinfo())
 }
 \arguments{
-\item{segs}{data frame of segments with fields denoting chromosome, start, end, and other metadata (see standardized segs for seg data frame input formats)}
+\item{segs}{data.frame (or data.table) of segments with fields denoting chromosome, start, end, and other metadata. (See function 'standardize_segs()' for 'seg' data.frame/data.table input formats)}
 
-\item{seqlengths}{seqlengths of output GRanges object}
+\item{seqlengths}{seqlengths of output GRanges object (default == NULL)}
 
-\item{seqinfo}{seqinfo of output GRanges object}
+\item{seqinfo}{seqinfo of output GRanges object (default == Seqinfo())}
+}
+\value{
+GRanges from converted "segs" data.frame/data.table
 }
 \description{
-Take data frame of ranges "segs" and converts into granges object porting over additional value columns
-"segs" data frame can obey any number of conventions to specify chrom, start, and end of ranges
-(eg $pos1, $pos2, $Start_position, $End_position) --> see "standardize_segs" for more info
+Input data.frame of segments "segs" and converts into GRanges object porting over additional value columns
+
+"segs" data.frame/data.table can obey any number of conventions to specify chrom, start, and end of ranges
+(e.g. $pos1, $pos2, $Start_position, $End_position) --> see "standardize_segs" for more info
 }

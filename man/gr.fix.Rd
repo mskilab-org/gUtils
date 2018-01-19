@@ -9,11 +9,11 @@ gr.fix(gr, genome = NULL, gname = NULL, drop = FALSE)
 \arguments{
 \item{gr}{\code{GRanges} object to fix}
 
-\item{genome}{Genome to fix to: \code{Seqinfo}, \code{BSgenome}, \code{GRanges} (w/seqlengths), \code{GRangesList} (w/seqlengths)}
+\item{genome}{Genome to fix to: \code{Seqinfo}, \code{BSgenome}, \code{GRanges} (w/seqlengths), \code{GRangesList} (w/seqlengths) (default = NULL)}
 
-\item{gname}{Name of the genome (optional, just appends to \code{Seqinfo} of the output) [NULL]}
+\item{gname}{string Name of the genome (optional, just appends to \code{Seqinfo} of the output) (default = NULL)}
 
-\item{drop}{Remove ranges that are not present in the supplied genome [FALSE]}
+\item{drop}{boolean Remove ranges that are not present in the supplied genome (default = FALSE)}
 }
 \value{
 \code{GRanges} pile with the fixed \code{Seqinfo}

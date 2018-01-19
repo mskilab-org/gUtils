@@ -9,7 +9,7 @@ si2gr(si, strip.empty = FALSE)
 \arguments{
 \item{si}{\code{Seqinfo} object or a \code{BSgenome} genome}
 
-\item{strip.empty}{Don't know. \code{[FALSE]}}
+\item{strip.empty}{boolean Flag to output non-zero GRanges only (default = FALSE)}
 }
 \value{
 \code{GRanges} representing the range of the input genome

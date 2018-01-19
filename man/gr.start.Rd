@@ -9,13 +9,13 @@ gr.start(x, width = 1, force = FALSE, ignore.strand = TRUE, clip = TRUE)
 \arguments{
 \item{x}{\code{GRanges} object to operate on}
 
-\item{width}{[default = 1] Specify subranges of greater width including the start of the range.}
+\item{width}{integer Specify subranges of greater width including the start of the range. (default = 1)}
 
-\item{force}{[default = F] Allows returned \code{GRanges} to have ranges outside of its \code{Seqinfo} bounds.}
+\item{force}{boolean Allows returned \code{GRanges} to have ranges outside of its \code{Seqinfo} bounds. (default = FALSE)}
 
-\item{ignore.strand}{If set to \code{FALSE}, will extend '-' strands from the other direction [TRUE].}
+\item{ignore.strand}{boolean If set to \code{FALSE}, will extend '-' strands from the other direction (default = TRUE)}
 
-\item{clip}{[default = F] Trims returned \code{GRanges} so that it does not extend beyond bounds of the input \code{GRanges}}
+\item{clip}{boolean Trims returned \code{GRanges} so that it does not extend beyond bounds of the input \code{GRanges} (default = TRUE)}
 }
 \value{
 \code{GRanges} object of width 1 ranges representing start of each genomic range in the input.
@@ -24,6 +24,8 @@ gr.start(x, width = 1, force = FALSE, ignore.strand = TRUE, clip = TRUE)
 Get GRanges corresponding to beginning of range
 }
 \examples{
+
 gr.start(example_dnase, width=200)
 gr.start(example_dnase, width=200, clip=TRUE)
+
 }

@@ -7,15 +7,17 @@
 grl.reduce(grl, pad = 0, clip = FALSE)
 }
 \arguments{
-\item{grl}{\code{GRangesList}}
+\item{grl}{\code{GRangesList} input}
 
-\item{pad}{padding to add to ranges inside grl before reducing}
+\item{pad}{integer Padding to add to ranges inside GRangesList before reducing (default = 0)}
+
+\item{clip}{boolean Flag to add to ranges inside GRangesList before reducing (default = FALSE)}
 }
 \value{
-\code{GRangesList} with reduced intervals
+\code{GRangesList} with GRanges of intervals "original GRanges +/- padding"
 }
 \description{
-Quickly ranges inside grl +/- pad
+Quickly computes GRanges +/- padding inside a GRangesList 
 Can use with split / unlist
 }
 \author{

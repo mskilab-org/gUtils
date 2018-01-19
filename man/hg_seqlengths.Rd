@@ -9,9 +9,9 @@ hg_seqlengths(genome = NULL, chr = FALSE, include.junk = FALSE)
 \arguments{
 \item{genome}{A \code{BSgenome} or object with a \code{seqlengths} accessor. Default is hg19, but loads with warning unless explicitly provided}
 
-\item{chr}{Flag for whether to keep "chr". Default FALSE}
+\item{chr}{boolean Flag for whether to keep "chr". (default = FALSE)}
 
-\item{include.junk}{Flag for whether to not trim to only 1-22, X, Y, M. Default FALSE}
+\item{include.junk}{boolean Flag for whether to not trim to only 1-22, X, Y, M. (default = FALSE)}
 }
 \value{
 Named integer vector with elements corresponding to the genome seqlengths

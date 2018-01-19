@@ -9,12 +9,13 @@ gr.sub(gr, a = c("(^chr)(\\\\.1$)", "MT"), b = c("", "M"))
 \arguments{
 \item{gr}{\code{GRanges} to switch out seqlevels for}
 
-\item{a}{Vector of regular expressions of things to sub-out}
+\item{a}{vector of regular expressions of things to ubstitute out}
 
-\item{b}{Vector of values to sub in}
+\item{b}{vector of values to substitute in}
+}
+\value{
+GRanges with substitutions
 }
 \description{
-Apply \code{gsub} to seqlevels of a \code{GRanges}
-
 Apply gsub to seqlevels of gr, by default removing 'chr', and "0.1" suffixes, and replacing "MT" with "M"
 }

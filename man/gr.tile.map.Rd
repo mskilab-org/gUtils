@@ -11,7 +11,7 @@ gr.tile.map(query, subject, verbose = FALSE)
 
 \item{subject}{Subject \code{GRanges} pile, perhaps created from some tile (e.g. \code{gr.tile}), and assumed to have no gaps}
 
-\item{verbose}{Increase the verbosity of the output}
+\item{verbose}{Increase the verbosity of the output (default = FALSE)}
 }
 \value{
 \code{list} of length = \code{length(query)}, where each element \code{i} is a vector of indicies in \code{subject} that overlaps element \code{i} of \code{query}

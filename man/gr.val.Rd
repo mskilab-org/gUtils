@@ -6,39 +6,39 @@
 \usage{
 gr.val(query, target, val = NULL, mean = TRUE, weighted = mean,
   na.rm = FALSE, by = NULL, by.prefix = val, merge = FALSE,
-  verbose = FALSE, FUN = NULL, default.val = NA, max.slice = Inf,
-  mc.cores = 1, sep = ", ", ...)
+  FUN = NULL, default.val = NA, max.slice = Inf, mc.cores = 1,
+  sep = ", ", verbose = FALSE, ...)
 }
 \arguments{
 \item{query}{\code{GRanges} of query ranges whose \code{val} column we will populate with aggregated values of \code{target}}
 
 \item{target}{\code{GRanges} of target ranges that already have "val" column populated}
 
-\item{val}{If a character field: then aggregation will paste together the (unique), overlapping values, collapsing by comma. \code{[NULL]}}
+\item{val}{If a character field: then aggregation will paste together the (unique), overlapping values, collapsing by comma. (default = NULL)}
 
-\item{mean}{Scalar logical flag. If \code{FALSE} then will return sum instead of mean, only applies if target \code{val} column is numeric.}
+\item{mean}{boolean If \code{FALSE} then will return sum instead of mean, only applies if target \code{val} column is numeric. (default = TRUE)}
 
-\item{weighted}{Calculate a weighted mean. If \code{FALSE}, calculates unweighted mean. \code{[TRUE]}}
+\item{weighted}{Calculate a weighted mean. If \code{FALSE}, calculates unweighted mean. (default = 'mean')}
 
-\item{na.rm}{Remove NA values when calulating means. only applies if val column of target is numeric \code{[FALSE]}}
+\item{na.rm}{boolean Remove NA values when calulating means. only applies if val column of target is numeric (default = FALSE)}
 
-\item{by}{scalar character, specifies additional "by" column of query AND target that will be used to match up query and target pairs (i.e. in addition to pure GRanges overlap), default is NULL}
+\item{by}{scalar character, specifies additional "by" column of query AND target that will be used to match up query and target pairs (i.e. in addition to pure GRanges overlap). (default = NULL)}
 
-\item{by.prefix}{Choose a set of \code{val} fields by a shared prefix.}
+\item{by.prefix}{Choose a set of \code{val} fields by a shared prefix. (default = 'val')}
 
-\item{merge}{if merge = FALSE then will cross every range in query with every level of "by" in target (and create data matrix), otherwise will assume query has "by" and merge only ranges that have matching "by" values in both query and target}
+\item{merge}{boolean If merge = FALSE then will cross every range in query with every level of "by" in target (and create data matrix), otherwise will assume query has "by" and merge only ranges that have matching "by" values in both query and target (default = FALSE)}
 
-\item{verbose}{Increase the verbosity of the output}
+\item{FUN}{Optional different function to call than mean. Takes two arguments (value, na.rm = TRUE) if weighted = FALSE, and three (value, width, na.rm = TRUE) if weighted = TRUE. (default = NULL)}
 
-\item{FUN}{Optional different function to call than mean. Takes two arguments (value, na.rm = TRUE) if weighted = FALSE, and three (value, width, na.rm = TRUE) if weighted = TRUE}
+\item{default.val}{If no hit in \code{target} found in \code{query}, fill output \code{val} field with this value. (default = NA)}
 
-\item{default.val}{If no hit in \code{target} found in \code{query}, fill output \code{val} field with this value.}
+\item{max.slice}{integer Maximum number of query ranges to consider in one memory chunk. (default = Inf)}
 
-\item{max.slice}{Maximum number of query ranges to consider in one memory chunk. \code{[Inf]}}
+\item{mc.cores}{integer Number of cores to use when running in chunked mode (default = 1)}
 
-\item{mc.cores}{Number of cores to use when running in chunked mode}
+\item{sep}{string Specifies character to use as separator when aggregating character "vals" from target, only applies if target is character (default = ', ')}
 
-\item{sep}{scalar character, specifies character to use as separator when aggregating character "vals" from target, only applies if target is character}
+\item{verbose}{boolean Increase the verbosity of the output (default = FALSE)}
 
 \item{...}{Additional arguments to be sent to \code{\link{gr.findoverlaps}}.}
 }

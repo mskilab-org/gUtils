@@ -7,13 +7,13 @@
 gr.sample(gr, k, wid = 100, replace = TRUE)
 }
 \arguments{
-\item{gr}{\code{GRanges} object defining the territory to sample from}
+\item{gr}{Granges defining the territory to sample from}
 
-\item{k}{Number of ranges to sample}
+\item{k}{integer Number of ranges to sample}
 
-\item{wid}{Length of the \code{GRanges} element to produce [100]}
+\item{wid}{integer Length of the \code{GRanges} element to produce (default = 100)}
 
-\item{replace}{If TRUE, will bootstrap, otherwise will sample without replacement. [TRUE]}
+\item{replace}{boolean If TRUE, will bootstrap, otherwise will sample without replacement. (default = TRUE)}
 }
 \value{
 GRanges of max length sum(k) [if k is vector) or k*length(gr) (if k is scalar) with labels indicating the originating range.
@@ -29,8 +29,10 @@ Samples \code{k} intervals of length "len" from a pile of \code{GRanges}.
 This is different from \code{GenomicRanges::sample} function, which just samples from a pile of \code{GRanges}
 }
 \examples{
+
 ## sample 5 \\code{GRanges} of length 10 each from territory of RefSeq genes
 gr.sample(reduce(example_genes), k=5, wid=10)
+
 }
 \author{
 Marcin Imielinski

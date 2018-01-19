@@ -7,9 +7,9 @@
 gr.bind(x, ...)
 }
 \arguments{
-\item{x}{First \code{GRanges}}
+\item{x}{GRanges input GRanges}
 
-\item{...}{additional \code{GRanges}}
+\item{...}{additional input GRanges}
 }
 \value{
 Concatenated \code{GRanges}

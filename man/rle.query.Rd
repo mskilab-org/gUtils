@@ -4,19 +4,19 @@
 \alias{rle.query}
 \title{Queries an \code{\link{RleList}} representing genomic data}
 \usage{
-rle.query(subject.rle, query.gr, verbose = FALSE, mc.cores = 1,
-  chunksize = 1e+09)
+rle.query(subject.rle, query.gr, mc.cores = 1, chunksize = 1e+09,
+  verbose = FALSE)
 }
 \arguments{
 \item{subject.rle}{\code{Rle}}
 
-\item{query.gr}{TODO}
-
-\item{verbose}{Set the verbosity of the output}
+\item{query.gr}{GRangeslist or GRanges}
 
 \item{mc.cores}{Number of cores to apply when doing chunked operation}
 
-\item{chunksize}{Number of \code{query.gr} ranges to consider in one memory chunk. 1e9}
+\item{chunksize}{integer Number of \code{query.gr} ranges to consider in one memory chunk. (default == 1e9)}
+
+\item{verbose}{Set the verbosity of the output}
 }
 \value{
 Rle representing the (concatenated) vector of data (reversing order in case of negative strand input)

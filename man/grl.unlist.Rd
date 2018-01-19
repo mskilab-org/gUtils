@@ -21,5 +21,7 @@ each \code{GRanges} corresponds to and a field \code{grl.iix} which saves the (l
 In this way, \code{grl.unlist} is reversible, while \code{BiocGenerics::unlist} is not.
 }
 \examples{
+
 grl.unlist(grl.hiC)
+
 }

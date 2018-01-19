@@ -9,9 +9,9 @@ rrbind(..., union = TRUE, as.data.table = FALSE)
 \arguments{
 \item{...}{Any number of \code{data.frame} or \code{data.table} objects}
 
-\item{union}{Take union of columns (and put NA's for columns of df1 not in df2 and vice versa). \code{[TRUE]}}
+\item{union}{Take union of columns (and put NA's for columns of df1 not in df2 and vice versa). (default == TRUE)}
 
-\item{as.data.table}{Return the binded data as a \code{data.table}. \code{[FALSE]}}
+\item{as.data.table}{Return the binded data as a \code{data.table}. (default == FALSE)}
 }
 \value{
 \code{data.frame} or \code{data.table} of the \code{rbind} operation

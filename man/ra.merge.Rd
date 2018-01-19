@@ -40,4 +40,5 @@ values(ram2)
 
 ram3 = ra.merge(ra1, ra2, ind = TRUE) #indices instead of flags
 values(ram3)
+
 }

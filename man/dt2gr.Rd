@@ -7,9 +7,11 @@
 dt2gr(dt, key = NULL, seqlengths = hg_seqlengths(), seqinfo = Seqinfo())
 }
 \arguments{
-\item{dt}{\code{data.table} to convert to \code{GRanges}}
+\item{dt}{data.table or data.frame to convert to \code{GRanges}}
 
-\item{dt}{data.table to convert}
+\item{seqlengths}{named integer vector representing genome (default = hg_seqlengths())}
+
+\item{seqinfo}{seqinfo of output GRanges object}
 }
 \value{
 \code{GRanges} object of \code{length = nrow(dt)}
@@ -20,5 +22,5 @@ an error if any one of these is not present.
 All of the remaining fields are added as metadata to the \code{GRanges}.
 }
 \examples{
-gr <- dt2gr(data.table(start=c(1,2), seqnames=c("X", "1"), end=c(10,20), strand = c('+', '-')))
+converted_gr = dt2gr(data.table(start=c(1,2), seqnames=c("X", "1"), end=c(10,20), strand = c('+', '-')))
 }

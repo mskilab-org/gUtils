@@ -7,7 +7,14 @@
 gr.duplicated(query, by = NULL, type = "any")
 }
 \arguments{
-\item{query}{query ranges}
+\item{query}{GRanges to query}
+
+\item{by}{string Column 'by' used to restrict duplicates. See the 'by' argument for function gr.match()}
+
+\item{type}{string 'type' used. See the 'type' argument for function gr.match()}
+}
+\value{
+boolean vector of match status
 }
 \description{
 Allows to restrict duplicates using "by" columns and allows in exact matching

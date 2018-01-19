@@ -9,11 +9,11 @@ grl.eval(grl, expr, condition = NULL)
 \arguments{
 \item{grl}{GRangesList to eval over}
 
-\item{expr}{expression on columns of granges or granges list}
+\item{expr}{any syntactically valid R expression, on columns of GRanges or GRangesList}
 
-\item{condition}{optional expression (with logical or integer output) on columns of GRanges on which to subset prior to evaluating main expr}
+\item{condition}{optional any syntactically valid R expression, on columns of GRanges or GRangesList, on which to subset before evaluating main 'expr'}
 }
 \description{
-Evaluate expression expr on indivdual granges inside grangeslist.
+Evaluate expression 'expr' on indivdual GRanges inside GRangesList.
 Expression should result in a single i.e. scalar value per grangeslist item.
 }

@@ -7,9 +7,9 @@
 gr.rand(w, genome)
 }
 \arguments{
-\item{w}{Vector of widths (length of \code{w} determines length of output)}
+\item{w}{vector of widths (length of \code{w} determines length of output)}
 
-\item{genome}{Genome which can be a \code{GRanges}, \code{GRangesList}, or \code{Seqinfo} object. Default is "hg19" from the \code{BSGenome} package.}
+\item{genome}{GRanges, GRangesList, or Seqinfo genome. Default is "hg19" from the \code{BSGenome} package.}
 }
 \value{
 \code{GRanges} with random intervals on the specifed "chromosomes"
@@ -22,8 +22,10 @@ Seed can be supplied with \code{set.seed}
 This function is currently quite slow, needs optimization
 }
 \examples{
+
 ## Generate 5 non-overlapping regions of width 10 on hg19
 gr.rand(rep(10,5), BSgenome.Hsapiens.UCSC.hg19::Hsapiens)
+
 }
 \author{
 Marcin Imielinski

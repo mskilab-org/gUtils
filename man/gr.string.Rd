@@ -10,13 +10,18 @@ gr.string(gr, add.chr = FALSE, mb = FALSE, round = 3, other.cols = c(),
 \arguments{
 \item{gr}{\code{GRanges} pile to get intervals from}
 
-\item{add.chr}{Prepend seqnames with "chr" \code{[FALSE]}}
+\item{add.chr}{boolean Flage to prepend seqnames with "chr" (default = FALSE)}
 
-\item{mb}{Round to the nearest megabase \code{[FALSE]}}
+\item{mb}{boolean Flag to round to the nearest megabase (default = FALSE)}
 
-\item{round}{If \code{mb} supplied, how many digits to round to. \code{[3]}}
+\item{round}{integer If \code{mb} supplied, the number of digits to round to. (default = 3)}
 
-\item{other.cols}{Names of additional \code{mcols} fields to add to the string (seperated by ";")}
+\item{other.cols}{character vector Names of additional \code{mcols} fields to add to the string (seperated by ";")}
+
+\item{pretty}{boolean Flag to output interval string in more readable format}
+}
+\value{
+UCSC style interval string corresponding to \code{GRanges} pile
 }
 \description{
 Return UCSC style interval string corresponding to \code{GRanges} pile (ie chr:start-end)

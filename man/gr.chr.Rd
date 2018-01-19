@@ -16,6 +16,8 @@ Identical \code{GRanges}, but with 'chr' prepended to each seqlevel
 Prepend "chr" to \code{GRanges seqlevels}
 }
 \examples{
+
 gr <-  gr.chr(GRanges(c(1,"chrX"), IRanges(c(1,2), 1)))
 seqnames(gr)
+
 }

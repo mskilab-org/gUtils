@@ -9,9 +9,9 @@ grl.string(grl, mb = FALSE, sep = ",", ...)
 \arguments{
 \item{grl}{\code{GRangesList} to convert to string vector}
 
-\item{mb}{Will return as MB and round to "round" [FALSE]}
+\item{mb}{boolean Flag to return as MB and round to "round" (default = FALSE)}
 
-\item{sep}{Character to separate single \code{GRanges} ranges [,]}
+\item{sep}{Character to separate single \code{GRanges} ranges (default = ',')}
 
 \item{...}{Additional arguments to be passed to \code{gr.string}}
 }
@@ -19,7 +19,7 @@ grl.string(grl, mb = FALSE, sep = ",", ...)
 Character vector where each element is a \code{GRanges} pile corresponding to a single \code{GRangesList} element
 }
 \description{
-Return ucsc style interval string corresponding to each \code{GRanges} in the \code{GRangesList}.
+Return UCSC style interval string corresponding to each \code{GRanges} in the \code{GRangesList}.
 One line per per \code{GRangesList} item. \code{GRanges} elements themselves are separated by \code{sep}
 }
 \examples{

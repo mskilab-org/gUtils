@@ -9,7 +9,7 @@ parse.grl(x, seqlengths = hg_seqlengths())
 \arguments{
 \item{x}{character vector representing a GRangesList with UCSC style coordinates (chr:start-end[+-]) representing a [signed] Granges and  ";" separators within each item of x separating individaul each GRAnges}
 
-\item{seqlengths}{named integer vector representing genome (hg_seqlengths() by default)}
+\item{seqlengths}{named integer vector representing genome (default == hg_seqlengths())}
 }
 \description{
 Quick function to parse \code{GRangesList} from character vector IGV / UCSC style strings of format gr1;gr2;gr3 where each gr is of format chr:start-end[+/-]

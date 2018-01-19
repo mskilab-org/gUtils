@@ -9,13 +9,13 @@ gr.end(x, width = 1, force = FALSE, ignore.strand = TRUE, clip = TRUE)
 \arguments{
 \item{x}{\code{GRanges} object to operate on}
 
-\item{width}{Specify subranges of greater width including the start of the range. \code{[1]}}
+\item{width}{integer Specify subranges of greater width including the start of the range. (default = 1)}
 
-\item{force}{Allows returned \code{GRanges} to have ranges outside of its \code{Seqinfo} bounds. \code{[FALSE]}}
+\item{force}{boolean Allows returned \code{GRanges} to have ranges outside of its \code{Seqinfo} bounds. (default = FALSE)}
 
-\item{ignore.strand}{If set to \code{FALSE}, will extend '-' strands from the other direction. \code{[TRUE]}}
+\item{ignore.strand}{boolean If set to \code{FALSE}, will extend '-' strands from the other direction. (default = TRUE)}
 
-\item{clip}{Trims returned \code{GRanges} so that it does not extend beyond bounds of the input \code{GRanges}. \code{[TRUE]}}
+\item{clip}{boolean Trims returned \code{GRanges} so that it does not extend beyond bounds of the input (default = TRUE)}
 }
 \value{
 \code{GRanges} object of width = \code{width} ranges representing end of each genomic range in the input.

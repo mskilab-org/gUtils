@@ -12,13 +12,18 @@ grl.in(grl, windows, some = FALSE, only = FALSE, logical = TRUE,
 
 \item{windows}{\code{GRanges} pile of windows}
 
-\item{some}{Will return \code{TRUE} for \code{GRangesList} elements that intersect at least on window range [FALSE]}
+\item{some}{boolean Will return \code{TRUE} for \code{GRangesList} elements that intersect at least on window range (default == FALSE)}
 
-\item{only}{Will return \code{TRUE} for \code{GRangesList} elements only if there are no elements of query that fail to interesect with windows [FALSE]}
+\item{only}{boolean Will return \code{TRUE} for \code{GRangesList} elements only if there are no elements of query that fail to interesect with windows (default == FALSE)}
 
-\item{logical}{will return logical otherwise will return numeric vector of number of windows overlapping each grl}
+\item{logical}{boolean Will return logical otherwise will return numeric vector of number of windows overlapping each grl (default == TRUE)}
+
+\item{exact}{boolean Will return exact intersection}
 
 \item{...}{Additional parameters to be passed on to \code{GenomicRanges::findOverlaps}}
+}
+\value{
+boolean vector of match status
 }
 \description{
 Check intersection of \code{GRangesList} with windows on genome

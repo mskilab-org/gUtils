@@ -14,11 +14,11 @@ anchorlift(query, subject, window = 1e+09, by = NULL, seqname = "Anchor",
 
 \item{window}{non-negative integer scalar specifying how far around each subject to gather query intervals to lift (default 1e9)}
 
-\item{by}{character vector specifying additional columsn (e.g. sample id) around which to restrict overlaps (via gr.findoverlaps) (default NULL)}
+\item{by}{character vector specifying additional columms (e.g. sample id) around which to restrict overlaps (via gr.findoverlaps) (default NULL)}
 
-\item{seqname}{Character specifying the name of the output sequence around which to anchor (default "Anchor")}
+\item{seqname}{String specifying the name of the output sequence around which to anchor (default "Anchor")}
 
-\item{include.values}{logical flag whether to include values from query and subject (default TRUE)}
+\item{include.values}{Boolean Flag whether to include values from query and subject (default TRUE)}
 }
 \description{
 "lifts" all queries with respect to subject in coordinates that are within "pad"
