@@ -3970,6 +3970,7 @@ parse.grl = function(x, seqlengths = hg_seqlengths())
 #' @param by character vector specifying additional columms (e.g. sample id) around which to restrict overlaps (via gr.findoverlaps()). Refer to `gr.findoverlaps()` documentation. (default = NULL)
 #' @param seqname String specifying the name of the output sequence around which to anchor (default = "Anchor")
 #' @param include.values Boolean Flag whether to include values from query and subject (default = TRUE)
+#' @return anchorlifted GRanges
 #' @author Marcin Imielinski
 #' @export
 anchorlift = function(query, subject, window = 1e9, by = NULL, seqname = "Anchor", include.values = TRUE)
