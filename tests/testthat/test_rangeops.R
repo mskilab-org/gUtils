@@ -676,13 +676,16 @@ test_that('ra.merge' {
     ra2 = split(gr2, rep(1:5, each = 2))
 
     ram = ra.merge(ra1, ra2)
-    values(ram) # shows the metadata with TRUE / FALSE flags
-  
-    ram2 = ra.merge(ra1, ra2, pad = 5) # more inexact matching results in more merging
-    values(ram2)
+    ## 'values(ram)' shows the metadata with TRUE / FALSE flags
+    expect_equal(values(ram)[, 1], c(TRUE, TRUE, TRUE, TRUE, TRUE, FALSE, FALSE))
 
-    ram3 = ra.merge(ra1, ra2, ind = TRUE) #indices instead of flags
-    values(ram3)
+
+  
+    ##ram2 = ra.merge(ra1, ra2, pad = 5) # more inexact matching results in more merging
+    ##values(ram2)
+
+    ##ram3 = ra.merge(ra1, ra2, ind = TRUE) #indices instead of flags
+    ##values(ram3)
 
 })
 

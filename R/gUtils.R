@@ -2379,11 +2379,13 @@ gr.sub = function (gr, a = c("(^chr)(\\.1$)", "MT"), b = c("", "M"))
 #' Input data.frame of segments "segs" and converts into GRanges object porting over additional value columns
 #'
 #' "segs" data.frame/data.table can obey any number of conventions to specify chrom, start, and end of ranges
-#' (e.g. $pos1, $pos2, $Start_position, $End_position) --> see "standardize_segs" for more info
+#' (e.g. $pos1, $pos2, $Start_position, $End_position) 
+#'  
+#' Please see documentation for function 'standardize_segs()' for more details. 
 #'
 #' @param segs data.frame (or data.table) of segments with fields denoting chromosome, start, end, and other metadata. (See function 'standardize_segs()' for 'seg' data.frame/data.table input formats)
-#' @param seqlengths seqlengths of output GRanges object (default == NULL)
-#' @param seqinfo seqinfo of output GRanges object (default == Seqinfo())
+#' @param seqlengths seqlengths of output GRanges object (default = NULL)
+#' @param seqinfo seqinfo of output GRanges object (default = Seqinfo())
 #' @return GRanges from converted "segs" data.frame/data.table
 #' @export
 seg2gr = function(segs, seqlengths = NULL, seqinfo = Seqinfo())
@@ -2460,7 +2462,7 @@ seg2gr = function(segs, seqlengths = NULL, seqinfo = Seqinfo())
 #' @title Takes and returns segs data frame standardized to a single format
 #' @description
 #'
-#' Takes and returns segs data frame standardized to a single format (ie $chr, $pos1, $pos2)
+#' Takes and returns segs data frame standardized to a single format (i.e. $chr, $pos1, $pos2)
 #'
 #' If chr = TRUE will ensure "chr" prefix is added to chromossome(if does not exist)
 #'
@@ -2478,10 +2480,10 @@ seg2gr = function(segs, seqlengths = NULL, seqinfo = Seqinfo())
 #'
 #' @import GenomicRanges
 #' @param segs data.frame or data.table of segments with fields denoting chromosome, start, end, and other metadata. 
-#' @param seqlengths seqlengths of output GRanges object
+#' @param chr boolean Flag to force add chromosomes (default = FALSE)
 #' @return data.frame or data.table with standardized segments
 #' @export
-standardize_segs = function(seg, chr= FALSE)
+standardize_segs = function(seg, chr = FALSE)
 {
 
     if (is(seg, 'matrix')){
@@ -2519,6 +2521,9 @@ standardize_segs = function(seg, chr= FALSE)
             if (!grepl('chr', seg$chr[1])){
                 seg$chr = paste('chr', seg$chr, sep = "");
             }
+        }
+        else{
+            message('seg$chr field already exists. As seg$chr != NULL, flag "chr=TRUE" had no effect.')
         }
     }
 
@@ -2584,16 +2589,16 @@ gr.nochr = function(gr) {
 #' @importFrom S4Vectors queryHits subjectHits
 #' @param query Query \code{GRanges} pile
 #' @param subject Subject \code{GRanges} pile
-#' @param ignore.strand Don't consider strand information during overlaps. (default == TRUE)
-#' @param first Restrict to only the first match of the subject (default is to return all matches). (first == FALSE)
-#' @param qcol \code{character} vector of query meta-data columns to add to results
-#' @param scol \code{character} vector of subject meta-data columns to add to results
-#' @param type \code{type} argument as defined by \code{IRanges::findOverlaps} (\code{"any"}, \code{"start"}, \code{"end"}, \code{"within"}, \code{"equal"}). \code{["any"]}
-#' @param by Meta-data column to consider when performing overlaps [NULL]
-#' @param return.type Select data format to return (supplied as character): \code{"same"}, \code{"data.table"}, \code{"GRanges"}. \code{["same"]}
-#' @param max.chunk Maximum number of \code{query*subject} ranges to consider at once. Lower number increases runtime but decreased memory. If \code{length(query)*length(subject)} is less than \code{max.chunk}, overlaps will run in one batch.\code{[1e13]}
-#' @param verbose Increase the verbosity. (default == FALSE)
-#' @param mc.cores Number of cores to use when running in chunked mode (default == 1)
+#' @param ignore.strand Don't consider strand information during overlaps. (default = TRUE)
+#' @param first Restrict to only the first match of the subject (default is to return all matches). (first = FALSE)
+#' @param qcol \code{character} vector of query meta-data columns to add to results (default = NULL)
+#' @param scol \code{character} vector of subject meta-data columns to add to results (default = NULL)
+#' @param type \code{type} argument as defined by \code{IRanges::findOverlaps} (\code{"any"}, \code{"start"}, \code{"end"}, \code{"within"}, \code{"equal"}). (default = 'any')
+#' @param by Meta-data column to consider when performing overlaps (default = NULL)
+#' @param return.type Select data format to return (supplied as character): \code{"same"}, \code{"data.table"}, \code{"GRanges"}. (default = 'same')
+#' @param max.chunk Maximum number of \code{query*subject} ranges to consider at once. Lower number increases runtime but decreased memory. If \code{length(query)*length(subject)} is less than \code{max.chunk}, overlaps will run in one batch. (default = 1e3)
+#' @param verbose Increase the verbosity. (default = FALSE)
+#' @param mc.cores Number of cores to use when running in chunked mode (default = 1)
 #' @param ... Additional arguments sent to \code{IRanges::findOverlaps}.
 #' @return \code{GRanges} pile of the intersection regions, with \code{query.id} and \code{subject.id} marking sources
 #' @export
@@ -2792,11 +2797,12 @@ gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE, 
 #' @description
 #'
 #' Evaluate expression 'expr' on indivdual GRanges inside GRangesList.
-#' Expression should result in a single i.e. scalar value per grangeslist item.
+#' Expression should result in a single i.e. scalar value per GRangesList item.
 #' 
-#' @param grl GRangesList to eval over
-#' @param expr any syntactically valid R expression, on columns of GRanges or GRangesList
-#' @param condition optional any syntactically valid R expression, on columns of GRanges or GRangesList, on which to subset before evaluating main 'expr'
+#' @param grl GRangesList to evaluate over
+#' @param expr Any syntactically valid R expression, on columns of GRanges or GRangesList
+#' @param condition Optional: any syntactically valid R expression, on columns of GRanges or GRangesList, on which to subset before evaluating main 'expr' (default = NULL)
+#' @return GRangesList evaluated by R expressions
 #' @export
 grl.eval = function(grl, expr, condition = NULL)
 {
@@ -2847,10 +2853,10 @@ grl.eval = function(grl, expr, condition = NULL)
 #' @title merge GRanges using coordinates as primary key
 #' @description
 #'
-#' Uses gr.findoverlaps to enable internal and external joins of GRanges using
+#' Uses gr.findoverlaps() to enable internal and external joins of GRanges using
 #' syntax similar to "merge" where merging is done using coordinates +/- "by" fields
 #'
-#' Uses gr.findoverlaps / findOverlaps for heavy lifting, but returns outputs with
+#' Uses gr.findoverlaps() / GRanges::findOverlaps for heavy lifting, but returns outputs with
 #' metadata populated as well as query and subject ids.  For external joins,
 #' overlaps x with gaps(y) and gaps(x) with y.
 #'
@@ -2858,11 +2864,10 @@ grl.eval = function(grl, expr, condition = NULL)
 #' @param subject Subject \code{GRanges} pile
 #' @param by vector Additional metadata fields to join on
 #' @param all boolean Flag whether to include left and right joins
-#' @param all.query whether to do a left join (default==all)
-#' @param all.subject whether to do a right join (default==all)
-#'
+#' @param all.query boolean Flag whether to do a left join (default = all)
+#' @param all.subject boolean Flag whether to do a right join (default = all)
+#' @return GRanges merged on 'by' vector
 #' @export
-#'
 gr.merge = function(query, subject, by = NULL, all = FALSE, all.query = all, all.subject = all, ignore.strand = TRUE, verbose = FALSE, ... )
 {
     qcol = names(values(query))
@@ -2930,10 +2935,11 @@ gr.merge = function(query, subject, by = NULL, all = FALSE, all.query = all, all
                 qgaps = gaps(query)
             }
         }
-        else ## if by not null then we want to define gaps in a group wise manner ..
+        ## if by not null then we want to define gaps in a group wise manner ..
+        else 
         {
-            qgaps = unlist(do.call('GRangesList', lapply(split(query, apply(as.matrix(values(query)[, by]), 1, paste, collapse = ' ')), function(group)
-            {
+            qgaps = unlist(do.call('GRangesList', lapply(split(query, apply(as.matrix(values(query)[, by]), 1, paste, collapse = ' ')), function(group){
+                
                 if (ignore.strand){
                     this.gap = gaps(gr.stripstrand(group)) %Q% (strand == '*')
                 }
@@ -2947,6 +2953,7 @@ gr.merge = function(query, subject, by = NULL, all = FALSE, all.query = all, all
         }
 
         ov.right = gr.findoverlaps(qgaps, subject, qcol = NULL, scol = scol, by = by, ignore.strand = ignore.strand, ...)
+        
         if (length(ov.right)>0){
             ov.right$query.id = NA
         }
@@ -2973,7 +2980,7 @@ gr.merge = function(query, subject, by = NULL, all = FALSE, all.query = all, all
 #'
 #' @param x GRanges to disjoin
 #' @param ... arguments to disjoin
-#' @param ignore.strand logical scalar, default TRUE
+#' @param ignore.strand logical scalar (default = TRUE)
 #' @export
 gr.disjoin = function(x, ..., ignore.strand = TRUE)
 {
@@ -3965,7 +3972,7 @@ ra.duplicated = function(grl, pad=500, ignore.strand=FALSE){
 #' Calc pairwise distance for rearrangements represented by \code{GRangesList} objects
 #'
 #' @param gr takes in gr or grl
-#' @param field character scalar, corresponding to value field of gr. (default == NULL)
+#' @param field character scalar, corresponding to value field of gr. (default = NULL)
 #' @param val \code{[NULL]}
 #' @param include.val boolean Flag will include in out gr values field of first matching record in input gr. \code{[TRUE]}
 #' @param split boolean Flag to split the output into \code{GRangesList} split by \code{"field"}. \code{[FALSE]}
