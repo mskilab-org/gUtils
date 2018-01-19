@@ -628,7 +628,7 @@ test_that('%^% works', {
 
 
 
-test_that('ra.merge' {
+test_that('ra.merge', {
 
     gr1 = GRanges(1, IRanges(1:10, width = 1), strand = rep(c('+', '-'), 5))
     gr2 = GRanges(1, IRanges(4 + 1:10, width = 1), strand = rep(c('+', '-'), 5))

@@ -3028,7 +3028,6 @@ gr.in = function(query, subject, ...)
 #' @param field metadata field from gr to use as a weight
 #' @param mean logical scalar specifying whether to divide the output at each interval but the total number of intervals overlapping it (only applies if field == NULL) (default FALSE)
 #' @return non-overlapping GRanges spanning the seqlengths of gr with $score (if field is NULL) or $field specifying the sum / mean at that position
-#' @name gr.collapse
 #' @export
 gr.sum = function(gr, field = NULL, mean = FALSE)
 {
@@ -3827,9 +3826,9 @@ ra.merge = function(..., pad = 0, ind = FALSE, ignore.strand = FALSE){
 #'
 #' Calc pairwise distance for rearrangements represented by \code{GRangesList} objects
 #'
-#' @param gr takes in gr or grl
+#' @param gr GRanges or GRangesList input 
 #' @param field character scalar, corresponding to value field of gr. (default = NULL)
-#' @param val \code{[NULL]}
+#' @param val character scalar (default = NULL)
 #' @param include.val boolean Flag will include in out gr values field of first matching record in input gr. \code{[TRUE]}
 #' @param split boolean Flag to split the output into \code{GRangesList} split by \code{"field"}. \code{[FALSE]}
 #' @param pad integer Pad ranges by this amount before doing merge. [1], which merges contiguous but non-overlapping ranges.
@@ -3837,7 +3836,7 @@ ra.merge = function(..., pad = 0, ind = FALSE, ignore.strand = FALSE){
 #' @export
 gr.simplify = function(gr, field = NULL, val = NULL, include.val = TRUE, split = FALSE, pad = 1)
 {
-    tmp = as.logical(suppressWarnings(width(GenomicRanges::pintersect(ranges(gr[-length(gr)]), ranges(gr[-1]+pad), resolve.empty = 'max.start'))>0) &
+    tmp = as.logical(suppressWarnings(width(GenomicRanges::pintersect(ranges(gr[-length(gr)]), ranges(gr[-1]+pad), resolve.empty = 'max.start')) > 0) &
                      seqnames(gr[-length(gr)]) == seqnames(gr[-1]) & strand(gr[-length(gr)]) == strand(gr[-1]))
 
     tmp = as.vector(c(0, cumsum(!tmp)))

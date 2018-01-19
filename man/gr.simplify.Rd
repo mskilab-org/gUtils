@@ -8,11 +8,11 @@ gr.simplify(gr, field = NULL, val = NULL, include.val = TRUE,
   split = FALSE, pad = 1)
 }
 \arguments{
-\item{gr}{takes in gr or grl}
+\item{gr}{GRanges or GRangesList input}
 
 \item{field}{character scalar, corresponding to value field of gr. (default = NULL)}
 
-\item{val}{\code{[NULL]}}
+\item{val}{character scalar (default = NULL)}
 
 \item{include.val}{boolean Flag will include in out gr values field of first matching record in input gr. \code{[TRUE]}}
 
