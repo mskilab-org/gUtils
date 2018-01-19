@@ -2996,7 +2996,7 @@ gr.disjoin = function(x, ..., ignore.strand = TRUE)
 #' @title Versatile implementation of \code{GenomicRanges::findOverlaps}
 #' @description
 #'
-#' Versatile implementation of \code{GenomicRanges::findOverlaps
+#' Versatile implementation of \code{GenomicRanges::findOverlaps}
 #'
 #' Returns boolean vector. TRUE if query range i is found in any range in subject. 
 #'
