@@ -534,7 +534,7 @@ gr.rand = function(w, genome)
             ranges(out)[i] = new.ir;
         }
         else{
-            stop('Error: Allocation failed.  Supplied widths are likely too large')
+            stop('Error: Allocation failed. Supplied widths are likely too large')
         }
     }
 
@@ -701,7 +701,7 @@ gr.sample = function(gr, k, wid = 100, replace = TRUE)
 
         ## add check that not all widths are zero
         if (all(sapply(tmp, is.null))){
-            stop("Error: Could not sample any ranges. Check that width of input is greater than request width of output")
+            stop("Error: Could not sample any ranges. Check that width of input is greater than request width of output.")
         }
 
         return(gr.fix(seg2gr(do.call('rbind', tmp)), gr))
@@ -2310,8 +2310,8 @@ rrbind = function (..., union = TRUE, as.data.table = FALSE)
 #' Apply gsub to seqlevels of gr, by default removing 'chr', and "0.1" suffixes, and replacing "MT" with "M"
 #'
 #' @param gr \code{GRanges} to switch out seqlevels for
-#' @param a vector of regular expressions of things to ubstitute out
-#' @param b vector of values to substitute in
+#' @param a vector of regular expressions of things to substitute out (default = c("(^chr)(\\.1$)", "MT"))
+#' @param b vector of values to substitute in (default = c("", "M"))
 #' @return GRanges with substitutions
 #' @export
 gr.sub = function (gr, a = c("(^chr)(\\.1$)", "MT"), b = c("", "M"))
@@ -2328,7 +2328,7 @@ gr.sub = function (gr, a = c("(^chr)(\\.1$)", "MT"), b = c("", "M"))
 
     if (is.null(tmp.gr))
     {
-        warning('Warning: gr.sub had to convert granges to data.table before replacing seqlevels: check input seqlevels e.g. for mixed chr and non-chr seqlevels')
+        warning('Warning: gr.sub had to convert GRanges to data.table before replacing seqlevels: check input seqlevels e.g. for mixed chr and non-chr seqlevels')
 
         is.list = FALSE
         gr.len = length(gr)
@@ -3211,7 +3211,7 @@ setMethod("%&%", signature(x = 'GRanges'), function(x, y) {
 
 
 #' @name %&&%
-#' @title Subset x on y ranges wise respecting strand
+#' @title Subset x on y ranges while respecting strand
 #' @description
 #'
 #' shortcut for x[gr.in(x,y)]

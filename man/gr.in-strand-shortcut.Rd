@@ -3,7 +3,7 @@
 \name{\%&&\%}
 \alias{\%&&\%}
 \alias{\%&&\%,GRanges-method}
-\title{Subset x on y ranges wise respecting strand}
+\title{Subset x on y ranges while respecting strand}
 \usage{
 x \%&&\% ...
 }

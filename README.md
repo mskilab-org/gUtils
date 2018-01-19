@@ -32,7 +32,7 @@ devtools::install_github('mskilab/gUtils')
 ```
 
 gUtils cheat sheet 
------
+------------------
 
 One feature of gUtils is syntactic sugar on top of basic `GenomicRanges` functionality, enabling easy piping of interval operations as part of interactive "genomic data science" exploration in R. In all these examples `a` and `b` are `GRanges` (e.g `a` are gene territories and `b` might be copy number segments or Chip-Seq peaks). 
 
@@ -113,7 +113,7 @@ Returns a `length(a)` logical vector whose item `i` TRUE if the  `a[i]` overlaps
 ```
 
 ### `gr.match`
-Returns a `length(a)` integer vector whose item `i` contains the *first* index in `b` overlapping `a[i]` (this function is the match cousin to `%over%` and %^%).
+Returns a `length(a)` integer vector whose item `i` contains the *first* index in `b` overlapping `a[i]` (this function is the match cousin to `%over%` and `%^%`).
 ```{r}
   gr.match(a, b) # strand agnostic
   gr.match(a, b, ignore.strand = FALSE) # strand specific	

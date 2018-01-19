@@ -2,16 +2,12 @@ library(gUtils)
 library(BSgenome.Hsapiens.UCSC.hg19)
 Sys.setenv(DEFAULT_BSGENOME = "BSgenome.Hsapiens.UCSC.hg19::Hsapiens")
 
-context("Range ops")
 
-
-
+context("unit testing gUtils operations")
 
 gr  <- GRanges(1, IRanges(c(3,7,13), c(5,9,16)), strand=c('+','-','-'), seqinfo=Seqinfo("1", 25), name=c("A","B","C"))
 gr2 <- GRanges(1, IRanges(c(1,9), c(6,14)), strand=c('+','-'), seqinfo=Seqinfo("1", 25), field=c(1,2))
 dt <- data.table(seqnames=1, start=c(2,5,10), end=c(3,8,15))
-
-
 
 
 
@@ -44,7 +40,7 @@ test_that("gr2dt", {
 })
 
 
-test_that("gr.start ", {
+test_that("gr.start", {
     
     gr = GRanges(1, IRanges(c(3,7,13), c(5,9,16)), strand=c('+','-','-'), seqinfo=Seqinfo("1", 25), name=c("A","B","C"))
     expect_identical(start(gr.start(gr)), c(3L,7L,13L))
@@ -269,7 +265,6 @@ test_that("gr.fix with null genome", {
 })
 
 
-
 test_that("gr.flatten", {
 
     gr = GRanges(1, IRanges(c(3,7,13), c(5,9,16)), strand=c('+','-','-'), seqinfo=Seqinfo("1", 25), name=c("A","B","C"))
@@ -317,9 +312,9 @@ test_that("gr.tile", {
 
 test_that("gr.tile.map", {
 
-    gr1 <- gr.tile(GRanges(1, IRanges(1,100)), width=10)
-    gr2 <- gr.tile(GRanges(1, IRanges(1,100)), width=5)
-    gg <- gr.tile.map(gr1, gr2, verbose=TRUE)
+    gr1 = gr.tile(GRanges(1, IRanges(1,100)), width=10)
+    gr2 = gr.tile(GRanges(1, IRanges(1,100)), width=5)
+    gg = gr.tile.map(gr1, gr2, verbose=TRUE)
     expect_equal(length(gg), 10)
     expect_equal(length(unlist(gg)), 20)
 
@@ -421,7 +416,7 @@ test_that("rrbind", {
 ## standardize_segs
 
 
-test_that("gr.nochr",{
+test_that("gr.nochr", {
 
     expect_identical(gr.nochr(gr.chr(example_genes)), example_genes)
 
@@ -503,6 +498,7 @@ test_that("gr.findoverlap by", {
 })
 
 
+
 ## grl.eval
 
 
@@ -535,76 +531,251 @@ test_that("gr.match", {
 })
 
 
-## %+%
+test_that('%+% works', {
+    
+    expect_warning(gr %+% 20000) ## GRanges object contains 3 out-of-bound ranges located on sequence 1.
+    shifted_gr = gr %+% 20000
+    expect_equal(width(shifted_gr), c(3, 3, 4))
+    expect_equal(start(shifted_gr), c(20003, 20007, 20013))
+    expect_equal(end(shifted_gr), c(20005, 20009, 20016))
+    gr_zero = gr %+% 0
+    expect_equal(gr_zero, gr)
+    ### expect_error(gr %+% -200) ## error: invalid class “IRanges” object: 'width(x)' cannot contain negative integers  ## MUST FIX. If length(shift) < width(), error
+    expect_warning(gr %+% -3) ## warning: GRanges object contains 1 out-of-bound range located on sequence 1.
+    gr_shifted_neg = gr %+% -3
+    expect_equal(width(gr_shifted_neg), c(3, 3, 4))
+    expect_equal(start(gr_shifted_neg), c(0, 4, 10))
+    expect_equal(end(gr_shifted_neg), c(2, 6, 13))
+
+})
 
 
-## %-%
+test_that('%-% works', {
+    
+    expect_warning(gr %-% 20000) ## GRanges object contains 3 out-of-bound ranges located on sequence 1.
+    shifted_gr = gr %-% 20000
+    expect_equal(width(shifted_gr), c(3, 3, 4))
+    expect_equal(start(shifted_gr), c(-19997, -19993, -19987))
+    expect_equal(end(shifted_gr), c(-19995, -19991, -19984))
+    gr_zero = gr %-% 0
+    expect_equal(gr_zero, gr)
+    ##expect_error(gr %-% -200) ## error: invalid class “IRanges” object: 'width(x)' cannot contain negative integers ## MUST FIX
+    ## expect_error(gr %-% -4) ## error: invalid class “IRanges” object: 'width(x)' cannot contain negative integers ## MUST FIX
+    gr_neg = gr %-% -3
+    expect_equal(width(gr_neg), c(3, 3, 4))
+    expect_equal(start(gr_neg), c(6, 10, 16))
+    expect_equal(end(gr_neg), c(8, 12, 19))
+
+})
 
 
-## %&%
+## a %&% b # strand agnostic
+## Return the subset of ranges in a that overlap with at least one range in b.
+test_that('%&% works', {
+    
+    expect_equal(gr %&% gr2, gr)
+    expect_equal(gr2 %&% gr, gr2)
+    gr_A = GRanges(2, IRanges(c(233101, 233105, 231023, 231028, 229966), c(233229, 233229, 231191, 231191, 230044)), strand = c("-"))
+    gr_B = GRanges(2, IRanges(c(233101, 333105, 331023, 331028, 329966), c(333229, 333229, 331191, 331191, 330044)), strand = c("+"))
+    ## gr_A %&% gr_B
+    expect_equal(length(gr_A %&% gr_B), 2)
+    expect_equal(start(gr_A %&% gr_B), c(233101, 233105))
+    expect_equal(end(gr_A %&% gr_B), c(233229, 233229))
+    expect_equal(width(gr_A %&% gr_B), c(129, 125))
+    expect_equal(as.vector(strand(gr_A %&% gr_B)), c('-', '-'))
+    ## gr_B %&% gr_A
+    expect_equal(length(gr_B %&% gr_A), 1)
+    expect_equal(start(gr_B %&% gr_A), 233101)
+    expect_equal(end(gr_B %&% gr_A), 333229)
+    expect_equal(width(gr_B %&% gr_A), 100129)
+    expect_equal(as.vector(strand(gr_B %&% gr_A)), '+')
+
+})
 
 
-## %&&%
+## a %&&% b # strand specific
+## Return the subset of ranges in a that overlap with at least one range in b.
+test_that('%&&% works', {
+    
+    expect_equal(gr %&&% gr2, gr)
+    expect_equal(gr2 %&&% gr, gr2)
+    gr_A = GRanges(2, IRanges(c(233101, 233105, 231023, 231028, 229966), c(233229, 233229, 231191, 231191, 230044)), strand = c("-"))
+    gr_B = GRanges(2, IRanges(c(233101, 333105, 331023, 331028, 329966), c(333229, 333229, 331191, 331191, 330044)), strand = c("+"))
+    ## gr_A %&&% gr_B
+    ## gr_A %&&% gr_B !=  GRanges(). The former has seqinfo() Seqinfo object with 1 sequence from an unspecified genome; seqnames 2
+    expect_equal(length(gr_B %&&% gr_A), 0)
+    ## gr_B %&&% gr_A
+    expect_equal(length(gr_A %&&% gr_B), 0)
+
+})
 
 
-## %O%
+## %O% ## strand-agnostic
+## Returns a length(a) numeric vector whose item i is the number of bases in a[i] that overlaps at least one range in b.
+test_that('%O% works', {
+
+    expect_equal(gr %O% gr, c(1, 1, 1))
+    expect_equal(gr2 %O% gr2, c(1, 1))
+    ## 
+    ## expect_equal(gr %O% gr2, c(1.0000000, 0.3333333, 0.5000000))  
+    ## expect_equal(gr2 %O% gr, c(0.5, 0.5))
+    gr_A = GRanges(2, IRanges(c(233101, 233105, 231023, 231028, 229966), c(233229, 233229, 231191, 231191, 230044)), strand = c("-"))
+    gr_B = GRanges(2, IRanges(c(233101, 333105, 331023, 331028, 329966), c(333229, 333229, 331191, 331191, 330044)), strand = c("+"))
+    ## gr_A %O% gr_B
+    ## 1 1 0 0 0
+    ##  gr_B %O% gr_A
+    ## 0.001288338 0.000000000 0.000000000 0.000000000 0.000000000
 
 
-## %OO%
+})
+
+
+## %OO% ## strand-specific
+## Returns a length(a) numeric vector whose item i is the number of bases in a[i] that overlaps at least one range in b.
+test_that('%OO% works', {
+
+    expect_equal(gr %OO% gr, c(1, 1, 1))
+    expect_equal(gr2 %OO% gr2, c(1, 1))
+    ## 
+    ##expect_equal(gr %OO% gr2, c(1.0000000, 0.3333333, 0.5000000))  
+    ##expect_equal(gr2 %OO% gr, c(0.5, 0.5))
+    gr_A = GRanges(2, IRanges(c(233101, 233105, 231023, 231028, 229966), c(233229, 233229, 231191, 231191, 230044)), strand = c("-"))
+    gr_B = GRanges(2, IRanges(c(233101, 333105, 331023, 331028, 329966), c(333229, 333229, 331191, 331191, 330044)), strand = c("+"))
+    ## gr_A %O% gr_B
+    expect_equal(gr_A %OO% gr_B, c(0, 0, 0, 0, 0))  
+    ## gr_B %O% gr_A
+    expect_equal(gr_B %OO% gr_A, c(0, 0, 0, 0, 0))  
+
+})
 
 
 ## %o%
+## strand-agnostic
+## Returns a length(a) numeric vector whose item i is the fraction of the width of a[i] that overlaps at least one range in b.
+test_that('%o% works', {
+
+    expect_equal(gr %o% gr, c(3, 3, 4))
+    expect_equal(gr2 %o% gr2, c(6, 6))
+    expect_equal(gr %o% gr2, c(3, 1, 2))
+    expect_equal(gr2 %o% gr, c(3, 3))
+    gr_A = GRanges(2, IRanges(c(233101, 233105, 231023, 231028, 229966), c(233229, 233229, 231191, 231191, 230044)), strand = c("-"))
+    gr_B = GRanges(2, IRanges(c(233101, 333105, 331023, 331028, 329966), c(333229, 333229, 331191, 331191, 330044)), strand = c("+"))
+    expect_equal(gr_A %o% gr_B, c(129, 125, 0, 0, 0))  
+    expect_equal(gr_B %o% gr_A, c(129, 0, 0, 0, 0))  
+
+})
 
 
 ## %oo%
+## strand-specific
+## Returns a length(a) numeric vector whose item i is the fraction of the width of a[i] that overlaps at least one range in b.
+test_that('%oo% works', {
+    
+    expect_equal(gr %oo% gr, c(3, 3, 4))
+    expect_equal(gr2 %oo% gr2, c(6, 6))
+    expect_equal(gr %oo% gr2, c(3, 1, 2))
+    expect_equal(gr2 %oo% gr, c(3, 3))
+    gr_A = GRanges(2, IRanges(c(233101, 233105, 231023, 231028, 229966), c(233229, 233229, 231191, 231191, 230044)), strand = c("-"))
+    gr_B = GRanges(2, IRanges(c(233101, 333105, 331023, 331028, 329966), c(333229, 333229, 331191, 331191, 330044)), strand = c("+"))
+    expect_equal(gr_A %oo% gr_B, c(0, 0, 0, 0, 0))  
+    expect_equal(gr_B %oo% gr_A, c(0, 0, 0, 0, 0))  
+
+})
 
 
 ## %N%
+## strand-agnostic
+## Returns a length(a) numeric vector whose item i is the total number of ranges in b that overlap with a[i].
+test_that('%N% works', {
+    
+    expect_equal(gr %N% gr, c(1, 1, 1))
+    expect_equal(gr2 %N% gr2, c(1, 1))
+    expect_equal(gr %N% gr2, c(1, 1, 1))
+    expect_equal(gr2 %N% gr, c(1, 2))
+    gr_A = GRanges(2, IRanges(c(233101, 233105, 231023, 231028, 229966), c(233229, 233229, 231191, 231191, 230044)), strand = c("-"))
+    gr_B = GRanges(2, IRanges(c(233101, 333105, 331023, 331028, 329966), c(333229, 333229, 331191, 331191, 330044)), strand = c("+"))
+    expect_equal(gr_A %N% gr_B, c(1, 1, 0, 0, 0))  
+    expect_equal(gr_B %N% gr_A, c(2, 0, 0, 0, 0))  
+
+})
 
 
 ## %NN%
+## strand-specific
+## Returns a length(a) numeric vector whose item i is the total number of ranges in b that overlap with a[i].
+test_that('%NN% works', {
+    
+    expect_equal(gr %NN% gr, c(1, 1, 1))
+    expect_equal(gr2 %NN% gr2, c(1, 1))
+    expect_equal(gr %NN% gr2, c(1, 1, 1))
+    expect_equal(gr2 %NN% gr, c(1, 2))
+    gr_A = GRanges(2, IRanges(c(233101, 233105, 231023, 231028, 229966), c(233229, 233229, 231191, 231191, 230044)), strand = c("-"))
+    gr_B = GRanges(2, IRanges(c(233101, 333105, 331023, 331028, 329966), c(333229, 333229, 331191, 331191, 330044)), strand = c("+"))
+    expect_equal(gr_A %NN% gr_B, c(0, 0, 0, 0, 0))  
+    expect_equal(gr_B %NN% gr_A, c(0, 0, 0, 0, 0))  
+
+})
 
 
 ## %_%
+## Shortcut for GenomicRanges::setdiff
 test_that('%_% works', {
 
-    gr1 <- GRanges(1, IRanges(10,20), strand="+")
-    gr2 <- GRanges(1, IRanges(15,25), strand="-")
-    gr3 <- GRanges("1:1-15")
+    gr1 = GRanges(1, IRanges(10,20), strand="+")
+    gr2 = GRanges(1, IRanges(15,25), strand="-")
+    gr3 = GRanges("1:1-15")
     expect_equal(width(gr1 %_% gr2), 5)
+    expect_equal(start(gr1 %_% gr2), 10)
+    expect_equal(end(gr1 %_% gr2), 14)
     expect_equal(width(gr1 %_% gr3), 5)
-    
+    expect_equal(start(gr1 %_% gr3), 16)
+    expect_equal(end(gr1 %_% gr3), 20)
+    expect_equal(width(gr3 %_% gr1), 9)
+    expect_equal(start(gr3 %_% gr1), 1)
+    expect_equal(end(gr3 %_% gr1), 9)
+    expect_equal(width(gr2 %_% gr1), 5)
+    expect_equal(start(gr2 %_% gr1), 21)
+    expect_equal(end(gr2 %_% gr1), 25)
+
 })
 
 
 ## %Q%
+## Subsets or re-orders a based on a logical or integer valued expression that operates on the GRanges metadata columns of a.
 test_that('%Q% works', {
 
-    testset <- GRanges(seqnames = Rle(1,c(5)) , ranges = IRanges(1:5 , end = 2000:2004) , strand = Rle(strand(c("+")) , c(5)) , mean = c(1, -2 , -5 , 5 ,6))
+    testset = GRanges(seqnames = Rle(1,c(5)) , ranges = IRanges(1:5 , end = 2000:2004) , strand = Rle(strand(c("+")) , c(5)) , mean = c(1, -2 , -5 , 5 ,6))
     expect_equal(length(testset %Q% (mean > 0)) , 3)
-
-})
-
-test_that('second test that %Q% works', {
-    
     foo = GRanges(seqnames = Rle(1,c(5)) , ranges = IRanges(1:5 , end = 2000:2004) , strand = Rle(strand(c("+")) , c(5)) , mean = c(50, 200, 300, 400, 500))
     expect_equal(length(foo %Q% (mean == 300)) , 1)
-    
+    testgr = GRanges(seqnames = Rle(1,c(5)) , ranges = IRanges(1:5 , end = c(5, 10, 15, 20, 25)) , strand = Rle(strand(c("+", "-", "-", "-", "-"))) , mean = c(1, -2 , -5 , 5 ,6), type = c("exon", "CDS", "exon", "CDS", "exon"))
+    ## string matching strand
+    expect_equal(length(testgr %Q% (strand == "-")), 4)
+    expect_equal(width(testgr %Q% (strand == '+')), 5)
+    expect_equal(length(testgr %Q% (strand == '*')), 0)
+    expect_error(testgr %Q% (strand > 100))
+    ## strng matching type
+    expect_equal(length(testgr %Q% ((type != 'exon') | (type != 'CDS'))), 5)
+    expect_equal(length(testgr %Q% ((type != 'exon') & (type != 'CDS'))), 0)
+    expect_equal(width(testgr %Q% ((mean > 1) & (type == 'CDS'))), 17)  ## only GRanges 1 [4, 20] - | 5 CDS
+    expect_equal(length(testgr %Q% (mean > 'foo')), 0)  ## nonsense %Q% subsets don't throw error, but do return empty GRanges
+
 })
 
-test_that('third test that %Q% works', {
-    
-    foo = GRanges(seqnames = Rle(1,c(5)) , ranges = IRanges(1:5 , end = c(5, 10, 15, 20, 25)) , strand = Rle(strand(c("+", "-", "-", "-", "-"))) , mean = c(1, -2 , -5 , 5 ,6))
-    expect_equal(length(foo %Q% (strand == "-") ) , 4)
-    
-})
 
 
 ## %^%
+## Returns a length(a) logical vector whose item i TRUE if the a[i] overlaps at least on range in b (similar to %over% just less fussy about Seqinfo).
 test_that('%^% works', {
 
-    testset <- GRanges(seqnames = Rle(1,c(5)) , ranges = IRanges(1:5 , end = 2000:2004) , strand = Rle(strand(c("+")) , c(5)) , mean = c(1, -2 , -5 , 5 ,6))
+    testset = GRanges(seqnames = Rle(1,c(5)) , ranges = IRanges(1:5 , end = 2000:2004) , strand = Rle(strand(c("+")) , c(5)) , mean = c(1, -2 , -5 , 5 ,6))
     expect_equal(length(testset %^% testset), 5)
+    expect_equal(length(gr %^% testset), 3)
+    expect_equal(length(testset %^% gr), 5)
+    gr_A = GRanges(2, IRanges(c(233101, 233105, 231023, 231028, 229966), c(233229, 233229, 231191, 231191, 230044)), strand = c("-"))
+    gr_B = GRanges(2, IRanges(c(233101, 333105, 331023, 331028, 329966), c(333229, 333229, 331191, 331191, 330044)), strand = c("+"))
+    expect_equal(as.vector(gr_A %^% gr_B), c(TRUE, TRUE, FALSE, FALSE, FALSE))
+    expect_equal(as.vector(gr_B %^% gr_A), c(TRUE, FALSE, FALSE, FALSE, FALSE))
 
 })
 
@@ -636,18 +807,20 @@ test_that('ra.merge', {
     ra2 = split(gr2, rep(1:5, each = 2))
 
     ram = ra.merge(ra1, ra2)
+    expect_warning(ra.merge(ra1, ra2))  ## warning: GRanges object contains 10 out-of-bound ranges located on sequence 1.
+    expect_equal(length(ram), 7)
     ## 'values(ram)' shows the metadata with TRUE / FALSE flags
-    expect_equal(values(ram)[, 1], c(TRUE, TRUE, TRUE, TRUE, TRUE, FALSE, FALSE))
+    expect_equal(values(ram)[, 1], c(TRUE, TRUE, TRUE, TRUE, TRUE, FALSE, FALSE)) 
+    expect_equal(values(ram)[, 2], c(FALSE, FALSE, TRUE, TRUE, TRUE, TRUE, TRUE)) 
 
-
-  
-    ##ram2 = ra.merge(ra1, ra2, pad = 5) # more inexact matching results in more merging
+    ram2 = ra.merge(ra1, ra2, pad = 5) # more inexact matching results in more merging
     ##values(ram2)
+    expect_equal(length(ram2), 4)
 
     ##ram3 = ra.merge(ra1, ra2, ind = TRUE) #indices instead of flags
     ##values(ram3)
-
 })
+
 
 
 test_that("gr.simplify", {
@@ -687,6 +860,10 @@ test_that("parse.grl", {
 
 
 ## anchorlift
+
+
+
+
 
 
 ## XT Yao function
