@@ -9,7 +9,7 @@
 \alias{\%^\%,GRanges-method}
 \alias{\%^^\%}
 \alias{\%^^\%,GRanges-method}
-\title{subset x on y ranges while ignoring strand}
+\title{subset x on y ranges while ignoring strand (strand-agnostic)}
 \usage{
 x \%&\% ...
 

@@ -3,7 +3,7 @@
 \name{\%oo\%}
 \alias{\%oo\%}
 \alias{\%oo\%,GRanges-method}
-\title{gr.val shortcut to total per interval width of overlap of gr1 with gr2, respecting strand}
+\title{gr.val shortcut to total per interval width of overlap of gr1 with gr2, strand-specific}
 \usage{
 x \%oo\% ...
 }

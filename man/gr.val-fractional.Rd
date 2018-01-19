@@ -4,7 +4,7 @@
 \name{\%OO\%}
 \alias{\%OO\%}
 \alias{\%OO\%,GRanges-method}
-\title{gr.val shortcut to get fractional overlap of gr1 by gr2, respecting strand}
+\title{gr.val shortcut to get fractional overlap of gr1 by gr2, strand-specific}
 \usage{
 x \%OO\% ...
 }

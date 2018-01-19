@@ -3,7 +3,7 @@
 \name{\%$$\%}
 \alias{\%$$\%}
 \alias{\%$$\%,GRanges-method}
-\title{gr.val shortcut to get mean values of subject "x" meta data fields in query "y" (respects strand)}
+\title{gr.val shortcut to get mean values of subject "x" meta data fields in query "y" (strand-specific)}
 \usage{
 x \%$$\% ...
 }

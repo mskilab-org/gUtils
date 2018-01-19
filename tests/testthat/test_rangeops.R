@@ -5,9 +5,9 @@ Sys.setenv(DEFAULT_BSGENOME = "BSgenome.Hsapiens.UCSC.hg19::Hsapiens")
 
 context("unit testing gUtils operations")
 
-gr  <- GRanges(1, IRanges(c(3,7,13), c(5,9,16)), strand=c('+','-','-'), seqinfo=Seqinfo("1", 25), name=c("A","B","C"))
-gr2 <- GRanges(1, IRanges(c(1,9), c(6,14)), strand=c('+','-'), seqinfo=Seqinfo("1", 25), field=c(1,2))
-dt <- data.table(seqnames=1, start=c(2,5,10), end=c(3,8,15))
+gr = GRanges(1, IRanges(c(3,7,13), c(5,9,16)), strand=c('+','-','-'), seqinfo=Seqinfo("1", 25), name=c("A","B","C"))
+gr2 = GRanges(1, IRanges(c(1,9), c(6,14)), strand=c('+','-'), seqinfo=Seqinfo("1", 25), field=c(1,2))
+dt = data.table(seqnames=1, start=c(2,5,10), end=c(3,8,15))
 
 
 
@@ -801,35 +801,60 @@ test_that('%^% works', {
 
 test_that('ra.merge', {
 
+    ## beginning with fake rearrangment data grl1 and grl2
+    expect_equal(length(ra.merge(grl1, grl2)), 500)
+    expect_true(unique(values(ra.merge(grl1, grl2))[, 1][1:250]))
+    expect_false(unique(values(ra.merge(grl1, grl2))[, 1][251:500]))
+    expect_false(unique(values(ra.merge(grl1, grl2))[, 2][1:249]))
+    expect_true(unique(values(ra.merge(grl1, grl2))[, 2][250:500]))
+    ## ignore.strand == TRUE makes no difference...
+    expect_equal(ra.merge(grl1, grl2, ignore.strand=TRUE), ra.merge(grl1, grl2))
+    ## example in function 'ra.merge()'
     gr1 = GRanges(1, IRanges(1:10, width = 1), strand = rep(c('+', '-'), 5))
     gr2 = GRanges(1, IRanges(4 + 1:10, width = 1), strand = rep(c('+', '-'), 5))
+    expect_error(ra.merge(gr1, gr2)) ##   Error: All inputs must be a GRangesList
+    ## create GRangesLists
     ra1 = split(gr1, rep(1:5, each = 2))
     ra2 = split(gr2, rep(1:5, each = 2))
-
     ram = ra.merge(ra1, ra2)
     expect_warning(ra.merge(ra1, ra2))  ## warning: GRanges object contains 10 out-of-bound ranges located on sequence 1.
     expect_equal(length(ram), 7)
     ## 'values(ram)' shows the metadata with TRUE / FALSE flags
     expect_equal(values(ram)[, 1], c(TRUE, TRUE, TRUE, TRUE, TRUE, FALSE, FALSE)) 
     expect_equal(values(ram)[, 2], c(FALSE, FALSE, TRUE, TRUE, TRUE, TRUE, TRUE)) 
-
-    ram2 = ra.merge(ra1, ra2, pad = 5) # more inexact matching results in more merging
+    ## ram2 = ra.merge(ra1, ra2, pad = 5) # more inexact matching results in more merging
+    ram2 = ra.merge(ra1, ra2, pad = 500) ## more inexact matching results in more merging
     ##values(ram2)
-    expect_equal(length(ram2), 4)
-
-    ##ram3 = ra.merge(ra1, ra2, ind = TRUE) #indices instead of flags
+    expect_equal(length(ram2), 5)    
+    expect_equal(values(ram2)[, 1], c(TRUE, TRUE, TRUE, TRUE, TRUE)) 
+    expect_equal(values(ram2)[, 2], c(TRUE, TRUE, TRUE, TRUE, TRUE)) 
+    expect_error(ra.merge(ra1, ra2, pad =-1)) ## adjustment would result in ranges with negative widths
+    ## ram3
+    ram3 = ra.merge(ra1, ra2, ind = TRUE) ## indices instead of flags
     ##values(ram3)
+    expect_equal(length(ram3), 7)
+    expect_equal(values(ram3)[, 1], c(1, 2, 3, 4, 5, NA, NA)) 
+    expect_equal(values(ram3)[, 2], c(NA, NA, 3, 4, 5, 4, 5)) 
+    ## test both 'pad', 'ind'
+    ram4 = ra.merge(ra1, ra2, pad = 500, ind = TRUE) 
+    expect_equal(values(ram4)[, 1], c(1, 2, 3, 4, 5))
+    expect_equal(values(ram4)[, 2], c(1, 2, 3, 4, 5))
+    ## ignore.strand == TRUE
+    expect_error(ra.merge(ra1, ra2, ignore.stand = TRUE)) ##  unable to find an inherited method for function ‘values’ for signature ‘"logical"’
+    ### all args
+    expect_error(ra.merge(ra1, ra2, pad = 500, ind = TRUE, ignore.stand = TRUE)) ## unable to find an inherited method for function ‘values’ for signature ‘"logical"’
+
 })
 
 
 
 test_that("gr.simplify", {
 
-    gg <- gr.simplify(gr, pad=4)
+    gg = gr.simplify(gr, pad=4)
     expect_identical(end(gg), c(5L, 16L))
     expect_equal(length(gg), 2)
 
-    gr$field <- c("A","B","B")
+    gr$field = c("A","B","B")
     expect_equal(length(gr.simplify(gr, pad=4, field="name")), 3)
     expect_equal(length(gr.simplify(gr, pad=4, field="field")), 2)
 
@@ -859,8 +884,30 @@ test_that("parse.grl", {
 })
 
 
-## anchorlift
 
+test_that('anchorlift', {
+
+    ## unlist rearrangement datasets grl1 and grl2
+    sv1 = grl.unlist(grl1)
+    sv2 = grl.unlist(grl2)
+    ## default
+    expect_equal(length(suppressWarnings(anchorlift(sv1, sv2))), 13158)
+    ## 'by' argument
+    anchor1 = anchorlift(sv1, sv2, by='bin')
+    expect_equal(width(anchor1), c(1, 1))
+    expect_equal(anchor1[1]$subject.id, 1)
+    expect_equal(anchor1[2]$subject.id, 2)
+    expect_equal(anchor1[1]$query.id, 499)
+    expect_equal(anchor1[2]$query.id, 500)   
+    expect_equal(anchor1[1]$bin, 4678)   
+    expect_equal(anchor1[2]$bin, 4678)   
+    ## 'window' argument
+    ## error if over 1e9
+    expect_error(anchorlift(gr, gr2, window=1.1e9))
+    ## include.values
+    expect_equal(dim(gr2dt(suppressWarnings(anchorlift(sv1, sv2, by='bin', include.values = FALSE))))[2], 7)  ## check only 7 columns
+
+})
 
 
 

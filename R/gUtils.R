@@ -3187,7 +3187,7 @@ setMethod("%-%", signature(gr = 'GRanges'), function(gr, sh) {
 
 
 #' @name %&%
-#' @title subset x on y ranges while ignoring strand
+#' @title subset x on y ranges while ignoring strand (strand-agnostic)
 #' @description
 #'
 #' shortcut for x[gr.in(x,y)]
@@ -3211,7 +3211,7 @@ setMethod("%&%", signature(x = 'GRanges'), function(x, y) {
 
 
 #' @name %&&%
-#' @title Subset x on y ranges while respecting strand
+#' @title Subset x on y ranges, strand-specific
 #' @description
 #'
 #' shortcut for x[gr.in(x,y)]
@@ -3235,7 +3235,7 @@ setMethod("%&&%", signature(x = "GRanges"), function(x, y) {
 
 
 #' @name %O%
-#' @title gr.val shortcut to get fractional overlap of gr1 by gr2, ignoring strand
+#' @title gr.val shortcut to get fractional overlap of gr1 by gr2, strand-agnostic
 #' @description
 #'
 #' Shortcut for gr.val (using val = names(values(y)))
@@ -3270,7 +3270,7 @@ setMethod("%O%", signature(x = "GRanges"), function(x, y) {
 
 
 #' @name %OO%
-#' @title gr.val shortcut to get fractional overlap of gr1 by gr2, respecting strand
+#' @title gr.val shortcut to get fractional overlap of gr1 by gr2, strand-specific
 #' @description
 #'
 #' Shortcut for gr.val (using val = names(values(y)))
@@ -3337,7 +3337,7 @@ setMethod("%o%", signature(x = "GRanges"), function(x, y) {
 
 
 #' @name %oo%
-#' @title gr.val shortcut to total per interval width of overlap of gr1 with gr2, respecting strand
+#' @title gr.val shortcut to total per interval width of overlap of gr1 with gr2, strand-specific
 #' @description
 #'
 #' gr1 %oo% gr2
@@ -3523,7 +3523,7 @@ setMethod("%^%", signature(x = "GRanges"), function(x, y) {
 
 
 #' @name %$%
-#' @title gr.val shortcut to get mean values of subject "x" meta data fields in query "y" (strand agnostic)
+#' @title gr.val shortcut to get mean values of subject "x" meta data fields in query "y" (strand-agnostic)
 #' @description
 #'
 #' Shortcut for gr.val (using val = names(values(y)))
@@ -3540,6 +3540,32 @@ setMethod("%^%", signature(x = "GRanges"), function(x, y) {
 setGeneric('%$%', function(x, ...) standardGeneric('%$%'))
 setMethod("%$%", signature(x = "GRanges"), function(x, y) {
     return(gr.val(x, y, val = names(values(y))))
+})
+
+
+
+
+#' @name %$$%
+#' @title gr.val shortcut to get mean values of subject "x" meta data fields in query "y" (strand-specific)
+#' @description
+#'
+#' Shortcut for gr.val (using val = names(values(y)))
+#'
+#' gr1 %$$% gr2
+#'
+#' @return gr1 with extra meta data fields populated from gr2
+#' @rdname gr.val-mean
+#' @exportMethod %$$%
+#' @aliases %$$%,GRanges-method
+#' @author Marcin Imielinski
+#' @param x See \link{gr.val}
+#' @param ... See \link{gr.val}
+setGeneric('%$$%', function(x, ...) standardGeneric('%$$%'))
+setMethod("%$$%", signature(x = "GRanges"), function(x, y) {
+    if (is.character(y)){
+        y = parse.gr(y)
+    }
+    return(gr.val(x, y, val = names(values(y)), ignore.strand = FALSE))
 })
 
 
@@ -3577,7 +3603,7 @@ setMethod("%*%", signature(x = "GRanges"), function(x, y) {
 
 
 #' @name %**%
-#' @title shortcut for gr.findoverlaps (respects strand)
+#' @title shortcut for gr.findoverlaps (strand-specific)
 #' @description
 #'
 #' Shortcut for gr.findoverlaps
@@ -3604,7 +3630,7 @@ setMethod("%**%", signature(x = "GRanges"), function(x, y) {
 
 
 #' @name %^^%
-#' @title gr.in shortcut (respects strand)
+#' @title gr.in shortcut (strand-specific)
 #' @description
 #'
 #' Shortcut for gr.in
@@ -3624,32 +3650,6 @@ setMethod("%^^%", signature(x = "GRanges"), function(x, y) {
         y = parse.gr(y)
     }
     return(gr.in(x, y, ignore.strand = FALSE))
-})
-
-
-
-
-#' @name %$$%
-#' @title gr.val shortcut to get mean values of subject "x" meta data fields in query "y" (respects strand)
-#' @description
-#'
-#' Shortcut for gr.val (using val = names(values(y)))
-#'
-#' gr1 %$$% gr2
-#'
-#' @return gr1 with extra meta data fields populated from gr2
-#' @rdname gr.val-mean
-#' @exportMethod %$$%
-#' @aliases %$$%,GRanges-method
-#' @author Marcin Imielinski
-#' @param x See \link{gr.val}
-#' @param ... See \link{gr.val}
-setGeneric('%$$%', function(x, ...) standardGeneric('%$$%'))
-setMethod("%$$%", signature(x = "GRanges"), function(x, y) {
-    if (is.character(y)){
-        y = parse.gr(y)
-    }
-    return(gr.val(x, y, val = names(values(y)), ignore.strand = FALSE))
 })
 
 
@@ -3711,7 +3711,7 @@ gr.setdiff = function(query, subject, ignore.strand = TRUE, by = NULL, ...)
 #' @param ... GRangesLists which represent rearrangements to be merged
 #' @param pad integer specifying padding (default = 0)
 #' @param ind boolean Flag specifying whether the "seen.by" fields should contain indices of inputs (rather than logical flags) and NA if the given junction is missing (default = FALSE)
-#' @param ignore.strand boolean Flag specifying whether to ignore strand (implies all strand information will be ignored, use at your own risk) (default = FALSE)
+#' @param ignore.strand boolean Flag specifying whether to ignore strand (implies all strand information will be ignored, use at your own risk). Refer to documentation for function 'ra.overlaps()'. (default = FALSE)
 #' @return \code{GRangesList} of merged junctions with meta data fields specifying which of the inputs each outputted junction was "seen.by"
 #' @examples
 #'

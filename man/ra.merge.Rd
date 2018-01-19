@@ -13,7 +13,7 @@ ra.merge(..., pad = 0, ind = FALSE, ignore.strand = FALSE)
 
 \item{ind}{boolean Flag specifying whether the "seen.by" fields should contain indices of inputs (rather than logical flags) and NA if the given junction is missing (default = FALSE)}
 
-\item{ignore.strand}{boolean Flag specifying whether to ignore strand (implies all strand information will be ignored, use at your own risk) (default = FALSE)}
+\item{ignore.strand}{boolean Flag specifying whether to ignore strand (implies all strand information will be ignored, use at your own risk). Refer to documentation for function 'ra.overlaps()'. (default = FALSE)}
 }
 \value{
 \code{GRangesList} of merged junctions with meta data fields specifying which of the inputs each outputted junction was "seen.by"

@@ -3,7 +3,7 @@
 \name{\%**\%}
 \alias{\%**\%}
 \alias{\%**\%,GRanges-method}
-\title{shortcut for gr.findoverlaps (respects strand)}
+\title{shortcut for gr.findoverlaps (strand-specific)}
 \usage{
 x \%**\% ...
 }
