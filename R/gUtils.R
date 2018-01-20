@@ -613,15 +613,17 @@ gr.trim = function(gr, starts=1, ends=1)
 #' @export
 gr.sample = function(gr, k, wid = 100, replace = TRUE)
 {
-    if (!inherits(gr, 'GRanges'))
+    if (!inherits(gr, 'GRanges')){
         gr = si2gr(gr)
+    }
 
     if (length(k)==1)
     {
         gr$ix.og = 1:length(gr)
         gr = gr[width(gr)>=wid]
-        if (length(gr)==0)
-            stop('Input territory has zero regions of sufficient width')
+        if (length(gr)==0){
+            stop('Error: Input territory has zero regions of sufficient width')
+        }
         gr.f = as.data.table(gr.flatten(gr.trim(gr, starts = 1, ends = width(gr)-wid), gap = 0))
         terr = sum(gr.f$end-gr.f$start + 1)
         st = gr.f$start;
@@ -757,7 +759,7 @@ si2gr = function(si, strip.empty = FALSE)
 
 
 
-#' @name gr.bind
+#' @name grbind
 #' @title Concatenate \code{GRanges}, robust to different \code{mcols}
 #' @description
 #'
@@ -767,9 +769,9 @@ si2gr = function(si, strip.empty = FALSE)
 #' @param ... additional input GRanges
 #' @note Does not fill in the \code{Seqinfo} for the output \code{GRanges}
 #' @return Concatenated \code{GRanges}
-#' gr.bind(example_genes, example_dnase)
+#' grbind(example_genes, example_dnase)
 #' @export
-gr.bind = function(x, ...)
+grbind = function(x, ...)
 {
     if (missing('x')){
         grs = list(...)
@@ -880,7 +882,7 @@ grl.bind = function(...)
 
     ## annoying acrobatics to reconcile gr and grl level features for heterogenous input gr / grls
     grls.ul = lapply(grls, grl.unlist)
-    grls.ul.rb = do.call('gr.bind', grls.ul)
+    grls.ul.rb = do.call('grbind', grls.ul)
     sp = base::unlist(lapply(1:length(grls), function(x) rep(x, length(grls.ul[[x]]))))
     gix = base::split(grls.ul.rb$grl.ix, sp)
     gjx = base::split(1:length(grls.ul.rb), sp)
@@ -1578,7 +1580,7 @@ gr.val = function(query, target, val = NULL, mean = TRUE, weighted = mean, na.rm
     {
         verbose = TRUE
         ix.l = split(1:length(query), ceiling(as.numeric((1:length(query)/max.slice))))
-        return(do.call('gr.bind', parallel::mclapply(ix.l, function(ix) {
+        return(do.call('grbind', parallel::mclapply(ix.l, function(ix) {
             if (verbose){
                 cat(sprintf('Processing %s to %s of %s\n', min(ix), max(ix), length(query)))
             }
@@ -2919,7 +2921,7 @@ gr.merge = function(query, subject, by = NULL, all = FALSE, all.query = all, all
             message('left join yields ', length(ov.left), ' overlaps')
         }
 
-        ov = gr.bind(ov, ov.left)
+        ov = grbind(ov, ov.left)
     }
 
     if (all.subject)
@@ -2961,7 +2963,7 @@ gr.merge = function(query, subject, by = NULL, all = FALSE, all.query = all, all
         if (verbose){
             message('right join yields ', length(ov.right), ' overlaps')
         }
-        ov = gr.bind(ov, ov.right)
+        ov = grbind(ov, ov.right)
     }
 
     return(ov)

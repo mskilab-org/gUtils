@@ -162,11 +162,11 @@ test_that("si2gr", {
 })
 
 
-test_that("gr.bind", {
+test_that("grbind", {
 
     example_dnase = GRanges(1, IRanges(c(562757, 564442, 564442), c(563203, 564813, 564813)), strand = c("-", "+", "+"))
     example_genes = GRanges(2, IRanges(c(233101, 233101, 231023, 231023, 229966), c(233229, 233229, 231191, 231191, 230044)), strand = c("-"), type = c("exon", "CDS", "exon", "CDS", "exon"))
-    expect_equal(length(suppressWarnings(gr.bind(example_genes, example_dnase))) > 0, TRUE)
+    expect_equal(length(suppressWarnings(grbind(example_genes, example_dnase))) > 0, TRUE)
 
 })
 
