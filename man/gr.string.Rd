@@ -10,7 +10,7 @@ gr.string(gr, add.chr = FALSE, mb = FALSE, round = 3, other.cols = c(),
 \arguments{
 \item{gr}{\code{GRanges} pile to get intervals from}
 
-\item{add.chr}{boolean Flage to prepend seqnames with "chr" (default = FALSE)}
+\item{add.chr}{boolean Flag to prepend seqnames with "chr" (default = FALSE)}
 
 \item{mb}{boolean Flag to round to the nearest megabase (default = FALSE)}
 

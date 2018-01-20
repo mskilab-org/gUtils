@@ -24,10 +24,10 @@ If chr = TRUE will ensure "chr" prefix is added to chromossome(if does not exist
 
 Conventions:
 \itemize{
-\code{ID} - 'id', 'patient', 'sample'
-\code{chr} - 'seqnames', 'chrom', 'chromosome', 'rname', 'space', 'contig'
-\code{pos1} - 'start', 'loc.start', 'start.bp', 'start_position', 'begin', 'pos', 'pos1', 'left', 's1'
-\code{pos2} - 'end', 'loc.end', 'stop', 'end.bp', 'end_posiiton', 'pos2', 'right', 'e1'
-\code{strand} - 'strand', 'str' 
+\item \code{ID} - 'id', 'patient', 'sample'
+\item \code{chr} - 'seqnames', 'chrom', 'chromosome', 'rname', 'space', 'contig'
+\item \code{pos1} - 'start', 'loc.start', 'start.bp', 'start_position', 'begin', 'pos', 'pos1', 'left', 's1'
+\item \code{pos2} - 'end', 'loc.end', 'stop', 'end.bp', 'end_posiiton', 'pos2', 'right', 'e1'
+\item s\code{strand} - 'strand', 'str' 
 }
 }

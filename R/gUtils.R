@@ -368,7 +368,7 @@ dt2gr = function(dt, key = NULL, seqlengths = hg_seqlengths(), seqinfo = Seqinfo
 #' @param force boolean Allows returned \code{GRanges} to have ranges outside of its \code{Seqinfo} bounds. (default = FALSE)
 #' @param ignore.strand boolean If set to \code{FALSE}, will extend '-' strands from the other direction. (default = TRUE)
 #' @param clip boolean Trims returned \code{GRanges} so that it does not extend beyond bounds of the input (default = TRUE)
-#' @return \code{GRanges} object of width = \code{width} ranges representing end of each genomic range in the input.
+#' @return GRanges object of width = \code{width} ranges representing end of each genomic range in the input.
 #' @examples
 #' gr.end(example_dnase, width=200, clip=TRUE)
 #' @importFrom GenomeInfoDb seqlengths
@@ -929,7 +929,7 @@ grl.bind = function(...)
 #' @return Identical \code{GRanges}, but with 'chr' prepended to each seqlevel
 #' @examples
 #'
-#' gr <-  gr.chr(GRanges(c(1,"chrX"), IRanges(c(1,2), 1)))
+#' gr <- gr.chr(GRanges(c(1,"chrX"), IRanges(c(1,2), 1)))
 #' seqnames(gr)
 #'
 #' @importFrom GenomeInfoDb seqlevels seqlevels<-
@@ -993,7 +993,7 @@ streduce = function(gr, pad = 0, sort = TRUE)
 #' Return UCSC style interval string corresponding to \code{GRanges} pile (ie chr:start-end)
 #'
 #' @param gr \code{GRanges} pile to get intervals from
-#' @param add.chr boolean Flage to prepend seqnames with "chr" (default = FALSE)
+#' @param add.chr boolean Flag to prepend seqnames with "chr" (default = FALSE)
 #' @param mb boolean Flag to round to the nearest megabase (default = FALSE)
 #' @param round integer If \code{mb} supplied, the number of digits to round to. (default = 3)
 #' @param other.cols character vector Names of additional \code{mcols} fields to add to the string (seperated by ";")
@@ -2470,11 +2470,11 @@ seg2gr = function(segs, seqlengths = NULL, seqinfo = Seqinfo())
 #'
 #' Conventions:
 #' \itemize{
-#' \code{ID} - 'id', 'patient', 'sample'
-#' \code{chr} - 'seqnames', 'chrom', 'chromosome', 'rname', 'space', 'contig'
-#' \code{pos1} - 'start', 'loc.start', 'start.bp', 'start_position', 'begin', 'pos', 'pos1', 'left', 's1'
-#' \code{pos2} - 'end', 'loc.end', 'stop', 'end.bp', 'end_posiiton', 'pos2', 'right', 'e1'
-#' \code{strand} - 'strand', 'str' 
+#' \item \code{ID} - 'id', 'patient', 'sample'
+#' \item \code{chr} - 'seqnames', 'chrom', 'chromosome', 'rname', 'space', 'contig'
+#' \item \code{pos1} - 'start', 'loc.start', 'start.bp', 'start_position', 'begin', 'pos', 'pos1', 'left', 's1'
+#' \item \code{pos2} - 'end', 'loc.end', 'stop', 'end.bp', 'end_posiiton', 'pos2', 'right', 'e1'
+#' \item s\code{strand} - 'strand', 'str' 
 #' }
 #'
 #' @import GenomicRanges
@@ -2574,8 +2574,8 @@ gr.nochr = function(gr) {
 #'
 #' Returns \code{GRanges} of matches with two additional fields:
 #' \itemize{
-#' \code{$query.id} - index of matching query
-#' \code{$subject.id} - index of matching subject
+#' \item \code{$query.id} - index of matching query
+#' \item \code{$subject.id} - index of matching subject
 #' }
 #' Optional \code{"by"} field is a character scalar that specifies a metadata column present in both query and subject
 #' that will be used to additionally restrict matches, i.e. to pairs of ranges that overlap and also

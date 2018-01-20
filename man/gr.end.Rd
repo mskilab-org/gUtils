@@ -18,7 +18,7 @@ gr.end(x, width = 1, force = FALSE, ignore.strand = TRUE, clip = TRUE)
 \item{clip}{boolean Trims returned \code{GRanges} so that it does not extend beyond bounds of the input (default = TRUE)}
 }
 \value{
-\code{GRanges} object of width = \code{width} ranges representing end of each genomic range in the input.
+GRanges object of width = \code{width} ranges representing end of each genomic range in the input.
 }
 \description{
 Alternative to \code{GenomicRanges::flank} that will provide end positions *within* intervals

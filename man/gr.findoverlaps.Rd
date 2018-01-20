@@ -44,8 +44,8 @@ Wrapper to \code{GenomicRanges::findOverlaps} with added functionality
 
 Returns \code{GRanges} of matches with two additional fields:
 \itemize{
-\code{$query.id} - index of matching query
-\code{$subject.id} - index of matching subject
+\item \code{$query.id} - index of matching query
+\item \code{$subject.id} - index of matching subject
 }
 Optional \code{"by"} field is a character scalar that specifies a metadata column present in both query and subject
 that will be used to additionally restrict matches, i.e. to pairs of ranges that overlap and also
