@@ -2478,7 +2478,7 @@ seg2gr = function(segs, seqlengths = NULL, seqinfo = Seqinfo())
 #' }
 #'
 #' @import GenomicRanges
-#' @param segs data.frame or data.table of segments with fields denoting chromosome, start, end, and other metadata. 
+#' @param seg data.frame or data.table of segments with fields denoting chromosome, start, end, and other metadata. 
 #' @param chr boolean Flag to force add chromosomes (default = FALSE)
 #' @return data.frame or data.table with standardized segments
 #' @export
@@ -2977,7 +2977,7 @@ gr.merge = function(query, subject, by = NULL, all = FALSE, all.query = all, all
 #' Identical to GRanges disjoin, except outputs inherit metadata from first overlapping parent instance on input
 #'
 #' @param x GRanges to disjoin
-#' @param ... arguments to disjoin
+#' @param ... arguments to disjoin (e.g. with.revmap=FALSE). Please see documentation for GenomicRanges::disjoin()
 #' @param ignore.strand logical scalar (default = TRUE)
 #' @return GRanges of non-overlapping ranges with metadata 
 #' @export
@@ -3075,8 +3075,7 @@ gr.collapse = function(gr, pad = 1)
     m[tmp$query.id[tmp$query.id == (tmp$subject.id-1)]] = TRUE
 
     ## will not collapse if two intersecting ranges are in the wrong "order" (ie not increasing (decreasing) on pos (neg) strand
-    m[which((strand(gr)[-length(gr)] == '+' & (start(gr)[-length(gr)] > start(gr)[-1])) |
-            (strand(gr)[-length(gr)] == '-' & (end(gr)[-length(gr)] < end(gr)[-1])))] = FALSE
+    m[which((strand(gr)[-length(gr)] == '+' & (start(gr)[-length(gr)] > start(gr)[-1])) | (strand(gr)[-length(gr)] == '-' & (end(gr)[-length(gr)] < end(gr)[-1]))) ] = FALSE
 
     m = as(m, 'IRanges')
 

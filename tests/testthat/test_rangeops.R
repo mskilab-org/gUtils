@@ -10,12 +10,11 @@ gr2 = GRanges(1, IRanges(c(1,9), c(6,14)), strand=c('+','-'), seqinfo=Seqinfo("1
 dt = data.table(seqnames=1, start=c(2,5,10), end=c(3,8,15))
 
 
-
 test_that("hg_seqlengths()", {
     
     expect_identical(as.numeric(length(hg_seqlengths())), 25)
     ee = structure(names="1", 249250621L)
-    expect_identical(hg_seqlengths(Hsapiens)[1],ee)
+    expect_identical(hg_seqlengths(Hsapiens)[1], ee)
     expect_equal(names(hg_seqlengths(Hsapiens, chr=TRUE)[1]), "chr1")
     expect_equal(length(hg_seqlengths(Hsapiens, include.junk = TRUE)), 93)
 
@@ -41,10 +40,10 @@ test_that("gr2dt", {
 test_that("gr.start", {
     
     expect_identical(start(gr.start(gr)), c(3L,7L,13L))
-    expect_identical(end(gr.start(gr)),   c(3L,7L,13L))
-    expect_identical(end(gr.start(gr, width=100)),   c(5L,9L,16L))
-    expect_identical(end(gr.start(gr, width=100, clip=FALSE)),   c(25L,25L,25L))
-    expect_identical(suppressWarnings(end(gr.start(gr, width=100, force=TRUE))),   c(5L,9L,16L))
+    expect_identical(end(gr.start(gr)), c(3L,7L,13L))
+    expect_identical(end(gr.start(gr, width=100)),  c(5L,9L,16L))
+    expect_identical(end(gr.start(gr, width=100, clip=FALSE)),  c(25L,25L,25L))
+    expect_identical(suppressWarnings(end(gr.start(gr, width=100, force=TRUE))),  c(5L,9L,16L))
     expect_identical(suppressWarnings(end(gr.start(gr, width=100, force=TRUE, clip=FALSE))),   c(102L,106L,112L))
     expect_identical(end(gr.start(gr, width=100, ignore.strand=FALSE)),   c(5L,9L,16L))
     expect_identical(end(gr.start(gr, width=100, ignore.strand=FALSE, clip=FALSE)),   c(25L,9L,16L))
@@ -141,7 +140,7 @@ test_that("gr.sample without replace", {
     gene3 = GRanges("2:278444-321000")
     gene4 = GRanges("3:1000-1500")
     example_genes = suppressWarnings(c(gene1, gene2, gene3, gene4))  ##  The 2 combined objects have no sequence levels in common. (Use suppressWarnings() to suppress this warning
-    gg <- gr.sample(reduce(example_genes), 10, k=1, replace=FALSE)
+    gg = gr.sample(reduce(example_genes), 10, k=1, replace=FALSE)
     expect_equal(unique(width(gg)), 10)
 
     expect_equal(width(gr.sample(example_genes[1:3], 1e7, k=1, replace=FALSE)),  10000000)
@@ -155,7 +154,7 @@ test_that("gr.sample without replace", {
 
 test_that("si2gr", {
 
-    gg <- si2gr(si, strip.empty = TRUE)
+    gg = si2gr(si, strip.empty = TRUE)
     expect_equal(start(gg)[3], 1)
     expect_equal(end(gg)[1], 249250621)
     expect_equal(as.character(strand(gg)[1]), "+")
@@ -174,11 +173,12 @@ test_that("gr.bind", {
 
 test_that("grl.bind", {
 
-    grl.hiC2 <- grl.hiC[1:20]
+    grl.hiC2 = grl.hiC[1:20]
     mcols(grl.hiC2)$test = 1
-    suppressWarnings(gg <- grl.bind(grl.hiC2, grl.hiC[1:30]))
-    expect_equal(length(gg), 50)
-    expect_equal(colnames(mcols(gg)), "test")
+    expect_warning(gg <- grl.bind(grl.hiC2, grl.hiC[1:30]))
+    ##gg <- grl.bind(grl.hiC2, grl.hiC[1:30])
+    expect_equal(length(grl.bind(grl.hiC2, grl.hiC[1:30])), 50)
+    expect_equal(colnames(mcols(grl.bind(grl.hiC2, grl.hiC[1:30]))), "test")
 
     ## names(grl.hiC) <- NULL
     ## out <- grl.bind(grl.hiC)
@@ -240,10 +240,9 @@ test_that("grl.string", {
 })
 
 
-
 test_that("gr.fix", {
 
-    gg <- GRanges(c("X",1), IRanges(c(1,2), width=1))
+    gg = GRanges(c("X",1), IRanges(c(1,2), width=1))
     expect_equal(length(seqlengths(gr.fix(gg, si))), 25)
     expect_equal(length(seqlengths(gr.fix(gg, BSgenome.Hsapiens.UCSC.hg19::Hsapiens))), 95)
 
@@ -405,12 +404,28 @@ test_that("rrbind", {
 
 
 ## gr.sub
+test_that('gr.sub', {
+    
+    gr  = GRanges(1, IRanges(c(3,7,13), c(5,9,16)), strand=c('+','-','-'), seqinfo=Seqinfo("1", 25), name=c("A","B","C"))
+    gr2 = GRanges(1, IRanges(c(1,9), c(6,14)), strand=c('+','-'), seqinfo=Seqinfo("1", 25), field=c(1,2))
+    expect_that(ncol(rrbind(mcols(gr), mcols(gr2))) > 0, is_true())
+    expect_equal(ncol(rrbind(mcols(gr), mcols(gr2), union=FALSE)), 0)
 
+})
 
 ## seg2gr
+test_that('seg2gr', {
 
+    expect_equal(width(seg2gr(dt)), c(2, 4, 6))    
+
+})
 
 ## standardize_segs
+test_that('standardize_segs', {
+
+    expect_error(standardize_segs(gr2))
+    
+})
 
 
 test_that("gr.nochr", {
@@ -497,21 +512,110 @@ test_that("gr.findoverlap by", {
 
 
 ## grl.eval
+test_that('grl.eval', {
+
+    expect_equal(grl.eval(grl1, bin**2)[1:5], c(100, 100, 676, 676, 2401))
+    expect_equal(grl.eval(grl1, width-5)[1:5], rep(-4, 5))
+
+})
 
 
 ## gr.merge
+test_that('gr.merge', {
+
+    sv1 = grl.unlist(grl1)
+    sv2 = grl.unlist(grl2)
+    ## default
+    expect_equal(length(suppressWarnings(gr.merge(sv1, sv2))), 3)
+    expect_equal(suppressWarnings(gr.merge(sv1, sv2)$query.id), c(367, 499, 500))
+    expect_equal(suppressWarnings(gr.merge(sv1, sv2)$subject.id), c(443, 1, 2))
+    ## all = TRUE
+    expect_equal(length(suppressWarnings(gr.merge(sv1, sv2, all=TRUE))), 999)
+})
 
 
-## gr.disjoin
+## gr.disjoint
+test_that('gr.disjoin', {
+
+    sv1 = grl.unlist(grl1)
+    sv2 = grl.unlist(grl2)
+    ## cf. http://bioconductor.org/packages/devel/bioc/vignettes/GenomicRanges/inst/doc/GenomicRangesIntroduction.pdf
+    ## example: 'disjoin(g)'
+    gr = GRanges(
+        seqnames = Rle(c("chr1", "chr2", "chr1", "chr3"), c(1, 3, 2, 4)),
+        ranges = IRanges(101:110, end = 111:120, names = head(letters, 10)),
+        strand = Rle(strand(c("-", "+", "*", "+", "-")), c(1, 2, 2, 3, 2)),
+        score = 1:10,
+        GC = seq(1, 0, length=10))
+    singles = split(gr, names(gr))
+    g = gr[1:3]
+    g = append(g, singles[[10]])
+    expect_equal(suppressWarnings(gr.disjoin(g)$score), c(1, 2, 2, 3, 10))
+    expect_equal(round(gr.disjoin(g)$GC, 3), c(1.000, 0.889, 0.889, 0.778, 0.000))
+
+})
 
 
 ## gr.in 
+test_that('gr.in', {
+
+    sv1 = grl.unlist(grl1)
+    sv2 = grl.unlist(grl2)
+    table(gr.in(sv1, sv2))
+    expect_equal(as.numeric(table(gr.in(sv1, sv2))[1]), 497)
+    expect_equal(as.numeric(table(gr.in(sv1, sv2))[2]), 3)
+
+})
 
 
 ## gr.sum
+test_that('gr.sum', {
+    
+    ## cf. http://bioconductor.org/packages/devel/bioc/vignettes/GenomicRanges/inst/doc/GenomicRangesIntroduction.pdf
+    gr = GRanges(
+        seqnames = Rle(c("chr1", "chr2", "chr1", "chr3"), c(1, 3, 2, 4)),
+        ranges = IRanges(101:110, end = 111:120, names = head(letters, 10)),
+        strand = Rle(strand(c("-", "+", "*", "+", "-")), c(1, 2, 2, 3, 2)),
+        score = 1:10,
+        GC = seq(1, 0, length=10))
+    ## default
+    expect_equal(length(gr.sum(gr)), 20)
+    ## 'field' argument
+    expect_error(length(gr.sum(gr, field = 'CG')))
+    expect_equal(length(gr.sum(gr, field = 'GC')), 19)
+    expect_equal(round(gr.sum(gr, field = 'GC')$GC[1:6], 3), c(0.000, 1.000, 1.556, 2.000, 1.000, 0.444))
+    ## 'field' argument and 'mean' = TRUE
+    expect_equal(round(gr.sum(gr, field = 'GC', mean=TRUE)$GC[1:6], 3), c(NaN, 1.000, 0.778, 0.667, 0.500, 0.444))
+    singles = split(gr, names(gr))
+    g = gr[1:3]
+    g = append(g, singles[[10]])
+    expect_equal(width(gr.sum(g)), c(100, 11, 101, 1, 10, 1, 109, 11))
+    sv1 = grl.unlist(grl1)
+    expect_equal(length(gr.sum(sv1)), 1025)
+
+})
 
 
-## gr.collapse
+## gr.collapse  
+test_that('gr.collapse', {
+    
+    ## cf. http://bioconductor.org/packages/devel/bioc/vignettes/GenomicRanges/inst/doc/GenomicRangesIntroduction.pdf
+    ## example: 'reduce(g)'
+    gr = GRanges(
+        seqnames = Rle(c("chr1", "chr2", "chr1", "chr3"), c(1, 3, 2, 4)),
+        ranges = IRanges(101:110, end = 111:120, names = head(letters, 10)),
+        strand = Rle(strand(c("-", "+", "*", "+", "-")), c(1, 2, 2, 3, 2)),
+        score = 1:10,
+        GC = seq(1, 0, length=10))
+    singles = split(gr, names(gr))
+    g = gr[1:3]
+    g = append(g, singles[[10]])
+    expect_equal(length(gr.collapse(gr)), 3)
+    expect_equal(length(gr.collapse(g)), 1)
+    sv1 = grl.unlist(grl1)
+    expect_equal(length(gr.collapse(sv1)), 0) 
+
+})
 
 
 test_that("gr.match", {
@@ -849,7 +953,6 @@ test_that('%*% works', {
 })
 
 
-
 ## %**%
 ## strand-agnostic
 test_that('%**% works', {
@@ -973,7 +1076,6 @@ test_that("parse.grl", {
     expect_equal(width(grl_example[[2]][2]), 79)
 
 })
-
 
 
 test_that('anchorlift', {
