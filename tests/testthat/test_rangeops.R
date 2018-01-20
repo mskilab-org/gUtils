@@ -13,7 +13,6 @@ dt = data.table(seqnames=1, start=c(2,5,10), end=c(3,8,15))
 
 test_that("hg_seqlengths()", {
     
-    gr  <- GRanges(1, IRanges(c(3,7,13), c(5,9,16)), strand=c('+','-','-'), seqinfo=Seqinfo("1", 25), name=c("A","B","C"))
     expect_identical(as.numeric(length(hg_seqlengths())), 25)
     ee = structure(names="1", 249250621L)
     expect_identical(hg_seqlengths(Hsapiens)[1],ee)
@@ -25,7 +24,6 @@ test_that("hg_seqlengths()", {
 
 test_that("gr2dt", {
 
-    gr = GRanges(1, IRanges(c(3,7,13), c(5,9,16)), strand=c('+','-','-'), seqinfo=Seqinfo("1", 25), name=c("A","B","C"))
     example_genes = GRanges(2, IRanges(c(233101, 233101, 231023, 231023, 229966), c(233229, 233229, 231191, 231191, 230044)), strand = c("-"), type = c("exon", "CDS", "exon", "CDS", "exon"))
     expect_identical(colnames(gr2dt(gr)), c("seqnames", "start", "end", "strand", "width", "name"))
     expect_equal(nrow(gr2dt(gr)), length(gr))
@@ -42,7 +40,6 @@ test_that("gr2dt", {
 
 test_that("gr.start", {
     
-    gr = GRanges(1, IRanges(c(3,7,13), c(5,9,16)), strand=c('+','-','-'), seqinfo=Seqinfo("1", 25), name=c("A","B","C"))
     expect_identical(start(gr.start(gr)), c(3L,7L,13L))
     expect_identical(end(gr.start(gr)),   c(3L,7L,13L))
     expect_identical(end(gr.start(gr, width=100)),   c(5L,9L,16L))
@@ -763,15 +760,15 @@ test_that('%Q% works', {
 })
 
 
-
 ## %^%
+## strand-agnostic
 ## Returns a length(a) logical vector whose item i TRUE if the a[i] overlaps at least on range in b (similar to %over% just less fussy about Seqinfo).
 test_that('%^% works', {
 
     testset = GRanges(seqnames = Rle(1,c(5)) , ranges = IRanges(1:5 , end = 2000:2004) , strand = Rle(strand(c("+")) , c(5)) , mean = c(1, -2 , -5 , 5 ,6))
     expect_equal(length(testset %^% testset), 5)
-    expect_equal(length(gr %^% testset), 3)
-    expect_equal(length(testset %^% gr), 5)
+    expect_equal(gr %^% testset, c(TRUE, TRUE, TRUE))
+    expect_equal(testset %^% gr, c(TRUE, TRUE, TRUE, TRUE, TRUE))
     gr_A = GRanges(2, IRanges(c(233101, 233105, 231023, 231028, 229966), c(233229, 233229, 231191, 231191, 230044)), strand = c("-"))
     gr_B = GRanges(2, IRanges(c(233101, 333105, 331023, 331028, 329966), c(333229, 333229, 331191, 331191, 330044)), strand = c("+"))
     expect_equal(as.vector(gr_A %^% gr_B), c(TRUE, TRUE, FALSE, FALSE, FALSE))
@@ -780,22 +777,116 @@ test_that('%^% works', {
 })
 
 
-## %$%
+## %^^%
+## strand-specific
+test_that('%^^% works', {
+
+    testset = GRanges(seqnames = Rle(1,c(5)) , ranges = IRanges(1:5 , end = 2000:2004) , strand = Rle(strand(c("+")) , c(5)) , mean = c(1, -2 , -5 , 5 ,6))
+    expect_equal(length(testset %^^% testset), 5)
+    expect_equal(gr %^^% testset, c(TRUE, FALSE, FALSE))
+    expect_equal(testset %^^% gr, c(TRUE, TRUE, TRUE, TRUE, TRUE))
+    gr_A = GRanges(2, IRanges(c(233101, 233105, 231023, 231028, 229966), c(233229, 233229, 231191, 231191, 230044)), strand = c("-"))
+    gr_B = GRanges(2, IRanges(c(233101, 333105, 331023, 331028, 329966), c(333229, 333229, 331191, 331191, 330044)), strand = c("+"))
+    expect_equal(as.vector(gr_A %^^% gr_B), c(FALSE, FALSE, FALSE, FALSE, FALSE))
+    expect_equal(as.vector(gr_B %^^% gr_A), c(FALSE, FALSE, FALSE, FALSE, FALSE))
+
+})
+
+
+## %$%  ## strand-specific
+## Aggregates the metadata in b across the territory of each range in a. 
+test_that('%$% works', {
+
+    gr1 = GRanges(1, IRanges(c(3,7,13), c(5,9,16)), strand=c('+','-','-'), seqinfo=Seqinfo("1", 25), name=c('A', 'B', 'C'))
+    gr1$gene_name = c('BRCA1', 'BRCA2', 'KRAS')
+    gr2 =  GRanges(1, IRanges(c(3,7,13), c(50, 90, 160)), strand='+')
+    gr2$aux = c(42.42, 'Arp2/3', NA)
+    expect_equal(colnames(gr2dt(gr1 %$% gr2))[6:8], c('name', 'gene_name', 'aux'))
+    expect_equal(colnames(gr2dt(gr2 %$% gr1))[6:8], c('aux', 'name', 'gene_name'))
+    expect_equal((gr1 %$% gr2)$name, c('A', 'B', 'C'))
+    expect_equal((gr1 %$% gr2)$gene_name, c('BRCA1', 'BRCA2', 'KRAS'))
+    expect_equal((gr1 %$% gr2)$aux, c('42.42', '42.42, Arp2/3', '42.42, Arp2/3'))
+    expect_equal((gr2 %$% gr1)$aux, c('42.42', 'Arp2/3', NA))
+    expect_equal((gr2 %$% gr1)$name, c('A, B, C', 'B, C', 'C'))
+    expect_equal((gr2 %$% gr1)$gene_name, c('BRCA1, BRCA2, KRAS', 'BRCA2, KRAS', 'KRAS'))
+
+})
+
+
+## %$$%  ## strand-agnostic
+## Aggregates the metadata in b across the territory of each range in a. 
+test_that('%$$% works', {
+
+    gr1 = GRanges(1, IRanges(c(3,7,13), c(5,9,16)), strand=c('+','-','-'), seqinfo=Seqinfo("1", 25), name=c('A', 'B', 'C'))
+    gr1$gene_name = c('BRCA1', 'BRCA2', 'KRAS')
+    gr2 =  GRanges(1, IRanges(c(3,7,13), c(50, 90, 160)), strand='+')
+    gr2$aux = c(42.42, 'Arp2/3', NA)
+    expect_equal(colnames(gr2dt(gr1 %$$% gr2))[6:8], c('name', 'gene_name', 'aux'))
+    expect_equal(colnames(gr2dt(gr2 %$$% gr1))[6:8], c('aux', 'name', 'gene_name'))
+    expect_equal((gr1 %$$% gr2)$name, c('A', 'B', 'C'))
+    expect_equal((gr1 %$$% gr2)$gene_name, c('BRCA1', 'BRCA2', 'KRAS'))
+    expect_equal((gr1 %$$% gr2)$aux, c('42.42', '', ''))
+    expect_equal((gr2 %$$% gr1)$aux, c('42.42', 'Arp2/3', NA))
+    expect_equal((gr2 %$$% gr1)$name, c('A', '', ''))
+    expect_equal((gr2 %$$% gr1)$gene_name, c('BRCA1', '', ''))
+
+})
 
 
 ## %*%
+## strand-specific
+test_that('%*% works', {
+
+    gr1 = GRanges(1, IRanges(c(3,7,13), c(5,9,16)), strand=c('+','-','-'), seqinfo=Seqinfo("1", 25), name=c('A', 'B', 'C'))
+    gr1$gene_name = c('BRCA1', 'BRCA2', 'KRAS')
+    gr2 =  GRanges(1, IRanges(c(3,7,13), c(50, 90, 160)), strand='+')
+    gr2$aux = c(42.42, 'Arp2/3', NA)
+    expect_equal(colnames(gr2dt(gr2 %*% gr1))[8:10], c('aux', 'name', 'gene_name'))
+    expect_equal(colnames(gr2dt(gr1 %*% gr2))[8:10], c('name', 'gene_name', 'aux'))
+    expect_equal((gr1 %*% gr2)$query.id, c(1, 2, 2, 3, 3, 3))
+    expect_equal((gr2 %*% gr1)$query.id, c(1, 1, 2, 1, 2, 3))
+
+})
+
 
 
 ## %**%
+## strand-agnostic
+test_that('%**% works', {
 
+    gr1 = GRanges(1, IRanges(c(3,7,13), c(5,9,16)), strand=c('+','-','-'), seqinfo=Seqinfo("1", 25), name=c('A', 'B', 'C'))
+    gr1$gene_name = c('BRCA1', 'BRCA2', 'KRAS')
+    gr2 =  GRanges(1, IRanges(c(3,7,13), c(50, 90, 160)), strand='+')
+    gr2$aux = c(42.42, 'Arp2/3', NA)
+    expect_equal(colnames(gr2dt(gr2 %**% gr1))[8:10], c('aux', 'name', 'gene_name'))
+    expect_equal(colnames(gr2dt(gr1 %**% gr2))[8:10], c('name', 'gene_name', 'aux'))
+    expect_equal(length(gr1 %**% gr2), 1)
+    expect_equal(length(gr2 %**% gr1), 1)
 
-## %^^%
-
-
-## %$$%
+})
 
 
 ## gr.setdiff
+## gr.setdiff = function(query, subject, ignore.strand = TRUE, by = NULL)
+test_that('gr.setdiff', {
+
+    gr1 = GRanges(1, IRanges(c(3,7,13), c(5,9,16)), strand=c('+','-','-'), seqinfo=Seqinfo("1", 25), name=c('A', 'B', 'C'))
+    gr1$gene_name = c('BRCA1', 'BRCA2', 'KRAS')
+    gr2 =  GRanges(1, IRanges(c(3,7,13), c(50, 90, 160)), strand='+')
+    gr2$aux = c(42.42, 'Arp2/3', NA)
+    expect_equal(length(gr.setdiff(gr1, gr2)), 0)
+    expect_equal(width(gr.setdiff(gr2, gr1)), c(1, 3, 3, 9, 9, 9))  
+    expect_equal(gr.setdiff(gr2, gr1)$query.id, c(1, 1, 2, 1, 2, 3))
+    expect_equal(gr.setdiff(gr2, gr1)$subject.id, c(2, 3, 3, 4, 4, 4))  
+    expect_equal(gr.setdiff(gr2, gr1)$aux, c('42.42', '42.42', 'Arp2/3', '42.42', 'Arp2/3', NA))  
+    expect_equal(length(gr1 %**% gr2), 1)
+    expect_equal(length(gr2 %**% gr1), 1)
+    expect_equal(width(gr.setdiff(gr2, gr1, ignore.strand = FALSE)), c(23, 20, 19, 19, 13, 13))
+    expect_equal(gr.setdiff(gr2, gr1, ignore.strand = FALSE)$query.id, c(1, 1, 2, 2, 3, 3))
+    expect_equal(gr.setdiff(gr2, gr1, ignore.strand = FALSE)$subject.id, c(6, 2, 2, 6, 2, 6))
+    expect_equal(gr.setdiff(gr2, gr1, ignore.strand = FALSE)$aux, c('42.42', '42.42', 'Arp2/3', 'Arp2/3', NA, NA))
+   
+})
 
 
 
