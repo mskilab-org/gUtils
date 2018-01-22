@@ -2500,8 +2500,8 @@ standardize_segs = function(seg, chr = FALSE)
     field.aliases = list(
         ID = c('id', 'patient', 'Sample', 'ID', 'Patient', 'sample'),
         chr = c('seqnames', "seqname", 'chrom', 'Chromosome', 'chr', 'chromosome', 'Seqnames', 'Seqname', "contig", "rname", "space"),
-        pos1 = c('start', 'loc.start', 'begin', 'Start', 'start', 'Start.bp', 'Start_position', 'Start_Position', 'pos', 'pos1', 'left', 's1'),
-        pos2 =  c('end', 'loc.end', 'End', 'end', "stop", 'End.bp', 'End_position', 'End_Position', 'pos2', 'right', 'e1'),
+        pos1 = c('start', 'loc.start', 'begin', 'Start', 'start', 'Start.bp', 'start_position', 'Start_position', 'Start_Position', 'start_Position', 'pos', 'pos1', 'left', 's1'),
+        pos2 =  c('end', 'loc.end', 'End', 'end', "stop", 'End.bp', 'end_position', 'End_position', 'end_Position', 'End_Position', 'pos2', 'right', 'e1'),
         strand = c('strand', 'str', 'strand', 'Strand', 'Str')
     )
 
