@@ -357,10 +357,11 @@ test_that('gr.dist', {
 
 ## rle.query
 test_that('rle.query', {
-
-    gg = grl.in(grl.hiC[1:100], example_genes)
-    expect_equal(length(gg), 100)
-
+    chr1_Rle = Rle(10:1, 1:10)
+    chr2_Rle = Rle(10:1, 1:10)
+    example_rlelist = RleList( chr1=chr1_Rle, chr2=chr2_Rle)
+    expect_equal(length(rle.query(example_rlelist, gr)), 10)
+    expect_equal(length(rle.query(example_rlelist, gr2)), 12)  
 })
 
 
@@ -405,10 +406,8 @@ test_that("rrbind", {
 ## gr.sub
 test_that('gr.sub', {
     
-    gr  = GRanges(1, IRanges(c(3,7,13), c(5,9,16)), strand=c('+','-','-'), seqinfo=Seqinfo("1", 25), name=c("A","B","C"))
-    gr2 = GRanges(1, IRanges(c(1,9), c(6,14)), strand=c('+','-'), seqinfo=Seqinfo("1", 25), field=c(1,2))
-    expect_that(ncol(rrbind(mcols(gr), mcols(gr2))) > 0, is_true())
-    expect_equal(ncol(rrbind(mcols(gr), mcols(gr2), union=FALSE)), 0)
+    gr1  = GRanges('chr1', IRanges(c(3,7,13), c(5,9,16)), strand=c('+','-','-'), seqinfo=Seqinfo("chr1", 25), name=c("A","B","C"))
+    expect_error(gr.sub(gr1), NA)
 
 })
 

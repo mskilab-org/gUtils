@@ -601,7 +601,7 @@ gr.trim = function(gr, starts=1, ends=1)
 #' @param gr Granges defining the territory to sample from
 #' @param k integer Number of ranges to sample
 #' @param wid integer Length of the \code{GRanges} element to produce (default = 100)
-#' @param replace boolean If TRUE, will bootstrap, otherwise will sample without replacement. (default = TRUE)
+#' @param replace boolean If TRUE, will bootstrap. If FALSE, otherwise will sample without replacement. (default = TRUE)
 #' @return GRanges of max length sum(k) [if k is vector) or k*length(gr) (if k is scalar) with labels indicating the originating range.
 #' @examples
 #'
@@ -1983,14 +1983,14 @@ grl.stripnames = function(grl)
 #' via \code{GRanges} object
 #'
 #' @param subject.rle \code{Rle}
-#' @param mc.cores Number of cores to apply when doing chunked operation
-#' @param query.gr GRangeslist or GRanges
+#' @param query.gr integer GRangeslist or GRanges
 #' @param chunksize integer Number of \code{query.gr} ranges to consider in one memory chunk. (default = 1e9)
-#' @param verbose Set the verbosity of the output
+#' @param mc.cores Number of cores to apply when doing chunked operation (default = 1)
+#' @param verbose boolean Set the verbosity of the output (default = FALSE)
 #' @return Rle representing the (concatenated) vector of data (reversing order in case of negative strand input)
 #' @note Throws warning if seqlengths(gr) do not correspond to the lengths of the \code{RleList} components
 #' @export
-rle.query = function(subject.rle, query.gr, mc.cores = 1, chunksize = 1e9, verbose = FALSE) 
+rle.query = function(subject.rle, query.gr, chunksize = 1e9, mc.cores = 1, verbose = FALSE) 
 {
     was.grl = FALSE
 
@@ -2071,7 +2071,7 @@ rle.query = function(subject.rle, query.gr, mc.cores = 1, chunksize = 1e9, verbo
 #' @param grl \code{GRangesList} object to query for membership in \code{windows}
 #' @param windows \code{GRanges} pile of windows
 #' @param some boolean Will return \code{TRUE} for \code{GRangesList} elements that intersect at least on window range (default = FALSE)
-#' @param only boolean Will return \code{TRUE} for \code{GRangesList} elements only if there are no elements of query that fail to interesect with windows (default = FALSE)
+#' @param only boolean Will return \code{TRUE} for \code{GRangesList} elements only if there are no elements of query that fail to intersect with windows (default = FALSE)
 #' @param logical boolean Will return logical otherwise will return numeric vector of number of windows overlapping each grl (default = TRUE)
 #' @param exact boolean Will return exact intersection
 #' @param ... Additional parameters to be passed on to \code{GenomicRanges::findOverlaps}
@@ -2851,7 +2851,7 @@ grl.eval = function(grl, expr, condition = NULL)
 
 
 #' @name gr.merge
-#' @title merge GRanges using coordinates as primary key
+#' @title merge GRanges by using coordinates as primary key
 #' @description
 #'
 #' Uses gr.findoverlaps() to enable internal and external joins of GRanges using
@@ -3073,11 +3073,12 @@ gr.sum = function(gr, field = NULL, mean = FALSE)
 gr.collapse = function(gr, pad = 1)
 {
     tmp = gr.findoverlaps(gr + pad, gr + pad, ignore.strand = FALSE)
-    m = rep(FALSE, length(gr))
-    m[tmp$query.id[tmp$query.id == (tmp$subject.id-1)]] = TRUE
+    m = rep(FALSE, length(gr));
 
-    ## will not collapse if two intersecting ranges are in the wrong "order" (ie not increasing (decreasing) on pos (neg) strand
-    m[ which((strand(gr)[-length(gr)] == '+' & (start(gr)[-length(gr)] > start(gr)[-1])) | (strand(gr)[-length(gr)] == '-' & (end(gr)[-length(gr)] < end(gr)[-1]))) ] = FALSE
+    m[ tmp$query.id[tmp$query.id == (tmp$subject.id-1)] ] = TRUE
+
+    ## will not collapse if two intersecting ranges are in the wrong "order" (i.e. not increasing (decreasing) on pos (neg) strand
+    m[ which( (strand(gr)[-length(gr)] == '+' & (start(gr)[-length(gr)] > start(gr)[-1]) ) | (strand(gr)[-length(gr)] == '-' & (end(gr)[-length(gr)] < end(gr)[-1]))) ] = FALSE
 
     m = as(m, 'IRanges')
 
@@ -3822,17 +3823,17 @@ ra.merge = function(..., pad = 0, ind = FALSE, ignore.strand = FALSE){
 
 
 #' @name gr.simplify
-#' @title Calc pairwise distance for rearrangements represented by \code{GRangesList} objects
+#' @title Calculates pairwise distance for rearrangements represented by \code{GRangesList} objects
 #' @description
 #'
-#' Calc pairwise distance for rearrangements represented by \code{GRangesList} objects
+#' Calculates pairwise distance for rearrangements represented by \code{GRangesList} objects
 #'
 #' @param gr GRanges or GRangesList input 
 #' @param field character scalar, corresponding to value field of gr. (default = NULL)
 #' @param val character scalar (default = NULL)
-#' @param include.val boolean Flag will include in out gr values field of first matching record in input gr. \code{[TRUE]}
-#' @param split boolean Flag to split the output into \code{GRangesList} split by \code{"field"}. \code{[FALSE]}
-#' @param pad integer Pad ranges by this amount before doing merge. [1], which merges contiguous but non-overlapping ranges.
+#' @param include.val boolean Flag will include in out gr values field of first matching record in input gr. (default = TRUE)
+#' @param split boolean Flag to split the output into \code{GRangesList} split by \code{"field"}. (default = FALSE)
+#' @param pad integer Pad ranges by this amount before doing merge. [1], which merges contiguous but non-overlapping ranges (default = 1)
 #' @return Simplified GRanges with "field" populated with uniquely contiguous values
 #' @export
 gr.simplify = function(gr, field = NULL, val = NULL, include.val = TRUE, split = FALSE, pad = 1)
@@ -3889,7 +3890,8 @@ gr.simplify = function(gr, field = NULL, val = NULL, include.val = TRUE, split =
 #' @title parse.gr 
 #' @description
 #'
-#' Quick function to parse GRanges from character vector IGV-/UCSC-style strings of format gr1;gr2;gr3 wohere each gr is of format chr:start-end[+/-]
+#' Quick function to parse GRanges from character vector IGV-/UCSC-style strings of format gr1;gr2;gr3 
+#' where each input GRanges is of the format chr:start-end[+/-]
 #'
 #' @param ... arguments to parse.grl i.e. character strings in UCSC style chr:start-end[+-]
 #' @author Marcin Imielinski
