@@ -142,6 +142,9 @@ test_that("gr.sample", {
     ### checks 'if (!inherits(gr, 'GRanges')){ gr = si2gr(gr) }'
     expect_equal(length(gr.sample(si, 10, 1)), 10)   
     expect_equal(length(gr.sample(reduce(example_genes), 10, k=3)), 3)
+
+    ## check 'if (length(k)==1)''
+    ###
     ## query width less than output
     ## expect_error(gr.sample(gr.start(example_genes), c(1:3), k=5))
 
@@ -286,6 +289,11 @@ test_that("gr.fix with null genome", {
 
 test_that("gr.flatten", {
 
+    ## check 'if (length(gr) == 0)'
+    foo = gr.flatten(GRanges())
+    expect_true(is(foo, 'data.frame'))
+    expect_equal(length(foo), 0)
+    ##
     gr = GRanges(1, IRanges(c(3,7,13), c(5,9,16)), strand=c('+','-','-'), seqinfo=Seqinfo("1", 25), name=c("A","B","C"))
     df = gr.flatten(gr)
     expect_equal(as.character(class(df)), "data.frame")
@@ -317,6 +325,8 @@ test_that('gr.pairflip', {
 test_that('gr.strandflip', {
 
     expect_identical(as.character(strand(gr.strandflip(gr))), c("-","+","+"))
+    expect_error(gr.strandflip(data.frame()))
+    expect_equal(length(gr.strandflip(GRanges())), 0)
 
 })
 
@@ -398,11 +408,18 @@ test_that('gr.dist', {
 
 ## rle.query
 test_that('rle.query', {
+
     chr1_Rle = Rle(10:1, 1:10)
     chr2_Rle = Rle(10:1, 1:10)
     example_rlelist = RleList( chr1=chr1_Rle, chr2=chr2_Rle)
     expect_equal(length(rle.query(example_rlelist, gr)), 10)
     expect_equal(length(rle.query(example_rlelist, gr2)), 12)  
+    ## check 'if (is(query.gr, 'GRangesList'))'
+    expect_equal(length(rle.query(example_rlelist, grl2)), 251)
+    ## check 'chunksize'
+    expect_equal(length(rle.query(example_rlelist, grl2[1:15], chunksize=5)), 15)
+
+
 })
 
 
@@ -410,6 +427,10 @@ test_that('grl.in', {
 
     gg = grl.in(grl.hiC[1:100], example_genes)
     expect_equal(length(gg), 100)
+    ## check  'if (length(grl)==0){''
+    expect_equal(grl.in(GRangesList(),  example_genes), logical(0))
+    ## check  'if (length(windows)==0){''
+    expect_false(all(grl.in(grl.hiC[1:100], GRanges())))
 
 })
 
@@ -420,6 +441,9 @@ test_that("grl.unlist", {
     expect_equal(length(gg), length(grl.hiC)*2)
     expect_equal(max(mcols(gg)$grl.iix), 2)
     expect_equal(max(mcols(gg)$grl.ix), length(grl.hiC))
+    ## check 'if (length(grl) == 0)'
+    expect_equal(length(grl.unlist(GRangesList())), 0)
+
 
 })
 
@@ -430,6 +454,10 @@ test_that("grl.pivot", {
     expect_equal(as.character(class(gg)), "GRangesList")
     expect_equal(length(gg),2)
     expect_equal(length(gg[[1]]), 10000)
+    ## check 'if (length(x) == 0)'
+    expect_equal(length(grl.pivot(GRangesList())), 2)
+    expect_equal(length(grl.pivot(GRangesList())[[1]]), 0)
+    expect_equal(length(grl.pivot(GRangesList())[[2]]), 0)
 
 })
 
@@ -449,6 +477,8 @@ test_that('gr.sub', {
     
     gr1  = GRanges('chr1', IRanges(c(3,7,13), c(5,9,16)), strand=c('+','-','-'), seqinfo=Seqinfo("chr1", 25), name=c("A","B","C"))
     expect_error(gr.sub(gr1), NA)
+    ## check 'if (is.null(tmp.gr))'
+    expect_equal(length(gr.sub(GRanges())), 0)
 
 })
 
@@ -476,15 +506,26 @@ test_that("gr.nochr", {
 ## gr.findoverlaps() tests
 test_that("gr.findoverlaps", {
 
-    example_dnase = GRanges(1, IRanges(c(562757, 564442, 564442), c(563203, 564813, 564813)), strand = c("-", "+", "+"))
-    example_genes = GRanges(2, IRanges(c(233101, 233101, 231023, 231023, 229966), c(233229, 233229, 231191, 231191, 230044)), strand = c("-"), type = c("exon", "CDS", "exon", "CDS", "exon"))
-    fo = suppressWarnings(gr.findoverlaps(example_genes, example_dnase))   ## The 2 combined objects have no sequence levels in common. (Use suppressWarnings() to suppress this warning.)
+    example1 = GRanges(1, IRanges(c(562757, 564442, 564442), c(563203, 564813, 564813)), strand = c("-", "+", "+"))
+    example2 = GRanges(2, IRanges(c(233101, 233101, 231023, 231023, 229966), c(233229, 233229, 231191, 231191, 230044)), strand = c("-"), type = c("exon", "CDS", "exon", "CDS", "exon"))
+    fo = suppressWarnings(gr.findoverlaps(example1, example2))   ## The 2 combined objects have no sequence levels in common. (Use suppressWarnings() to suppress this warning.)
     expect_equal(ncol(mcols(fo)), 0)
     expect_that(length(fo) == 0, is_true())
-
+    ## qcol
+    expect_equal(length(gr.findoverlaps(example_genes, example_dnase, qcol = 'exonCount')), 4184)
+    ## scol
+    expect_equal(round(mean(gr.findoverlaps(example_genes, example_dnase, scol='pValue')$pValue), 2), 66.12)
     expect_equal(length(gr.findoverlaps(example_genes, GRanges())), 0)
     expect_equal(length(gr.findoverlaps(GRanges(), GRanges())), 0)
     expect_equal(length(gr.findoverlaps(GRanges(), example_dnase)), 0)
+    ## check input error catching
+    expect_error(gr.findoverlaps(1, 2)) ##   Error: Both subject and query have to be GRanges or data.table
+    ## check 'if ((as.numeric(length(query)) * as.numeric(length(subject))) > max.chunk)'
+    ## here == 188120000
+    expect_equal(length(gr.findoverlaps(example_genes, example_dnase, max.chunk = 1e6)), 4184)
+    ## check 'if (is.null(h))'
+    expect_equal(length(gr.findoverlaps(GRanges(), GRanges())), 0)
+
 
 })
 
@@ -570,6 +611,8 @@ test_that('gr.merge', {
     expect_equal(suppressWarnings(gr.merge(sv1, sv2)$subject.id), c(443, 1, 2))
     ## all = TRUE
     expect_equal(length(suppressWarnings(gr.merge(sv1, sv2, all=TRUE))), 999)
+    ## by
+    expect_equal(length((gr.merge(sv1, sv2, all=TRUE, by='bin'))), 2)
 })
 
 
@@ -670,6 +713,9 @@ test_that("gr.match", {
 
     ## ignore strand is successfully passed
     expect_error(gr.match(gr1, gr2, ignore.strand = FALSE))
+    ## check 'if (length(query)>max.slice)'
+    expect_equal(length(gr.match(gr1, gr2, max.slice=1)), 2)
+
 
 })
 

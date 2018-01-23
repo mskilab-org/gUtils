@@ -1292,7 +1292,7 @@ gr.strandflip = function(gr)
 {
 
     if (!is(gr, 'GRanges')){
-        stop('Warning: GRanges input only')
+        stop('Error: GRanges input only')
     }
 
     if (length(gr)==0){
@@ -1731,7 +1731,7 @@ gr.val = function(query, target, val = NULL, mean = TRUE, weighted = mean, na.rm
         else
         {
             if (!is.null(by.prefix)){
-                
+
                 if (is.na(by.prefix)){
                     by.prefix = NULL
                 }
