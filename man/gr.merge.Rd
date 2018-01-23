@@ -2,7 +2,7 @@
 % Please edit documentation in R/gUtils.R
 \name{gr.merge}
 \alias{gr.merge}
-\title{merge GRanges using coordinates as primary key}
+\title{merge GRanges by using coordinates as primary key}
 \usage{
 gr.merge(query, subject, by = NULL, all = FALSE, all.query = all,
   all.subject = all, ignore.strand = TRUE, verbose = FALSE, ...)

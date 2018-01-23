@@ -2,7 +2,7 @@
 % Please edit documentation in R/gUtils.R
 \name{gr.simplify}
 \alias{gr.simplify}
-\title{Calc pairwise distance for rearrangements represented by \code{GRangesList} objects}
+\title{Calculates pairwise distance for rearrangements represented by \code{GRangesList} objects}
 \usage{
 gr.simplify(gr, field = NULL, val = NULL, include.val = TRUE,
   split = FALSE, pad = 1)
@@ -14,15 +14,15 @@ gr.simplify(gr, field = NULL, val = NULL, include.val = TRUE,
 
 \item{val}{character scalar (default = NULL)}
 
-\item{include.val}{boolean Flag will include in out gr values field of first matching record in input gr. \code{[TRUE]}}
+\item{include.val}{boolean Flag will include in out gr values field of first matching record in input gr. (default = TRUE)}
 
-\item{split}{boolean Flag to split the output into \code{GRangesList} split by \code{"field"}. \code{[FALSE]}}
+\item{split}{boolean Flag to split the output into \code{GRangesList} split by \code{"field"}. (default = FALSE)}
 
-\item{pad}{integer Pad ranges by this amount before doing merge. [1], which merges contiguous but non-overlapping ranges.}
+\item{pad}{integer Pad ranges by this amount before doing merge. [1], which merges contiguous but non-overlapping ranges (default = 1)}
 }
 \value{
 Simplified GRanges with "field" populated with uniquely contiguous values
 }
 \description{
-Calc pairwise distance for rearrangements represented by \code{GRangesList} objects
+Calculates pairwise distance for rearrangements represented by \code{GRangesList} objects
 }

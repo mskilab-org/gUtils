@@ -14,7 +14,7 @@ grl.in(grl, windows, some = FALSE, only = FALSE, logical = TRUE,
 
 \item{some}{boolean Will return \code{TRUE} for \code{GRangesList} elements that intersect at least on window range (default = FALSE)}
 
-\item{only}{boolean Will return \code{TRUE} for \code{GRangesList} elements only if there are no elements of query that fail to interesect with windows (default = FALSE)}
+\item{only}{boolean Will return \code{TRUE} for \code{GRangesList} elements only if there are no elements of query that fail to intersect with windows (default = FALSE)}
 
 \item{logical}{boolean Will return logical otherwise will return numeric vector of number of windows overlapping each grl (default = TRUE)}
 

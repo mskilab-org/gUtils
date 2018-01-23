@@ -13,7 +13,7 @@ gr.sample(gr, k, wid = 100, replace = TRUE)
 
 \item{wid}{integer Length of the \code{GRanges} element to produce (default = 100)}
 
-\item{replace}{boolean If TRUE, will bootstrap, otherwise will sample without replacement. (default = TRUE)}
+\item{replace}{boolean If TRUE, will bootstrap. If FALSE, otherwise will sample without replacement. (default = TRUE)}
 }
 \value{
 GRanges of max length sum(k) [if k is vector) or k*length(gr) (if k is scalar) with labels indicating the originating range.

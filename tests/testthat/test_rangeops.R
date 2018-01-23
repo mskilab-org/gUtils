@@ -65,7 +65,7 @@ test_that("dt2gr", {
     expect_equal(dt2gr(dt)$name, "A")
     expect_equal(start(dt2gr(as.data.frame(dt)))[1], 1)
     expect_error(suppressWarnings(dt2gr(1)))
-    expect_error(suppressWarnings(dt2gr(dt)))    ### warning within error---warning: coercing to GRanges via non-standard columns
+    ## expect_error(suppressWarnings(dt2gr(dt)))    ### warning within error---warning: coercing to GRanges via non-standard columns
     ## as.integer(seqnames(seqinfo(dt2gr(dt, seqlengths=NULL, seqinfo=NULL)))
 
 })
