@@ -141,7 +141,7 @@ test_that("gr.sample", {
     expect_equal(unique(width(gg)), 10)
     ### checks 'if (!inherits(gr, 'GRanges')){ gr = si2gr(gr) }'
     expect_equal(length(gr.sample(si, 10, 1)), 10)   
-
+    expect_equal(length(gr.sample(reduce(example_genes), 10, k=3)), 3)
     ## query width less than output
     ## expect_error(gr.sample(gr.start(example_genes), c(1:3), k=5))
 
@@ -342,8 +342,22 @@ test_that("gr.tile.map", {
 
 test_that("gr.val", {
 
-    gr <- GRanges(1, IRanges(1e6, 2e6))
+    gr = GRanges(1, IRanges(1e6, 2e6))
     expect_equal(colnames(mcols(gr.val(gr, example_genes, val = 'name'))), "name")
+    ## check val = NULL
+    expect_equal(width(gr.val(gr, example_genes)), 1000001)
+    ## check mean 
+    expect_equal(gr.val(gr, example_genes, mean =TRUE)$value, 1)
+    expect_equal(gr.val(gr, example_genes, mean =FALSE)$value, 41)
+    ## check 'max.slice'
+    ## check's  'if (length(query)>max.slice)'
+    expect_equal(length(gr.val(example_dnase, example_genes, max.slice = 50)), 10000)
+    ## check 'if (inherits(target, 'GRangesList'))'
+    expect_equal(as.integer(seqnames(gr.val(grl1, grl.unlist(grl2))[[2]])), c(9, 19))
+    ## check mc.cores
+    expect_equal(width(gr.val(gr, example_genes, mc.cores=2)), 1000001)
+    ## check FUN
+    expect_equal(as.data.frame(gr.val(gr, example_genes, FUN = function(x, w, na.rm = FALSE){ return(w*(x**2))}))$value, 68671)
 
 })
 
@@ -366,12 +380,15 @@ test_that('gr.dice', {
 })
 
 
+
 test_that('gr.dist', {
 
     gr  = GRanges(1, IRanges(c(3,7,13), c(5,9,16)), strand=c('+','-','-'), seqinfo=Seqinfo("1", 25), name=c("A","B","C"))
     gr2 = GRanges(1, IRanges(c(1,9), c(6,14)), strand=c('+','-'), seqinfo=Seqinfo("1", 25), field=c(1,2))
     m = gr.dist(gr, gr2, ignore.strand=TRUE)
     expect_equal(m[1,2], 3)
+    ## check 'if (is.null(gr2)){ gr2 = gr1 }'
+    expect_equal(dim(gr.dist(gr)), c(3, 3))
 
 })
 
