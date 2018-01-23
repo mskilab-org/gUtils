@@ -6,6 +6,7 @@ Authors@R: c(
     person("Jeremiah", "Wala", role = "aut", email = "jwala@broadinstitute.org"),
     person("Marcin", "Imielinski", role = c("aut", "cre"), email = "mimielinski@nygenome.org"))
 Description: R package providing additional capabilities and speed for GenomicRanges operations.
+biocViews:
 Depends:
     R (>= 3.1.0),
     GenomicRanges (>= 1.18),

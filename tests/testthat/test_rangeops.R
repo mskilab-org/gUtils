@@ -26,7 +26,7 @@ test_that("gr2dt", {
     example_genes = GRanges(2, IRanges(c(233101, 233101, 231023, 231023, 229966), c(233229, 233229, 231191, 231191, 230044)), strand = c("-"), type = c("exon", "CDS", "exon", "CDS", "exon"))
     expect_identical(colnames(gr2dt(gr)), c("seqnames", "start", "end", "strand", "width", "name"))
     expect_equal(nrow(gr2dt(gr)), length(gr))
-
+    ## using subjectdt
     subjectdt <- gr2dt(example_genes)
     expect_equal(!any(subjectdt$start!=start(example_genes)), TRUE)
     expect_equal(!any(subjectdt$end!=end(example_genes)), TRUE)
@@ -63,12 +63,11 @@ test_that("dt2gr", {
     expect_equal(as.character(strand(dt2gr(dt))), '+')
     expect_equal(start(dt2gr(dt)), 1)
     expect_equal(dt2gr(dt)$name, "A")
-
     expect_equal(start(dt2gr(as.data.frame(dt)))[1], 1)
     expect_error(suppressWarnings(dt2gr(1)))
-
-    dt <- data.table(sdf=1, start=1, end=10, strand='+', name="A")
     expect_error(suppressWarnings(dt2gr(dt)))    ### warning within error---warning: coercing to GRanges via non-standard columns
+    ## as.integer(seqnames(seqinfo(dt2gr(dt, seqlengths=NULL, seqinfo=NULL)))
+
 })
 
 
@@ -1102,6 +1101,115 @@ test_that('anchorlift', {
     expect_equal(dim(gr2dt(suppressWarnings(anchorlift(sv1, sv2, by='bin', include.values = FALSE))))[2], 7)  ## check only 7 columns
 
 })
+
+
+## tests for data functions
+
+
+
+## hg_seqlengths()
+test_that('hg_seqlengths()', {
+
+    expect_equal(length(hg_seqlengths()), 25)
+    expect_equal(as.vector(hg_seqlengths()[1]), 249250621)
+    expect_equal(as.vector(hg_seqlengths()[2]), 243199373)
+    expect_equal(as.vector(hg_seqlengths()[3]), 198022430)
+    expect_equal(as.vector(hg_seqlengths()[4]), 191154276)
+    expect_equal(as.vector(hg_seqlengths()[5]), 180915260)
+    expect_equal(as.vector(hg_seqlengths()[6]), 171115067)
+    expect_equal(as.vector(hg_seqlengths()[7]), 159138663)
+    expect_equal(as.vector(hg_seqlengths()[8]), 146364022)
+    expect_equal(as.vector(hg_seqlengths()[9]), 141213431)
+    expect_equal(as.vector(hg_seqlengths()[10]), 135534747)
+    expect_equal(as.vector(hg_seqlengths()[11]), 135006516)
+    expect_equal(as.vector(hg_seqlengths()[12]), 133851895)
+    expect_equal(as.vector(hg_seqlengths()[13]), 115169878)
+    expect_equal(as.vector(hg_seqlengths()[14]), 107349540)
+    expect_equal(as.vector(hg_seqlengths()[15]), 102531392)
+    expect_equal(as.vector(hg_seqlengths()[16]), 90354753)
+    expect_equal(as.vector(hg_seqlengths()[17]), 81195210)
+    expect_equal(as.vector(hg_seqlengths()[18]), 78077248)
+    expect_equal(as.vector(hg_seqlengths()[19]), 59128983)
+    expect_equal(as.vector(hg_seqlengths()[20]), 63025520)
+    expect_equal(as.vector(hg_seqlengths()[21]), 48129895)
+    expect_equal(as.vector(hg_seqlengths()[22]), 51304566)
+    expect_equal(as.vector(hg_seqlengths()[23]), 155270560)
+    expect_equal(as.vector(hg_seqlengths()[24]), 59373566)
+    expect_equal(as.vector(hg_seqlengths()[25]), 16571)
+
+})
+
+
+
+## example_genes
+test_that('example_genes', {
+
+    expect_equal(length(example_genes), 18812)
+    expect_true(is(example_genes, 'GRanges'))
+    expect_equal(length(unique(example_genes$exonCount)), 102)
+
+})
+
+
+
+## example_dnase
+test_that('example_dnase', {
+
+    expect_equal(length(example_dnase), 10000)
+    expect_true(is(example_dnase, 'GRanges'))
+    expect_equal(max(example_dnase$signalValue), 714.731)
+    expect_equal(max(example_dnase$pValue), 324)
+
+})
+
+
+
+## grl1
+test_that('grl1, SV rearrangements', {
+
+    expect_equal(length(grl1), 250)
+    expect_true(is(grl1, 'GRangesList'))
+    expect_equal(length(unlist(grl1)), 500)
+    expect_equal(grl1[[1]]$bin, c(10, 10))
+    expect_equal(width(grl1[[1]]), c(1, 1))
+
+})
+
+
+
+## grl2
+test_that('grl2, SV rearrangements', {
+
+    expect_equal(length(grl2), 251)
+    expect_true(is(grl2, 'GRangesList'))
+    expect_equal(length(unlist(grl2)), 502)
+    expect_equal(grl2[[1]]$bin, c(4678, 4678))
+    expect_equal(width(grl2[[1]]), c(1, 1))
+
+})
+
+
+## 
+test_that('si', {
+    
+    expect_equal(length(si), 25)
+    expect_false(all(as.data.frame(si)$isCircular))
+    expect_match(unique(as.data.frame(si)$genome), 'hg19')
+
+})
+
+test_that('grl.hiC', {
+
+    expect_equal(length(grl.hiC), 10000)
+    expect_equal(length(unlist(grl.hiC)), 20000)
+
+
+})
+
+
+
+
+
 
 
 
