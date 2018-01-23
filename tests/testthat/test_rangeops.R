@@ -12,6 +12,13 @@ dt = data.table(seqnames=1, start=c(2,5,10), end=c(3,8,15))
 
 test_that("hg_seqlengths()", {
     
+    Sys.setenv(DEFAULT_BSGENOME = "")
+    expect_warning(hg_seqlengths(genome=NULL))
+    ## throw error with incorrect DEFAULT_BSGENOME 
+    Sys.setenv(DEFAULT_BSGENOME = "incorrect")
+    expect_error(hg_seqlengths())
+    ## set DEFAULT_BSGENOME as hg19
+    Sys.setenv(DEFAULT_BSGENOME = "BSgenome.Hsapiens.UCSC.hg19::Hsapiens")
     expect_identical(as.numeric(length(hg_seqlengths())), 25)
     ee = structure(names="1", 249250621L)
     expect_identical(hg_seqlengths(Hsapiens)[1], ee)
@@ -37,8 +44,13 @@ test_that("gr2dt", {
 })
 
 
+
 test_that("gr.start", {
     
+    expect_equal(gr.start(NULL), NULL)  ### check 'if (length(x)==0){ return(x) }' 
+    seqlengths(gr) = 0
+    expect_warning(gr.start(gr)) ## check 'if (any(seqlengths(x)==0) | any(is.na(seqlengths(x))))' warning :: warning('Warning: Check or fix seqlengths, some are equal 0 or NA, may lead to negative widths')
+    gr = GRanges(1, IRanges(c(3,7,13), c(5,9,16)), strand=c('+','-','-'), seqinfo=Seqinfo("1", 25), name=c("A","B","C"))
     expect_identical(start(gr.start(gr)), c(3L,7L,13L))
     expect_identical(end(gr.start(gr)), c(3L,7L,13L))
     expect_identical(end(gr.start(gr, width=100)),  c(5L,9L,16L))
@@ -73,6 +85,9 @@ test_that("dt2gr", {
 
 test_that("gr.end", {
 
+    expect_equal(gr.end(NULL), NULL)  ### check 'if (length(x)==0){ return(x) }' 
+    seqlengths(gr) = 0
+    expect_warning(gr.end(gr)) ## check 'if (any(seqlengths(x)==0) | any(is.na(seqlengths(x))))' warning :: warning('Warning: Check or fix seqlengths, some are equal 0 or NA, may lead to negative widths')
     gr = GRanges(1, IRanges(c(3,7,13), c(5,9,16)), strand=c('+','-','-'), seqinfo=Seqinfo("1", 25), name=c("A","B","C"))
     expect_identical(start(gr.end(gr)), c(5L,9L,16L))
     expect_identical(start(gr.end(gr, width=100)),   c(3L,7L,13L))
@@ -100,6 +115,7 @@ test_that('gr.rand', {
     gg <- gr.rand(c(3,5), si)
     print(start(gg))
     expect_equal(start(gg)[1], 59221325L)
+    expect_error(gr.rand(c(3,500000000), si)) ## Error: Allocation failed. Supplied widths are likely too large
 
 })
 
@@ -115,12 +131,16 @@ test_that('gr.trim', {
 })
 
 
+   
+
 test_that("gr.sample", {
 
     ## ALERT: change of argument name, "k" instead of "len"
     set.seed(42)
     gg <- gr.sample(reduce(example_genes), 10, k=1)
     expect_equal(unique(width(gg)), 10)
+    ### checks 'if (!inherits(gr, 'GRanges')){ gr = si2gr(gr) }'
+    expect_equal(length(gr.sample(si, 10, 1)), 10)   
 
     ## query width less than output
     ## expect_error(gr.sample(gr.start(example_genes), c(1:3), k=5))
@@ -157,6 +177,10 @@ test_that("si2gr", {
     expect_equal(start(gg)[3], 1)
     expect_equal(end(gg)[1], 249250621)
     expect_equal(as.character(strand(gg)[1]), "+")
+    ## check 'if (is(si, 'BSgenome'))'
+    expect_equal(length(si2gr(BSgenome.Hsapiens.UCSC.hg19::Hsapiens)), 93)   
+    ## check ' else if (!is(si, 'Seqinfo'))'
+    expect_equal(length(si2gr(GRanges(si))), 25)   
 
 })
 
@@ -166,6 +190,7 @@ test_that("grbind", {
     example_dnase = GRanges(1, IRanges(c(562757, 564442, 564442), c(563203, 564813, 564813)), strand = c("-", "+", "+"))
     example_genes = GRanges(2, IRanges(c(233101, 233101, 231023, 231023, 229966), c(233229, 233229, 231191, 231191, 230044)), strand = c("-"), type = c("exon", "CDS", "exon", "CDS", "exon"))
     expect_equal(length(suppressWarnings(grbind(example_genes, example_dnase))) > 0, TRUE)
+    expect_equal(grbind(0, 1, 2, 3), NULL)
 
 })
 
