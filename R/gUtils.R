@@ -3701,122 +3701,122 @@ gr.setdiff = function(query, subject, ignore.strand = TRUE, by = NULL, ...)
 
 
 
-#' @name ra.merge
-#' @title Merges rearrangements represented by \code{GRangesList} objects
-#' @description
-#'
-#' Determines overlaps between two or more piles of rearrangement junctions (as named or numbered arguments) +/- padding
-#' and will merge those that overlap into single junctions in the output, and then keep track for each output junction which
-#' of the input junctions it was "seen in" using logical flag  meta data fields prefixed by "seen.by." and then the argument name
-#' (or "seen.by.ra" and the argument number)
-#'
-#' @param ... GRangesLists which represent rearrangements to be merged
-#' @param pad integer specifying padding (default = 0)
-#' @param ind boolean Flag specifying whether the "seen.by" fields should contain indices of inputs (rather than logical flags) and NA if the given junction is missing (default = FALSE)
-#' @param ignore.strand boolean Flag specifying whether to ignore strand (implies all strand information will be ignored, use at your own risk). Refer to documentation for function 'ra.overlaps()'. (default = FALSE)
-#' @return \code{GRangesList} of merged junctions with meta data fields specifying which of the inputs each outputted junction was "seen.by"
-#' @examples
-#'
-#' # generate some junctions
-#' gr1 <- GRanges(1, IRanges(1:10, width = 1), strand = rep(c('+', '-'), 5))
-#' gr2 <- GRanges(1, IRanges(4 + 1:10, width = 1), strand = rep(c('+', '-'), 5))
-#' ra1 = split(gr1, rep(1:5, each = 2))
-#' ra2 = split(gr2, rep(1:5, each = 2))
-#'
-#' ram = ra.merge(ra1, ra2)
-#' values(ram) # shows the metadata with TRUE / FALSE flags
-#'
-#' ram2 = ra.merge(ra1, ra2, pad = 5) # more inexact matching results in more merging
-#' values(ram2)
-#'
-#' ram3 = ra.merge(ra1, ra2, ind = TRUE) #indices instead of flags
-#' values(ram3)
-#'
-#' @export
-ra.merge = function(..., pad = 0, ind = FALSE, ignore.strand = FALSE){
-
-    ra = list(...)
-    ra = ra[which(!sapply(ra, is.null))]
-    nm = names(ra)
-
-    if (is.null(nm)){
-        nm = paste('ra', 1:length(ra), sep = '')
-    }
-    
-    nm = gsub('\\W+', '\\.', paste('seen.by', nm, sep = '.'))
-    
-    if (length(nm)==0){
-        return(NULL)
-    }
-
-    out = ra[[1]]
-    values(out) = cbind(as.data.frame(matrix(FALSE, nrow = length(out), ncol = length(nm), dimnames = list(NULL, nm))), values(out))
-
-    if (!ind){
-        values(out)[, nm[1]] = TRUE
-    }
-    else{
-        values(out)[, nm[1]] = 1:length(out)
-    }
-
-    if (length(ra)>1){
-
-        for (i in 2:length(ra)){
-
-            this.ra = ra[[i]]
-            if (length(this.ra)>0){
-
-                values(this.ra) = cbind(as.data.frame(matrix(FALSE, nrow = length(this.ra), ncol = length(nm), dimnames = list(NULL, nm))), values(this.ra))
-                ovix = ra.overlaps(out, this.ra, pad = pad, ignore.strand = ignore.strand)
-
-                if (!ind){
-                    values(this.ra)[[nm[i]]] = TRUE
-                }
-                else{
-                    values(this.ra)[[nm[i]]] = 1:length(this.ra)
-                }
-
-                if (!ind){
-                    if (!all(is.na(ovix))){
-                        values(out)[, nm[i]][ovix[,1]] = TRUE
-                    }
-                }
-                else{
-                    values(out)[, nm[i]] = NA
-                    if (!all(is.na(ovix))){
-                        values(out)[, nm[i]][ovix[,1]] = ovix[,1]
-                    }
-                }
-
-                ## which are new ranges not already present in out, we will add these
-                if (!all(is.na(ovix))){
-                    nix = setdiff(1:length(this.ra), ovix[,2])
-                } 
-                else{
-                    nix = 1:length(this.ra)
-                }
-
-                if (length(nix)>0){
-
-                    val1 = values(out)
-                    val2 = values(this.ra)
-                    if (ind){
-                        val2[, nm[1:(i-1)]] = NA
-                    }
-                    else{
-                        val2[, nm[1:(i-1)]] = FALSE
-                    }
-                    values(out) = NULL
-                    values(this.ra) = NULL
-                    out = grl.bind(out, this.ra[nix])
-                    values(out) = rrbind(val1, val2[nix, ])
-                }
-            }
-        }
-    }
-
-    return(out)
-}
+## #' @name ra.merge
+## #' @title Merges rearrangements represented by \code{GRangesList} objects
+## #' @description
+## #'
+## #' Determines overlaps between two or more piles of rearrangement junctions (as named or numbered arguments) +/- padding
+## #' and will merge those that overlap into single junctions in the output, and then keep track for each output junction which
+## #' of the input junctions it was "seen in" using logical flag  meta data fields prefixed by "seen.by." and then the argument name
+## #' (or "seen.by.ra" and the argument number)
+## #'
+## #' @param ... GRangesLists which represent rearrangements to be merged
+## #' @param pad integer specifying padding (default = 0)
+## #' @param ind boolean Flag specifying whether the "seen.by" fields should contain indices of inputs (rather than logical flags) and NA if the given junction is missing (default = FALSE)
+## #' @param ignore.strand boolean Flag specifying whether to ignore strand (implies all strand information will be ignored, use at your own risk). Refer to documentation for function 'ra.overlaps()'. (default = FALSE)
+## #' @return \code{GRangesList} of merged junctions with meta data fields specifying which of the inputs each outputted junction was "seen.by"
+## #' @examples
+## #'
+## #' # generate some junctions
+## #' gr1 <- GRanges(1, IRanges(1:10, width = 1), strand = rep(c('+', '-'), 5))
+## #' gr2 <- GRanges(1, IRanges(4 + 1:10, width = 1), strand = rep(c('+', '-'), 5))
+## #' ra1 = split(gr1, rep(1:5, each = 2))
+## #' ra2 = split(gr2, rep(1:5, each = 2))
+## #'
+## #' ram = ra.merge(ra1, ra2)
+## #' values(ram) # shows the metadata with TRUE / FALSE flags
+## #'
+## #' ram2 = ra.merge(ra1, ra2, pad = 5) # more inexact matching results in more merging
+## #' values(ram2)## 
+## #'
+## #' ram3 = ra.merge(ra1, ra2, ind = TRUE) #indices instead of flags
+## #' values(ram3)
+## #'
+## #' @export  
+#### ra.merge = function(..., pad = 0, ind = FALSE, ignore.strand = FALSE){
+#### 
+####     ra = list(...)
+####     ra = ra[which(!sapply(ra, is.null))]
+####     nm = names(ra)
+#### 
+####     if (is.null(nm)){
+####         nm = paste('ra', 1:length(ra), sep = '')
+####     }
+####     
+####     nm = gsub('\\W+', '\\.', paste('seen.by', nm, sep = '.'))
+####     
+####     if (length(nm)==0){
+####         return(NULL)
+####     }
+#### 
+####     out = ra[[1]]
+####     values(out) = cbind(as.data.frame(matrix(FALSE, nrow = length(out), ncol = length(nm), dimnames = list(NULL, nm))), values(out))
+#### 
+####     if (!ind){
+####         values(out)[, nm[1]] = TRUE
+####     }
+####     else{
+####         values(out)[, nm[1]] = 1:length(out)
+####     }
+#### 
+####     if (length(ra)>1){
+#### 
+####         for (i in 2:length(ra)){
+#### 
+####             this.ra = ra[[i]]
+####             if (length(this.ra)>0){
+#### 
+####                 values(this.ra) = cbind(as.data.frame(matrix(FALSE, nrow = length(this.ra), ncol = length(nm), dimnames = list(NULL, nm))), values(this.ra))
+####                 ovix = ra.overlaps(out, this.ra, pad = pad, ignore.strand = ignore.strand)
+#### 
+####                 if (!ind){
+####                     values(this.ra)[[nm[i]]] = TRUE
+####                 }
+####                 else{
+####                     values(this.ra)[[nm[i]]] = 1:length(this.ra)
+####                 }
+#### 
+####                 if (!ind){
+####                     if (!all(is.na(ovix))){
+####                         values(out)[, nm[i]][ovix[,1]] = TRUE
+####                     }
+####                 }
+####                 else{
+####                     values(out)[, nm[i]] = NA
+####                     if (!all(is.na(ovix))){
+####                         values(out)[, nm[i]][ovix[,1]] = ovix[,1]
+####                     }
+####                 }
+#### 
+####                 ## which are new ranges not already present in out, we will add these
+####                 if (!all(is.na(ovix))){
+####                     nix = setdiff(1:length(this.ra), ovix[,2])
+####                 } 
+####                 else{
+####                     nix = 1:length(this.ra)
+####                 }
+#### 
+####                 if (length(nix)>0){
+#### 
+####                     val1 = values(out)
+####                     val2 = values(this.ra)
+####                     if (ind){
+####                         val2[, nm[1:(i-1)]] = NA
+####                     }
+####                     else{
+####                         val2[, nm[1:(i-1)]] = FALSE
+####                     }
+####                     values(out) = NULL
+####                     values(this.ra) = NULL
+####                     out = grl.bind(out, this.ra[nix])
+####                     values(out) = rrbind(val1, val2[nix, ])
+####                 }
+####             }
+####         }
+####     }
+#### 
+####     return(out)
+#### }
 
 
 
@@ -4179,8 +4179,6 @@ anchorlift = function(query, subject, window = 1e9, by = NULL, seqname = "Anchor
 ####
 
 
-
-
 ## XT 'I'm gonna rewrite the family of functions "ra.xxx". ', 18 Jan 2018
 #### ra.duplicated = function(grl, pad=500, ignore.strand=FALSE){
 ####
@@ -4287,7 +4285,6 @@ anchorlift = function(query, subject, window = 1e9, by = NULL, seqname = "Anchor
 ####         return(ro)
 ####     }
 #### }
-
 
 
 
