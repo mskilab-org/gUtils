@@ -1324,42 +1324,44 @@ test_that('grl.hiC', {
 
 
 ## XT plans to re-write, Jan 18
-## test_that('ra.overlaps', {
-##
-##    gr = GRanges(1, IRanges(c(3,7), c(5,9)), strand=c('+','-'))
-##    gr1 = GRanges(1, IRanges(c(10,20), width=5), strand=c("+", "-"))
-##    gr2 = GRanges(1, IRanges(c(1,9), c(6,14)), strand=c('+','-'))
-##    grl1 = GRangesList("gr"=gr, "gr1"=gr1)
-##    grl2 = GRangesList("gr1"=gr1, "gr2"=gr2)
-##    foobar = suppressWarnings(grl.bind(grl1, grl2))
-##    ro = ra.overlaps(grl1, grl2)
-##    expect_equal(class(ro), "matrix")
-##    expect_equal(nrow(ro), 2)
-##    expect_equal(ncol(ro), 2)
-##    expect_equal(nrow(ra.overlaps(grl2, grl2)), length(grl2))
-##
-## })
-## test_that("ra.overlaps handles empty",{
-##     
-##     ## test empty inputs and no overlaps inputs
-##     gr = GRanges(1, IRanges(c(10,20), width=5), strand=c("+", "-"))
-##     grl1 = GRangesList("gr1" = gr)
-##     expect_equal(ra.overlaps(GRangesList(), grl1)[1], NA)
-##     expect_equal(ra.overlaps(grl2[2:3], grl1)[1], NA)
-##     
-## })  
-## test_that("ra.overlaps handles wrong signs", {
-## 
-##     ## make one that overlaps, but wrong signs
-##     gr = GRanges(1, IRanges(c(3,7), c(5,9)), strand=c('+','-'))
-##     gr1 = GRanges(1, IRanges(c(10,20), width=5), strand=c("+", "-"))
-##     gr2 = GRanges(1, IRanges(c(1,9), c(6,14)), strand=c('+','-'))
-##     grl1 = GRangesList("gr" = gr, "gr1" = gr1, "gr2" = gr2)
-##     grl3 <- grl1[2]
-##     strand(grl3[[1]]) <- c("+", "-")
-##     expect_equal(ra.overlaps(grl3, grl2)[1], NA)
-## 
-##  })
+test_that('ra.overlaps', {
+
+    gr = GRanges(1, IRanges(c(3,7), c(5,9)), strand=c('+','-'))
+    gr1 = GRanges(1, IRanges(c(10,20), width=5), strand=c("+", "-"))
+    gr2 = GRanges(1, IRanges(c(1,9), c(6,14)), strand=c('+','-'))
+    grl1 = GRangesList("gr"=gr, "gr1"=gr1)
+    grl2 = GRangesList("gr1"=gr1, "gr2"=gr2)
+    foobar = suppressWarnings(grl.bind(grl1, grl2))
+    ro = ra.overlaps(grl1, grl2)
+    expect_equal(class(ro), "matrix")
+    expect_equal(nrow(ro), 2)
+    expect_equal(ncol(ro), 2)
+    expect_equal(nrow(ra.overlaps(grl2, grl2)), length(grl2))
+
+ })
+
+test_that("ra.overlaps handles empty",{
+     
+    ## test empty inputs and no overlaps inputs
+    gr = GRanges(1, IRanges(c(10,20), width=5), strand=c("+", "-"))
+    grl1 = GRangesList("gr1" = gr)
+    expect_equal(ra.overlaps(GRangesList(), grl1)[1], NA)
+    expect_equal(ra.overlaps(grl2[2:3], grl1)[1], NA)
+    
+})  
+
+test_that("ra.overlaps handles wrong signs", {
+ 
+    ## make one that overlaps, but wrong signs
+    gr = GRanges(1, IRanges(c(3,7), c(5,9)), strand=c('+','-'))
+    gr1 = GRanges(1, IRanges(c(10,20), width=5), strand=c("+", "-"))
+    gr2 = GRanges(1, IRanges(c(1,9), c(6,14)), strand=c('+','-'))
+    grl1 = GRangesList("gr" = gr, "gr1" = gr1, "gr2" = gr2)
+    grl3 <- grl1[2]
+    strand(grl3[[1]]) <- c("+", "-")
+    expect_equal(ra.overlaps(grl3, grl2)[1], NA)
+ 
+})
 
 
 
