@@ -1,7 +1,6 @@
 [![Build Status](https://travis-ci.org/mskilab/gUtils.svg?branch=master)](https://travis-ci.org/mskilab/gUtils)
 [![Documentation Status](https://readthedocs.org/projects/gutils/badge/?version=latest)](https://readthedocs.org/projects/gutils/?badge=latest)
-
-
+[![codecov.io](https://img.shields.io/codecov/c/github/mskilab/gUtils.svg)](https://codecov.io/github/mskilab/gUtils?branch=master)
 gUtils
 =======
 
@@ -32,7 +31,7 @@ devtools::install_github('mskilab/gUtils')
 ```
 
 gUtils cheat sheet 
------
+------------------
 
 One feature of gUtils is syntactic sugar on top of basic `GenomicRanges` functionality, enabling easy piping of interval operations as part of interactive "genomic data science" exploration in R. In all these examples `a` and `b` are `GRanges` (e.g `a` are gene territories and `b` might be copy number segments or Chip-Seq peaks). 
 
@@ -60,7 +59,7 @@ Performs "natural join" or merge of metadata columns of `a` and `b` using interv
 
 
 ### `%$%`
-Aggregates the metadata in `b` across the territory of each range in `a`.  This returns `a` appended with additional metadata columns of `b` with values aggregated over the `a` and `b` overlap. For character or factor-valued metadata columns of `b`, aggregation will return a comma collapsed character value of all `b` values (e.g. gene names) that overlap `a[i]`, For numeric columns of `b` it will return the width-weighted mean value (e.g. peak intensity) of that column across the  `a[i]` and `b` overlap.  For custom aggregations please see `gr.val` function. 
+Aggregates the metadata in `b` across the territory of each range in `a`.  This returns `a` appended with additional metadata columns of `b` with values aggregated over the `a` and `b` overlap. For character or factor-valued metadata columns of `b`, aggregation will return a comma collapsed character value of all `b` values (e.g. gene names) that overlap `a[i]`. For numeric columns of `b` it will return the width-weighted mean value (e.g. peak intensity) of that column across the  `a[i]` and `b` overlap.  For custom aggregations please see `gr.val` function. 
 ```{r}	   
   a %$% b # strand agnostic aggregation
   a %$$% b # strand specific aggregation
@@ -113,7 +112,7 @@ Returns a `length(a)` logical vector whose item `i` TRUE if the  `a[i]` overlaps
 ```
 
 ### `gr.match`
-Returns a `length(a)` integer vector whose item `i` contains the *first* index in `b` overlapping `a[i]` (this function is the match cousin to `%over%` and %^%).
+Returns a `length(a)` integer vector whose item `i` contains the *first* index in `b` overlapping `a[i]` (this function is the match cousin to `%over%` and `%^%`).
 ```{r}
   gr.match(a, b) # strand agnostic
   gr.match(a, b, ignore.strand = FALSE) # strand specific	
