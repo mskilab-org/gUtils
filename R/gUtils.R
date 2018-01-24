@@ -4285,3 +4285,9 @@ gr.breaks = function(bps=NULL, query=NULL){
         return(output)
     }
 }
+
+segments_dt = data.table(patient = c('patient11235813', 'patient3141592', 'patient42'), 
+                        chromosome = c('chr3', 'chr5', 'chrX'), 
+                         Start_position = c(1000, 2000, 3000), 
+                        End_position = c(5000, 6000, 7000),
+                           strand = c('-', '+', '*'))
