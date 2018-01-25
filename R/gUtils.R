@@ -1943,35 +1943,6 @@ gr.dist = function(gr1, gr2 = NULL, ignore.strand = FALSE, ...)
 
 
 
-## not exported in dev branch
-## #' @name grl.stripnames
-## # ' @title Remove \code{GRanges} names inside a \code{GRangesList}
-## #' @description
-## #'
-## #' Remove \code{GRanges} names inside a \code{GRangesList}
-## #'
-## #' @param grl \code{GRangesList} with names elements
-## #' @return \code{GRangesList} where \code{GRanges} have no names
-#### grl.stripnames = function(grl)
-#### {
-####     ele = tryCatch(as.data.frame(grl)$element, error = function(e) NULL)
-####     if (is.null(ele))
-####     {
-####         ele = unlist(lapply(1:length(grl), function(x) rep(x, length(grl[[x]]))))
-####     }
-#### 
-####     gr = unlist(grl);
-####     names(gr) = NULL;
-#### 
-####     out = split(gr, ele);
-####     values(out) = values(grl)
-####     names(out) = names(grl)
-#### 
-####     return(out)
-#### }
-
-
-
 
 #' @name rle.query
 #' @title Queries an \code{\link{RleList}} representing genomic data
