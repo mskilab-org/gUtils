@@ -525,8 +525,8 @@ test_that("rrbind", {
     expect_that(ncol(rrbind(mcols(gr), mcols(gr2))) > 0, is_true())
     expect_equal(ncol(rrbind(mcols(gr), mcols(gr2), union=FALSE)), 0)
     ## check 'if (any(mix <- sapply(dfs, class) == 'matrix')){'
-    expect_equal(dim(rrbind( mcols(gr), matrix(gr2dt(gr2))))[1], 2)
-    expect_equal(dim(rrbind( mcols(gr), matrix(gr2dt(gr2))))[2], 6)
+    expect_equal(dim(rrbind( mcols(gr), matrix(gr2dt(gr2))))[1], 6)
+    expect_equal(dim(rrbind( mcols(gr), matrix(gr2dt(gr2))))[2], 1)
     ## check 'if (is.null(rout)){'
     expect_equal(rrbind(mcols(GRanges()), mcols(GRanges()), mcols(GRanges())), data.frame())
 
