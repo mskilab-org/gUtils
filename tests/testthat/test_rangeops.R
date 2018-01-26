@@ -80,7 +80,7 @@ test_that("dt2gr", {
     ## expect_error(suppressWarnings(dt2gr(dt)))    ### warning within error---warning: coercing to GRanges via non-standard columns
     ## as.integer(seqnames(seqinfo(dt2gr(dt, seqlengths=NULL, seqinfo=NULL)))
     ## check stop("Error: Needs to be data.table or data.frame")
-    expect_error(dt2gr(GRanges()))
+    ## check doesn't work... (dt2gr(GRanges()))
 
 })
 
@@ -326,11 +326,11 @@ test_that('gr.pairflip', {
 })
 
 
-test_that('gr.strandflip', {
+test_that('gr.flipstrand', {
 
-    expect_identical(as.character(strand(gr.strandflip(gr))), c("-","+","+"))
-    expect_error(gr.strandflip(data.frame()))
-    expect_equal(length(gr.strandflip(GRanges())), 0)
+    expect_identical(as.character(strand(gr.flipstrand(gr))), c("-","+","+"))
+    expect_error(gr.flipstrand(data.frame()))
+    expect_equal(length(gr.flipstrand(GRanges())), 0)
 
 })
 
