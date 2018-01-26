@@ -1,5 +1,8 @@
 library(gUtils)
 library(BSgenome.Hsapiens.UCSC.hg19)
+
+library(testthat)
+
 Sys.setenv(DEFAULT_BSGENOME = "BSgenome.Hsapiens.UCSC.hg19::Hsapiens")
 
 
@@ -40,6 +43,9 @@ test_that("gr2dt", {
     expect_equal(!any(subjectdt$width!=width(example_genes)), TRUE)
     expect_equal(all(as.character(subjectdt$strand) == as.character(strand(example_genes))), TRUE)
     expect_equal(all(subjectdt$seqnames == as.vector(seqnames(example_genes))), TRUE)
+    ## check 'if (any(duplicated(names(x))))'
+    ## check 'if (is.null(out)){'
+    expect_equal(gr2dt(NULL), data.table())
     
 })
 
@@ -80,7 +86,8 @@ test_that("dt2gr", {
     ## expect_error(suppressWarnings(dt2gr(dt)))    ### warning within error---warning: coercing to GRanges via non-standard columns
     ## as.integer(seqnames(seqinfo(dt2gr(dt, seqlengths=NULL, seqinfo=NULL)))
     ## check stop("Error: Needs to be data.table or data.frame")
-    ## check doesn't work... (dt2gr(GRanges()))
+    expect_error(dt2gr(matrix()))
+    expect_error(dt2gr(GRanges()))
 
 })
 
@@ -118,6 +125,9 @@ test_that('gr.rand', {
     print(start(gg))
     expect_equal(start(gg)[1], 59221325L)
     expect_error(gr.rand(c(3,500000000), si)) ## Error: Allocation failed. Supplied widths are likely too large
+    ## check 'if (!is(genome, 'Seqinfo')){'
+    ref = si2gr(BSgenome.Hsapiens.UCSC.hg19::Hsapiens)
+    expect_equal(length(gr.rand(c(3,5), ref)), 2)
 
 })
 
@@ -198,6 +208,10 @@ test_that("grbind", {
     example_genes = GRanges(2, IRanges(c(233101, 233101, 231023, 231023, 229966), c(233229, 233229, 231191, 231191, 230044)), strand = c("-"), type = c("exon", "CDS", "exon", "CDS", "exon"))
     expect_equal(length(suppressWarnings(grbind(example_genes, example_dnase))) > 0, TRUE)
     expect_equal(grbind(0, 1, 2, 3), NULL)
+    ## check ' grs <- c(x, list(...))'
+    expect_equal(width(grbind(GRanges(), GRanges('1:1-10'),GRanges(),GRanges(),GRanges('1:100-200'),GRanges())[2]), 101)
+    ## check ' if (is.null(tmp)){'
+    expect_equal(grbind(data.frame(),data.frame(),data.frame()), NULL)
 
 })
 
@@ -221,11 +235,15 @@ test_that("grl.bind", {
 })
 
 
+
+
 test_that("gr.chr", {
 
     expect_equal(as.character(seqnames(gr.chr(GRanges(c(1,"chrX"), IRanges(c(1,2), 1))))), c("chr1", "chrX"))
 
 })
+
+
 
 
 test_that("streduce", {
@@ -236,7 +254,13 @@ test_that("streduce", {
     gg2 = streduce(example_genes, pad=10)
     expect_equal(length(gg2), length(reduce(gg2)))
 
+    ## check 'if (any(is.na(seqlengths(gr)))){'
+    seqlengths(grl.hiC) = NA
+    expect_equal(length(streduce(grl.hiC, pad=10)), 19701)
+
 })
+
+
 
 
 test_that("gr.string", {
@@ -244,6 +268,17 @@ test_that("gr.string", {
     expect_that(grepl(":", gr.string(example_genes)[1]), is_true())
     expect_that(grepl("-", gr.string(example_genes)[1]), is_true())
     expect_that(grepl("(+|-)", gr.string(example_genes)[1]), is_true())
+    ## check 'if (length(gr)==0){'
+    ## add.chr
+    expect_equal(gr.string(example_genes, add.chr=TRUE)[1], 'chr1:69090-70008+')
+    ## mb
+    expect_equal(gr.string(example_genes[1], mb = TRUE), '1:0.069-0.07+')
+    ## round
+    expect_equal(gr.string(example_genes[1], round = 1, mb=TRUE), '1:0.1-0.1+')
+    ## other.cols
+    expect_equal(gr.string(example_genes[1], other.cols='name'), '1:69090-70008+  OR4F5')
+    ## pretty
+    expect_equal(gr.string(example_genes, pretty=TRUE)[1], '1:69,090-70,008+')
 
 })
 
@@ -266,6 +301,14 @@ test_that("grl.string", {
 
     expect_that(nchar(names(grl.string(grl.hiC[1:5])[1])) > 0, is_true())
     expect_that(grepl(",", grl.string(grl.hiC[1:5])[1]), is_true())
+    ## check 'if (class(grl) == "GRanges"){'
+    expect_equal(grl.string(example_genes[1]), '1:69090-70008+')
+    ## check 'error handling'
+    expect_error(grl.string('foo')) ##  Error: Input must be GRangesList (or GRanges, which is sent to gr.string)
+    ## check 'else{ nm = 1:length(grl) ! 1138 }'
+    names(grl1) = NULL
+    expect_equal(as.character(grl.string(grl1[2])), '9:140100229-140100229-,19:24309057-24309057-')
+
 
 })
 
@@ -275,6 +318,8 @@ test_that("gr.fix", {
     gg = GRanges(c("X",1), IRanges(c(1,2), width=1))
     expect_equal(length(seqlengths(gr.fix(gg, si))), 25)
     expect_equal(length(seqlengths(gr.fix(gg, BSgenome.Hsapiens.UCSC.hg19::Hsapiens))), 95)
+    ## check 'if (is(gr, 'GRangesList')){'
+    expect_equal(as.integer(seqnames(gr.fix(grl1[1])[1])), 5)
 
 })
 
@@ -339,6 +384,11 @@ test_that("gr.tile", {
 
     expect_identical(start(gr.tile(gr, w=3)), c(3L, 7L, 13L, 16L))
     expect_equal(length(gr.tile(GRanges())), 0)
+    ## check 'if (is(gr, 'data.table'))'
+    expect_equal(length(gr.tile(dt, w=3)), 5)
+    ## check 'else if (!is(gr, 'GRanges')){'
+    expect_equal(length(gr.tile(si['M'], w=3)), 5524)
+
 
 })
 
@@ -447,6 +497,8 @@ test_that("grl.unlist", {
     expect_equal(max(mcols(gg)$grl.ix), length(grl.hiC))
     ## check 'if (length(grl) == 0)'
     expect_equal(length(grl.unlist(GRangesList())), 0)
+    ## check 'if (is(grl, 'GRanges'))'
+    expect_equal(grl.unlist(gr2)[1]$grl.ix, 1)
 
 
 })
@@ -472,6 +524,11 @@ test_that("rrbind", {
     gr2 = GRanges(1, IRanges(c(1,9), c(6,14)), strand=c('+','-'), seqinfo=Seqinfo("1", 25), field=c(1,2))
     expect_that(ncol(rrbind(mcols(gr), mcols(gr2))) > 0, is_true())
     expect_equal(ncol(rrbind(mcols(gr), mcols(gr2), union=FALSE)), 0)
+    ## check 'if (any(mix <- sapply(dfs, class) == 'matrix')){'
+    expect_equal(dim(rrbind( mcols(gr), matrix(gr2dt(gr2))))[1], 2)
+    expect_equal(dim(rrbind( mcols(gr), matrix(gr2dt(gr2))))[2], 6)
+    ## check 'if (is.null(rout)){'
+    expect_equal(rrbind(mcols(GRanges()), mcols(GRanges()), mcols(GRanges())), data.frame())
 
 })
 
@@ -480,7 +537,7 @@ test_that("rrbind", {
 test_that('gr.sub', {
     
     gr1  = GRanges('chr1', IRanges(c(3,7,13), c(5,9,16)), strand=c('+','-','-'), seqinfo=Seqinfo("chr1", 25), name=c("A","B","C"))
-    expect_error(gr.sub(gr1), NA)
+    expect_error(gr.sub(gr1), NA)  ## check works
     ## check 'if (is.null(tmp.gr))'
     expect_equal(length(gr.sub(GRanges())), 0)
 

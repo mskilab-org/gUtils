@@ -142,6 +142,7 @@ gr2dt = function(x)
 {
     ## new approach just directly instantiating data table
     cmd = 'data.frame(';
+
     if (is(x, 'GRanges'))
     {
         ## as.data.table complains if duplicated row names
@@ -320,6 +321,10 @@ gr.start = function(x, width = 1, force = FALSE, ignore.strand = TRUE, clip = TR
 #' @export
 dt2gr = function(dt, key = NULL, seqlengths = hg_seqlengths(), seqinfo = Seqinfo()) {
 
+    if (!inherits(dt, 'data.frame') & !inherits(dt, 'data.table')){   
+        stop("Error: Input needs to be data.table or data.frame")
+    }
+
     out = tryCatch({
         rr <- IRanges(dt$start, dt$end)
         if (!'strand' %in% colnames(dt)){
@@ -334,9 +339,7 @@ dt2gr = function(dt, key = NULL, seqlengths = hg_seqlengths(), seqinfo = Seqinfo
         else if (inherits(dt, 'data.frame')){
             mc <- as.data.frame(dt[, setdiff(colnames(dt), c('start', 'end', 'seqnames', 'strand')), drop = FALSE])
         }
-        else{
-            stop("Error: Needs to be data.table or data.frame")
-        }
+
         if (nrow(mc)){
             mcols(out) <- mc
         }
@@ -1352,9 +1355,15 @@ gr.pairflip = function(gr)
 gr.tile = function(gr, width = 1e3)
 {
     numw = tile.id = query.id = NULL ## getting past NOTE
-    if (!is(gr, 'GRanges')){
+    if (is(gr, 'data.table')){
+        message('Executing dt2gr() on input \n');
+        gr = dt2gr(gr);
+    }
+    else if (!is(gr, 'GRanges')){
+        message('Executing si2gr() on input \n');
         gr = si2gr(gr);
     }
+
 
     ix = which(width(gr) > 0)
     gr = gr[ix]
