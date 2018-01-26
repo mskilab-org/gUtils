@@ -79,6 +79,8 @@ test_that("dt2gr", {
     expect_error(suppressWarnings(dt2gr(1)))
     ## expect_error(suppressWarnings(dt2gr(dt)))    ### warning within error---warning: coercing to GRanges via non-standard columns
     ## as.integer(seqnames(seqinfo(dt2gr(dt, seqlengths=NULL, seqinfo=NULL)))
+    ## check stop("Error: Needs to be data.table or data.frame")
+    expect_error(dt2gr(GRanges()))
 
 })
 
@@ -151,6 +153,8 @@ test_that("gr.sample", {
     gg <- suppressWarnings(gr.sample(example_genes[1:5], c(2,2,3,4,5), k=2))    ### expect warning: longer object length is not a multiple of shorter object length
     expect_equal(length(gg), 5)
     expect_equal(sum(width(gg)), 16)
+    ## check ' stop('Error: Input territory has zero regions of sufficient width')'
+    expect_error(gr.sample(GRanges(), 10, k=1))
 
 })
 

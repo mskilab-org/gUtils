@@ -335,7 +335,7 @@ dt2gr = function(dt, key = NULL, seqlengths = hg_seqlengths(), seqinfo = Seqinfo
             mc <- as.data.frame(dt[, setdiff(colnames(dt), c('start', 'end', 'seqnames', 'strand')), drop = FALSE])
         }
         else{
-            warning("Warning: Needs to be data.table or data.frame")
+            stop("Error: Needs to be data.table or data.frame")
         }
         if (nrow(mc)){
             mcols(out) <- mc
@@ -1277,7 +1277,7 @@ gr.stripstrand = function(gr)
 
 
 
-#' @name gr.strandflip
+#' @name gr.flipstrand
 #' @title Flip strand on \code{GRanges}
 #' @description
 #'
@@ -1286,9 +1286,9 @@ gr.stripstrand = function(gr)
 #' @param gr \code{GRanges} pile with strands to be flipped
 #' @return \code{GRanges} with flipped strands (+ to -, * to *, - to *)
 #' @examples
-#' gr.strandflip(GRanges(1, IRanges(c(10,10,10),20), strand=c("+","*","-")))
+#' gr.gr.flipstrand(GRanges(1, IRanges(c(10,10,10),20), strand=c("+","*","-")))
 #' @export
-gr.strandflip = function(gr)
+gr.flipstrand= function(gr)
 {
 
     if (!is(gr, 'GRanges')){
@@ -1325,7 +1325,7 @@ gr.strandflip = function(gr)
 gr.pairflip = function(gr)
 {
     strand(gr)[strand(gr) =='*'] = '+';
-    return(split(c(gr, gr.strandflip(gr)), rep(c(1:length(gr)), 2)))
+    return(split(c(gr, gr.flipstrand(gr)), rep(c(1:length(gr)), 2)))
 }
 
 
@@ -4189,7 +4189,7 @@ ra.duplicated = function(grl, pad=500, ignore.strand=FALSE){
 #' if argument pad = 0 (default) then only perfect overlap will validate, otherwise if pad>0 is given, then
 #' padded overlap is allowed
 #'
-#' strand matters, though we test overlap of both ra1[i] vs ra2[j] and gr.strandflip(ra2[j])
+#' strand matters, though we test overlap of both ra1[i] vs ra2[j] and gr.flipstrand(ra2[j])
 #'
 #' @param ra1 \code{GRangesList} with rearrangement set 1
 #' @param ra2 \code{GRangesList} with rearrangement set 2

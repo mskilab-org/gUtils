@@ -26,5 +26,5 @@ against each other, returning a sparseMatrix that is T at entry ij if junction i
 if argument pad = 0 (default) then only perfect overlap will validate, otherwise if pad>0 is given, then
 padded overlap is allowed
 
-strand matters, though we test overlap of both ra1[i] vs ra2[j] and gr.strandflip(ra2[j])
+strand matters, though we test overlap of both ra1[i] vs ra2[j] and gr.flipstrand(ra2[j])
 }
