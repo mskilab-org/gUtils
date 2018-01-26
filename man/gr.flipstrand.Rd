@@ -16,5 +16,5 @@ gr.flipstrand(gr)
 Flip strand on \code{GRanges}
 }
 \examples{
-gr.gr.flipstrand(GRanges(1, IRanges(c(10,10,10),20), strand=c("+","*","-")))
+gr.flipstrand(GRanges(1, IRanges(c(10,10,10),20), strand=c("+","*","-")))
 }

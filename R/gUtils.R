@@ -1286,7 +1286,7 @@ gr.stripstrand = function(gr)
 #' @param gr \code{GRanges} pile with strands to be flipped
 #' @return \code{GRanges} with flipped strands (+ to -, * to *, - to *)
 #' @examples
-#' gr.gr.flipstrand(GRanges(1, IRanges(c(10,10,10),20), strand=c("+","*","-")))
+#' gr.flipstrand(GRanges(1, IRanges(c(10,10,10),20), strand=c("+","*","-")))
 #' @export
 gr.flipstrand= function(gr)
 {
