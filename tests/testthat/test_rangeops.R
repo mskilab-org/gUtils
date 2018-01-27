@@ -457,8 +457,6 @@ test_that('gr.dist', {
 })
 
 
-## grl.stripnames; not exported in dev
-
 
 ## rle.query
 test_that('rle.query', {
@@ -554,6 +552,8 @@ test_that('seg2gr', {
 test_that('standardize_segs', {
 
     expect_error(standardize_segs(gr2))
+    expect_error(standardize_segs(gr2dt(gr2)))
+    expect_error(standardize_segs(gr2dt(gr2), chr=TRUE))
     
 })
 
@@ -1365,23 +1365,50 @@ test_that('grl.hiC', {
 
 
 
-
-
-
-
-
-
 ## XT Yao function
 #### gr.breaks
+test_that('gr.breaks', {
+    ## check 'if (is.null(bps)) {'
+    expect_equal(width(gr.breaks(bps=NULL, gr2)[1]), 6)
+    ## check 'if (is.null(query)){'
+    expect_error(gr.breaks(bps=gr2, query=NULL)) ## Trying chromosomes 1-22 and X, Y. Error in (function (classes, fdef, mtable) :
+    expect_error(gr.breaks(bps=gr2, query=grl1[1:10]))  ## Error in (function (...)  : all elements in '...' must be GRanges objects
+    expect_error(gr.breaks(bps=GRanges('1:10075-2000100'), query=grl2))
+    expect_equal(width(gr.breaks(gr, gr2)[1]), 2)
+    expect_equal(width(gr.breaks(gr, gr2)[2]), 4)
+    expect_equal(width(gr.breaks(gr, gr2)[3]), 3)
+    expect_equal(width(gr.breaks(gr, gr2)[4]), 2)
+
+})
+
+
+
 
 
 ## XT, ra.dedup
 ## Jan 18, correspondence from XT 'leave that internal for now'
 
+test_that('ra.dedup', {
+    ## check 'if (!is(grl, "GRangesList")){'
+    expect_error(ra.dedup(GRanges()))
+    ## check 'if (length(grl)==0 | length(grl)==1){'
+    expect_equal(ra.dedup(GRangesList()), GRangesList())
+    expect_equal(ra.dedup(grl2[1:2])[[1]]$bin[1], 4678)
+    expect_equal(ra.dedup(grl2[1:2])[[2]]$bin[1], 4713)
+
+})
+
 
 ## XT, ra.duplicated
 ## Jan 18, correspondence from XT 'leave that internal for now'
+test_that('ra.duplicated', {
+    ## check 'if (!is(grl, "GRangesList")){'
+    expect_error(ra.duplicated(GRanges()))
+    ## check 'if (length(grl)==0){'
+    expect_equal(ra.duplicated(GRangesList()), logical(0))
+    expect_equal(as.logical(ra.duplicated(grl1[1:2])), c(FALSE, FALSE))
 
+})
 
 
 ## XT plans to re-write, Jan 18

@@ -4005,6 +4005,7 @@ gr.breaks = function(bps=NULL, query=NULL){
 
    ## if bps not provided, return back-traced disjoin wrapper
    if (is.null(bps)) {
+       message("Argument 'bps' not provided")
        return(query)
    } 
    else {
@@ -4125,15 +4126,35 @@ gr.breaks = function(bps=NULL, query=NULL){
 
 
 
+
+#' @name ra.dedup
+#' @title ra.dedup
+#' @description
+#'
+#' Deduplicates rearrangements represented by \code{GRangesList} objects
+#'
+#' Determines overlaps between two or more piles of rearrangement junctions (as named or numbered arguments) +/- padding
+#' and will merge those that overlap into single junctions in the output, and then keep track for each output junction which
+#' of the input junctions it was "seen in" using logical flag  meta data fields prefixed by "seen.by." and then the argument name
+#' (or "seen.by.ra" and the argument number)
+#'
+#' @author Xiaotong Yao
+#' @param grl GRangesList representing rearrangements to be merged
+#' @param pad non-negative integer specifying padding (default = 500)
+#' @param ignore.strand whether to ignore strand (implies all strand information will be ignored, use at your own risk)
+#' @return \code{GRangesList} of merged junctions with meta data fields specifying which of the inputs each outputted junction was "seen.by"
+#' @examples
+#' 
+#' @export
 ra.dedup = function(grl, pad=500, ignore.strand=FALSE){
 
    if (!is(grl, "GRangesList")){
        stop("Error: Input must be GRangesList!")
    }
 
-   if (any(elementNROWS(grl)!=2)){
-       stop("Error: Each element must be length 2!")
-   }
+   ##if (any(elementNROWS(grl)!=2)){
+   ##    stop("Error: Each element must be length 2!")
+   ##}
 
    if (length(grl)==0 | length(grl)==1){
        return(grl)
@@ -4154,15 +4175,38 @@ ra.dedup = function(grl, pad=500, ignore.strand=FALSE){
 
 
 
+
+
+
+#' @name ra.duplicated
+#' @title ra.duplicated
+#' @description
+#'
+#' Show if junctions are Deduplicated
+#'
+#' Determines overlaps between two or more piles of rearrangement junctions (as named or numbered arguments) +/- padding
+#' and will merge those that overlap into single junctions in the output, and then keep track for each output junction which
+#' of the input junctions it was "seen in" using logical flag  meta data fields prefixed by "seen.by." and then the argument name
+#' (or "seen.by.ra" and the argument number)
+#'
+#' @author Xiaotong Yao
+#' @param grl GRangesList representing rearrangements to be merged
+#' @param pad non-negative integer specifying padding
+#' @param ignore.strand whether to ignore strand (implies all strand information will be ignored, use at your own risk)
+#' @return \code{GRangesList} of merged junctions with meta data fields specifying which of the inputs each outputted junction was "seen.by"
+#' @name ra.duplicated
+#' @examples
+#'
+#' @export
 ra.duplicated = function(grl, pad=500, ignore.strand=FALSE){
 
    if (!is(grl, "GRangesList")){
        stop("Error: Input must be GRangesList!")
    }
 
-   if (any(elementNROWS(grl)!=2)){
-       stop("Error: Each element must be length 2!")
-   }
+   ##if (any(elementNROWS(grl)!=2)){
+   ##    stop("Error: Each element must be length 2!")
+   ##}
 
    if (length(grl)==0){
        return(logical(0))
@@ -4185,6 +4229,10 @@ ra.duplicated = function(grl, pad=500, ignore.strand=FALSE){
        }
    }
 }
+
+
+
+
 
 
 
