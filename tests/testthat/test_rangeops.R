@@ -1371,7 +1371,8 @@ test_that('gr.breaks', {
     ## check 'if (is.null(bps)) {'
     expect_equal(width(gr.breaks(bps=NULL, gr2)[1]), 6)
     ## check 'if (is.null(query)){'
-    expect_error(gr.breaks(bps=gr2, query=NULL)) ## Trying chromosomes 1-22 and X, Y. Error in (function (classes, fdef, mtable) :
+    ## expect_error(gr.breaks(bps=gr2, query=NULL)) ## Trying chromosomes 1-22 and X, Y. Error in (function (classes, fdef, mtable) :
+    expect_equal(length(gr.breaks(bps=gr2, query=NULL)), 28)
     expect_error(gr.breaks(bps=gr2, query=grl1[1:10]))  ## Error in (function (...)  : all elements in '...' must be GRanges objects
     expect_error(gr.breaks(bps=GRanges('1:10075-2000100'), query=grl2))
     expect_equal(width(gr.breaks(gr, gr2)[1]), 2)

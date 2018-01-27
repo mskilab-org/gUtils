@@ -4024,7 +4024,7 @@ gr.breaks = function(bps=NULL, query=NULL){
 
        ## in case query is not a GRanges
        if (!is(query, "GRanges")){
-           stop("'query' must be a GRanges object.")
+           stop("Error: 'query' must be a GRanges object.")
        }
 
        ## preprocess query
@@ -4055,31 +4055,31 @@ gr.breaks = function(bps=NULL, query=NULL){
        }
 
        if (any(!is.null(names(bps)))){
-           warning("Removing row names from bps.")
+           warning("Warning: Removing row names from bps.")
            names(bps) = NULL
        }
 
        ## having strand info? remove it!
        if (any(strand(bps)!="*")){
-           warning("Some breakpoints have strand info. Force to '*'.")
+           warning("Warning: Some breakpoints have strand info. Force to '*'.")
            bps = gr.stripstrand(bps)
        }
 
        ## solve three edge cases
        if (any(w.0 <- (width(bps)<1))){
-           warning("Some breakpoint width==0.")
+           warning("Warning: Some breakpoint width==0.")
            ## right bound smaller coor
            ## and there's no negative width GR allowed
            bps[which(w.0)] = gr.start(bps[which(w.0)]) %-% 1
        }
        if (any(w.2 <- (width(bps)==2))){
-           warning("Some breakpoint width==2.")
+           warning("Warning: Some breakpoint width==2.")
            ## this is seen as breakpoint by spanning two bases
            bps[which(w.2)] = gr.start(bps[which(w.2)])
        }
        if (any(w.l <- (width(bps)>2))){
            ## some not a point? turn it into a point
-           warning("Some breakpoint width>1.")
+           warning("Warning: Some breakpoint width>1.")
            rbps = gr.end(bps[which(w.l)])
            lbps = gr.start(bps[which(w.l)])
            start(lbps) = pmax(start(lbps)-1, 1)
@@ -4088,7 +4088,7 @@ gr.breaks = function(bps=NULL, query=NULL){
 
        bps$inQuery = bps %^% query
        if (any(bps$inQuery==F)){
-           warning("Some breakpoint not within query ranges.")
+           warning("Warning: Some breakpoint not within query ranges.")
        }
 
        ## label and only consider breakpoints not already at the boundary of query

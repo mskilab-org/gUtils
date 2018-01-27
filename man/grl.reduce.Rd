@@ -17,7 +17,7 @@ grl.reduce(grl, pad = 0, clip = FALSE)
 \code{GRangesList} with GRanges of intervals "original GRanges +/- padding"
 }
 \description{
-Quickly computes GRanges +/- padding inside a GRangesList 
+Quickly computes GRanges +/- padding inside a GRangesList
 Can use with split / unlist
 }
 \author{

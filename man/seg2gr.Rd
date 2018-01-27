@@ -20,7 +20,7 @@ GRanges from converted "segs" data.frame/data.table
 Input data.frame of segments "segs" and converts into GRanges object porting over additional value columns
 
 "segs" data.frame/data.table can obey any number of conventions to specify chrom, start, and end of ranges
-(e.g. $pos1, $pos2, $Start_position, $End_position) 
- 
+(e.g. $pos1, $pos2, $Start_position, $End_position)
+
 Please see documentation for function 'standardize_segs()' for more details.
 }

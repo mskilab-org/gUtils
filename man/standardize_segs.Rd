@@ -20,7 +20,7 @@ Takes and returns segs data frame standardized to a single format (i.e. $chr, $p
 If chr = TRUE will ensure "chr" prefix is added to chromossome(if does not exist)
 
 "segs" data.frame can obey any number of conventions to specify chrom, start, and end of ranges
-(e.g. $pos1, $pos2, $Start_position, $End_position) 
+(e.g. $pos1, $pos2, $Start_position, $End_position)
 
 Conventions:
 \itemize{
@@ -28,6 +28,6 @@ Conventions:
 \item \code{chr} - 'seqnames', 'chrom', 'chromosome', 'rname', 'space', 'contig'
 \item \code{pos1} - 'start', 'loc.start', 'start.bp', 'start_position', 'begin', 'pos', 'pos1', 'left', 's1'
 \item \code{pos2} - 'end', 'loc.end', 'stop', 'end.bp', 'end_posiiton', 'pos2', 'right', 'e1'
-\item s\code{strand} - 'strand', 'str' 
+\item s\code{strand} - 'strand', 'str'
 }
 }

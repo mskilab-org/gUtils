@@ -13,7 +13,7 @@ parse.gr(...)
 GRanges parsed from IGV-/UCSC-style strings
 }
 \description{
-Quick function to parse GRanges from character vector IGV-/UCSC-style strings of format gr1;gr2;gr3 
+Quick function to parse GRanges from character vector IGV-/UCSC-style strings of format gr1;gr2;gr3
 where each input GRanges is of the format chr:start-end[+/-]
 }
 \author{
