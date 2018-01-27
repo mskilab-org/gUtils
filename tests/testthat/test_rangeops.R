@@ -404,6 +404,9 @@ test_that("gr.tile.map", {
 })
 
 
+## gr.val = function(query, target, val = NULL, mean = TRUE, weighted = mean, na.rm = FALSE, by = NULL, by.prefix = val, merge = FALSE,   
+## FUN = NULL, default.val = NA, max.slice = Inf, mc.cores = 1,  sep = ', ', verbose = FALSE, ...)
+##
 test_that("gr.val", {
 
     gr = GRanges(1, IRanges(1e6, 2e6))
@@ -413,6 +416,15 @@ test_that("gr.val", {
     ## check mean 
     expect_equal(gr.val(gr, example_genes, mean =TRUE)$value, 1)
     expect_equal(gr.val(gr, example_genes, mean =FALSE)$value, 41)
+    ## check weighted
+    expect_equal(gr.val(gr, example_genes, mean =TRUE, weighted=FALSE)$value, 1)
+    expect_equal(gr.val(gr, example_genes, mean =FALSE, weighted=TRUE)$value, 531234)
+    ## check na.rm 
+    expect_equal(gr.val(gr, example_dnase, mean=FALSE, na.rm=TRUE)$value, 5)
+    ## check by
+    expect_equal(length(colnames(as.data.table(gr.val(gr, example_genes, by='name')))), 46)
+    ## check merge
+    expect_equal(length(gr.val(example_genes, example_dnase, mean=FALSE, merge=TRUE)), 18812)
     ## check 'max.slice'
     ## check's  'if (length(query)>max.slice)'
     expect_equal(length(gr.val(example_dnase, example_genes, max.slice = 50)), 10000)
@@ -422,6 +434,11 @@ test_that("gr.val", {
     expect_equal(width(gr.val(gr, example_genes, mc.cores=2)), 1000001)
     ## check FUN
     expect_equal(as.data.frame(gr.val(gr, example_genes, FUN = function(x, w, na.rm = FALSE){ return(w*(x**2))}))$value, 68671)
+    ## check val=NULL
+    ## 'if (!is.null(val)){} else{}'
+    expect_equal(width(gr.val(gr, example_genes, val=NULL)), 1000001)
+    ## check 'if (inherits(target, 'GRangesList'))''
+    ## I get errors: e.g. 'gr.val(grl1, example_genes)'
 
 })
 
