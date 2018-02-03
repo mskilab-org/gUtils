@@ -37,7 +37,7 @@ test_that("gr2dt", {
     expect_identical(colnames(gr2dt(gr)), c("seqnames", "start", "end", "strand", "width", "name"))
     expect_equal(nrow(gr2dt(gr)), length(gr))
     ## using subjectdt
-    subjectdt <- gr2dt(example_genes)
+    subjectdt = gr2dt(example_genes)
     expect_equal(!any(subjectdt$start!=start(example_genes)), TRUE)
     expect_equal(!any(subjectdt$end!=end(example_genes)), TRUE)
     expect_equal(!any(subjectdt$width!=width(example_genes)), TRUE)
@@ -160,17 +160,20 @@ test_that("gr.sample", {
     ## query width less than output
     ## expect_error(gr.sample(gr.start(example_genes), c(1:3), k=5))
 
-    gg <- suppressWarnings(gr.sample(example_genes[1:5], c(2,2,3,4,5), k=2))    ### expect warning: longer object length is not a multiple of shorter object length
+    gg <- suppressWarnings(gr.sample(example_genes, c(2,2,3,4,5), k=2))    ### expect warning: longer object length is not a multiple of shorter object length
     expect_equal(length(gg), 5)
     expect_equal(sum(width(gg)), 16)
     ## check ' stop('Error: Input territory has zero regions of sufficient width')'
     expect_error(gr.sample(GRanges(), 10, k=1))
+    ## k > 1
+    expect_equal(length(gr.sample(example_genes[1:5], k=c(1, 2, 3, 3, 3), wid=100, replace=TRUE)), 12)
 
 })
 
 
 test_that("gr.sample without replace", {
     
+    set.seed(123)
     gene1 = GRanges("3:3540000-234329000")
     gene2 = GRanges("2:24440-30000")
     gene3 = GRanges("2:278444-321000")
@@ -188,6 +191,8 @@ test_that("gr.sample without replace", {
 })
 
 
+
+
 test_that("si2gr", {
 
     gg = si2gr(si, strip.empty = TRUE)
@@ -198,6 +203,7 @@ test_that("si2gr", {
     expect_equal(length(si2gr(BSgenome.Hsapiens.UCSC.hg19::Hsapiens)), 93)   
     ## check ' else if (!is(si, 'Seqinfo'))'
     expect_equal(length(si2gr(GRanges(si))), 25)   
+
 
 })
 
@@ -792,8 +798,7 @@ test_that("gr.match", {
     ## ignore strand is successfully passed
     expect_error(gr.match(gr1, gr2, ignore.strand = FALSE))
     ## check 'if (length(query)>max.slice)'
-    expect_equal(length(gr.match(gr1, gr2, max.slice=1)), 2)
-
+    expect_equal(as.numeric(length(gr.match(gr1, gr2, max.slice=1))), 0)
 
 })
 
@@ -1391,7 +1396,7 @@ test_that('gr.breaks', {
     ## expect_error(gr.breaks(bps=gr2, query=NULL)) ## Trying chromosomes 1-22 and X, Y. Error in (function (classes, fdef, mtable) :
     expect_equal(length(gr.breaks(bps=gr2, query=NULL)), 28)
     expect_error(gr.breaks(bps=gr2, query=grl1[1:10]))  ## Error in (function (...)  : all elements in '...' must be GRanges objects
-    expect_error(gr.breaks(bps=GRanges('1:10075-2000100'), query=grl2))
+    expect_error(gr.breaks(bps=GRanges('1:10075-2000100'), query=grl2))  ## Error: 'query' must be a GRanges object.
     expect_equal(width(gr.breaks(gr, gr2)[1]), 2)
     expect_equal(width(gr.breaks(gr, gr2)[2]), 4)
     expect_equal(width(gr.breaks(gr, gr2)[3]), 3)

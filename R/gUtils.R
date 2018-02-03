@@ -559,8 +559,8 @@ gr.rand = function(w, genome)
 #' (e.g. \code{shift}, \code{reduce}, \code{restrict}, \code{shift}, \code{resize}, \code{flank})
 #'
 #' @param gr \code{GRanges} to trim
-#' @param starts Number of bases to trim off of the front\code{[1]}
-#' @param ends Number of bases to trim off of the back\code{[1]}
+#' @param starts integer Beginning of interval trimmed; Number of bases to trim off of the front\code{[1]}
+#' @param ends integer End of interval trimmed
 #' @examples
 #'
 #' ## trim the first 20 and last 50 bases
@@ -675,15 +675,12 @@ gr.sample = function(gr, k, wid = 100, replace = TRUE)
     else
     {
         gr.df = data.frame(chr = as.character(seqnames(gr)), start = start(gr), end = end(gr))
-        gr.df$k = k;
+        ##gr.df$k = k;
         gr.df$length = wid
         gr.df$replace = replace
-        tmp = lapply(1:length(gr), function(i)
-        {
-            if (!gr.df$replace[i])
-            {
-                if (!is.na(k[i]))
-                {
+        tmp = lapply(1:length(gr), function(i){
+            if (!gr.df$replace[i]){
+                if (!is.na(k[i])){
                     w = floor(width(gr)[i]/wid)
                     k[i] = min(k[i], w)
                     if (k[i]>0) {
@@ -698,7 +695,7 @@ gr.sample = function(gr, k, wid = 100, replace = TRUE)
                 }
             }
             else{
-                s = (gr.df$end[i]-gr.df$start[i]-gr.df$wid[i])*stats::runif(k[i])+gr.df$start[i]
+                s = (gr.df$end[i]-gr.df$start[i]-gr.df$length[i])*stats::runif(k[i])+gr.df$start[i]
             }
 
             return(data.frame(chr = gr.df$chr[i], start=s, end =s+wid-1, strand = as.character(strand(gr)[i]), query.id = i))

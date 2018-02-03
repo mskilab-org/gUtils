@@ -9,9 +9,9 @@ gr.trim(gr, starts = 1, ends = 1)
 \arguments{
 \item{gr}{\code{GRanges} to trim}
 
-\item{starts}{Number of bases to trim off of the front\code{[1]}}
+\item{starts}{integer Beginning of interval trimmed; Number of bases to trim off of the front\code{[1]}}
 
-\item{ends}{Number of bases to trim off of the back\code{[1]}}
+\item{ends}{integer End of interval trimmed}
 }
 \value{
 GRanges with trimmed intervals relative to the specified <local> coordinates of each range
