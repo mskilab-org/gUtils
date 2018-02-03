@@ -3053,17 +3053,18 @@ gr.sum = function(gr, field = NULL, mean = FALSE)
 gr.collapse = function(gr, pad = 1)
 {
     tmp = gr.findoverlaps(gr + pad, gr + pad, ignore.strand = FALSE)
-    m = rep(FALSE, length(gr));
+    m = rep(FALSE, length(gr))
+    m[tmp$query.id[tmp$query.id == (tmp$subject.id-1)]] = TRUE
 
-    m[ tmp$query.id[tmp$query.id == (tmp$subject.id-1)] ] = TRUE
-
-    ## will not collapse if two intersecting ranges are in the wrong "order" (i.e. not increasing (decreasing) on pos (neg) strand
-    m[ which( (strand(gr)[-length(gr)] == '+' & (start(gr)[-length(gr)] > start(gr)[-1]) ) | (strand(gr)[-length(gr)] == '-' & (end(gr)[-length(gr)] < end(gr)[-1]))) ] = FALSE
+    ## will not collapse if two intersecting ranges are in the wrong "order" (ie not increasing (decreasing) on pos (neg) strand
+    m[which((strand(gr)[-length(gr)] == '+' & (start(gr)[-length(gr)] > start(gr)[-1])) |
+            (strand(gr)[-length(gr)] == '-' & (end(gr)[-length(gr)] < end(gr)[-1])))] = FALSE
 
     m = as(m, 'IRanges')
 
-    if (length(m)>0){
-        end(m) = end(m) + 1
+    if (length(m)>0)
+    {
+        end(m) = end(m)+1
         tmp = cbind(start(gr)[start(m)], end(gr)[start(m)], start(gr)[end(m)], end(gr)[end(m)])
         s = pmin(start(gr)[start(m)], end(gr)[start(m)], start(gr)[end(m)], end(gr)[end(m)])
         e = pmax(start(gr)[start(m)], end(gr)[start(m)], start(gr)[end(m)], end(gr)[end(m)])
