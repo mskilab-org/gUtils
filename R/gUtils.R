@@ -1141,6 +1141,29 @@ grl.string = function(grl, mb= FALSE, sep = ',', ...)
 }
 
 
+#' Flip strand on \code{GRanges}
+#'
+#' @name gr.flipstrand
+#' @param gr \code{GRanges} pile with strands to be flipped
+#' @return \code{GRanges} with flipped strands (+ to -, * to *, - to *)
+#' @examples
+#' gr.flipstrand(GRanges(1, IRanges(c(10,10,10),20), strand=c("+","*","-")))
+#' @export
+gr.flipstrand <- function(gr)
+                 {
+                     if (!is(gr, 'GRanges'))
+                         stop('GRanges input only')
+
+                     if (length(gr)==0)
+                         return(gr)
+
+                     which = cbind(1:length(gr), TRUE)[,2] == 1
+
+                     if (any(which))
+                         strand(gr)[which] = c('*'='*', '+'='-', '-'='+')[as.character(strand(gr))][which]
+
+                     return(gr)
+                 }
 
 
 #' @name gr.fix
@@ -1273,42 +1296,6 @@ gr.stripstrand = function(gr)
     strand(gr) = "*"
     return(gr)
 }
-
-
-
-
-#' @name gr.strandflip
-#' @title Flip strand on \code{GRanges}
-#' @description
-#'
-#' Flip strand on \code{GRanges}
-#'
-#' @param gr \code{GRanges} pile with strands to be flipped
-#' @return \code{GRanges} with flipped strands (+ to -, * to *, - to *)
-#' @examples
-#' gr.strandflip(GRanges(1, IRanges(c(10,10,10),20), strand=c("+","*","-")))
-#' @export
-gr.strandflip = function(gr)
-{
-
-    if (!is(gr, 'GRanges')){
-        stop('Error: GRanges input only')
-    }
-
-    if (length(gr)==0){
-        return(gr)
-    }
-
-    which = cbind(1:length(gr), TRUE)[,2] == 1
-
-    if (any(which)){
-        strand(gr)[which] = c('*'='*', '+'='-', '-'='+')[as.character(strand(gr))][which]
-    }
-
-    return(gr)
-}
-
-
 
 
 #' @name gr.pairflip
