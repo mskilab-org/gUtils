@@ -1,5 +1,8 @@
 library(gUtils)
 library(BSgenome.Hsapiens.UCSC.hg19)
+
+library(testthat)
+
 Sys.setenv(DEFAULT_BSGENOME = "BSgenome.Hsapiens.UCSC.hg19::Hsapiens")
 
 
@@ -34,12 +37,15 @@ test_that("gr2dt", {
     expect_identical(colnames(gr2dt(gr)), c("seqnames", "start", "end", "strand", "width", "name"))
     expect_equal(nrow(gr2dt(gr)), length(gr))
     ## using subjectdt
-    subjectdt <- gr2dt(example_genes)
+    subjectdt = gr2dt(example_genes)
     expect_equal(!any(subjectdt$start!=start(example_genes)), TRUE)
     expect_equal(!any(subjectdt$end!=end(example_genes)), TRUE)
     expect_equal(!any(subjectdt$width!=width(example_genes)), TRUE)
     expect_equal(all(as.character(subjectdt$strand) == as.character(strand(example_genes))), TRUE)
     expect_equal(all(subjectdt$seqnames == as.vector(seqnames(example_genes))), TRUE)
+    ## check 'if (any(duplicated(names(x))))'
+    ## check 'if (is.null(out)){'
+    expect_equal(gr2dt(NULL), data.table())
     
 })
 
@@ -79,6 +85,9 @@ test_that("dt2gr", {
     expect_error(suppressWarnings(dt2gr(1)))
     ## expect_error(suppressWarnings(dt2gr(dt)))    ### warning within error---warning: coercing to GRanges via non-standard columns
     ## as.integer(seqnames(seqinfo(dt2gr(dt, seqlengths=NULL, seqinfo=NULL)))
+    ## check stop("Error: Needs to be data.table or data.frame")
+    expect_error(dt2gr(matrix()))
+    expect_error(dt2gr(GRanges()))
 
 })
 
@@ -116,6 +125,9 @@ test_that('gr.rand', {
     print(start(gg))
     expect_equal(start(gg)[1], 59221325L)
     expect_error(gr.rand(c(3,500000000), si)) ## Error: Allocation failed. Supplied widths are likely too large
+    ## check 'if (!is(genome, 'Seqinfo')){'
+    ref = si2gr(BSgenome.Hsapiens.UCSC.hg19::Hsapiens)
+    expect_equal(length(gr.rand(c(3,5), ref)), 2)
 
 })
 
@@ -148,15 +160,20 @@ test_that("gr.sample", {
     ## query width less than output
     ## expect_error(gr.sample(gr.start(example_genes), c(1:3), k=5))
 
-    gg <- suppressWarnings(gr.sample(example_genes[1:5], c(2,2,3,4,5), k=2))    ### expect warning: longer object length is not a multiple of shorter object length
+    gg <- suppressWarnings(gr.sample(example_genes, c(2,2,3,4,5), k=2))    ### expect warning: longer object length is not a multiple of shorter object length
     expect_equal(length(gg), 5)
     expect_equal(sum(width(gg)), 16)
+    ## check ' stop('Error: Input territory has zero regions of sufficient width')'
+    expect_error(gr.sample(GRanges(), 10, k=1))
+    ## k > 1
+    expect_equal(length(gr.sample(example_genes[1:5], k=c(1, 2, 3, 3, 3), wid=100, replace=TRUE)), 12)
 
 })
 
 
 test_that("gr.sample without replace", {
     
+    set.seed(123)
     gene1 = GRanges("3:3540000-234329000")
     gene2 = GRanges("2:24440-30000")
     gene3 = GRanges("2:278444-321000")
@@ -174,6 +191,8 @@ test_that("gr.sample without replace", {
 })
 
 
+
+
 test_that("si2gr", {
 
     gg = si2gr(si, strip.empty = TRUE)
@@ -185,6 +204,7 @@ test_that("si2gr", {
     ## check ' else if (!is(si, 'Seqinfo'))'
     expect_equal(length(si2gr(GRanges(si))), 25)   
 
+
 })
 
 
@@ -194,6 +214,10 @@ test_that("grbind", {
     example_genes = GRanges(2, IRanges(c(233101, 233101, 231023, 231023, 229966), c(233229, 233229, 231191, 231191, 230044)), strand = c("-"), type = c("exon", "CDS", "exon", "CDS", "exon"))
     expect_equal(length(suppressWarnings(grbind(example_genes, example_dnase))) > 0, TRUE)
     expect_equal(grbind(0, 1, 2, 3), NULL)
+    ## check ' grs <- c(x, list(...))'
+    expect_equal(width(grbind(GRanges(), GRanges('1:1-10'),GRanges(),GRanges(),GRanges('1:100-200'),GRanges())[2]), 101)
+    ## check ' if (is.null(tmp)){'
+    expect_equal(grbind(data.frame(),data.frame(),data.frame()), NULL)
 
 })
 
@@ -217,11 +241,15 @@ test_that("grl.bind", {
 })
 
 
+
+
 test_that("gr.chr", {
 
     expect_equal(as.character(seqnames(gr.chr(GRanges(c(1,"chrX"), IRanges(c(1,2), 1))))), c("chr1", "chrX"))
 
 })
+
+
 
 
 test_that("streduce", {
@@ -232,7 +260,13 @@ test_that("streduce", {
     gg2 = streduce(example_genes, pad=10)
     expect_equal(length(gg2), length(reduce(gg2)))
 
+    ## check 'if (any(is.na(seqlengths(gr)))){'
+    seqlengths(grl.hiC) = NA
+    expect_equal(length(streduce(grl.hiC, pad=10)), 19701)
+
 })
+
+
 
 
 test_that("gr.string", {
@@ -240,6 +274,17 @@ test_that("gr.string", {
     expect_that(grepl(":", gr.string(example_genes)[1]), is_true())
     expect_that(grepl("-", gr.string(example_genes)[1]), is_true())
     expect_that(grepl("(+|-)", gr.string(example_genes)[1]), is_true())
+    ## check 'if (length(gr)==0){'
+    ## add.chr
+    expect_equal(gr.string(example_genes, add.chr=TRUE)[1], 'chr1:69090-70008+')
+    ## mb
+    expect_equal(gr.string(example_genes[1], mb = TRUE), '1:0.069-0.07+')
+    ## round
+    expect_equal(gr.string(example_genes[1], round = 1, mb=TRUE), '1:0.1-0.1+')
+    ## other.cols
+    expect_equal(gr.string(example_genes[1], other.cols='name'), '1:69090-70008+  OR4F5')
+    ## pretty
+    expect_equal(gr.string(example_genes, pretty=TRUE)[1], '1:69,090-70,008+')
 
 })
 
@@ -262,6 +307,14 @@ test_that("grl.string", {
 
     expect_that(nchar(names(grl.string(grl.hiC[1:5])[1])) > 0, is_true())
     expect_that(grepl(",", grl.string(grl.hiC[1:5])[1]), is_true())
+    ## check 'if (class(grl) == "GRanges"){'
+    expect_equal(grl.string(example_genes[1]), '1:69090-70008+')
+    ## check 'error handling'
+    expect_error(grl.string('foo')) ##  Error: Input must be GRangesList (or GRanges, which is sent to gr.string)
+    ## check 'else{ nm = 1:length(grl) ! 1138 }'
+    names(grl1) = NULL
+    expect_equal(as.character(grl.string(grl1[2])), '9:140100229-140100229-,19:24309057-24309057-')
+
 
 })
 
@@ -271,6 +324,8 @@ test_that("gr.fix", {
     gg = GRanges(c("X",1), IRanges(c(1,2), width=1))
     expect_equal(length(seqlengths(gr.fix(gg, si))), 25)
     expect_equal(length(seqlengths(gr.fix(gg, BSgenome.Hsapiens.UCSC.hg19::Hsapiens))), 95)
+    ## check 'if (is(gr, 'GRangesList')){'
+    expect_equal(as.integer(seqnames(gr.fix(grl1[1])[1])), 5)
 
 })
 
@@ -322,11 +377,11 @@ test_that('gr.pairflip', {
 })
 
 
-test_that('gr.strandflip', {
+test_that('gr.flipstrand', {
 
-    expect_identical(as.character(strand(gr.strandflip(gr))), c("-","+","+"))
-    expect_error(gr.strandflip(data.frame()))
-    expect_equal(length(gr.strandflip(GRanges())), 0)
+    expect_identical(as.character(strand(gr.flipstrand(gr))), c("-","+","+"))
+    expect_error(gr.flipstrand(data.frame()))
+    expect_equal(length(gr.flipstrand(GRanges())), 0)
 
 })
 
@@ -335,6 +390,11 @@ test_that("gr.tile", {
 
     expect_identical(start(gr.tile(gr, w=3)), c(3L, 7L, 13L, 16L))
     expect_equal(length(gr.tile(GRanges())), 0)
+    ## check 'if (is(gr, 'data.table'))'
+    expect_equal(length(gr.tile(dt, w=3)), 5)
+    ## check 'else if (!is(gr, 'GRanges')){'
+    expect_equal(length(gr.tile(si['M'], w=3)), 5524)
+
 
 })
 
@@ -350,6 +410,9 @@ test_that("gr.tile.map", {
 })
 
 
+## gr.val = function(query, target, val = NULL, mean = TRUE, weighted = mean, na.rm = FALSE, by = NULL, by.prefix = val, merge = FALSE,   
+## FUN = NULL, default.val = NA, max.slice = Inf, mc.cores = 1,  sep = ', ', verbose = FALSE, ...)
+##
 test_that("gr.val", {
 
     gr = GRanges(1, IRanges(1e6, 2e6))
@@ -359,6 +422,15 @@ test_that("gr.val", {
     ## check mean 
     expect_equal(gr.val(gr, example_genes, mean =TRUE)$value, 1)
     expect_equal(gr.val(gr, example_genes, mean =FALSE)$value, 41)
+    ## check weighted
+    expect_equal(gr.val(gr, example_genes, mean =TRUE, weighted=FALSE)$value, 1)
+    expect_equal(gr.val(gr, example_genes, mean =FALSE, weighted=TRUE)$value, 531234)
+    ## check na.rm 
+    expect_equal(gr.val(gr, example_dnase, mean=FALSE, na.rm=TRUE)$value, 5)
+    ## check by
+    expect_equal(length(colnames(as.data.table(gr.val(gr, example_genes, by='name')))), 46)
+    ## check merge
+    expect_equal(length(gr.val(example_genes, example_dnase, mean=FALSE, merge=TRUE)), 18812)
     ## check 'max.slice'
     ## check's  'if (length(query)>max.slice)'
     expect_equal(length(gr.val(example_dnase, example_genes, max.slice = 50)), 10000)
@@ -368,6 +440,11 @@ test_that("gr.val", {
     expect_equal(width(gr.val(gr, example_genes, mc.cores=2)), 1000001)
     ## check FUN
     expect_equal(as.data.frame(gr.val(gr, example_genes, FUN = function(x, w, na.rm = FALSE){ return(w*(x**2))}))$value, 68671)
+    ## check val=NULL
+    ## 'if (!is.null(val)){} else{}'
+    expect_equal(width(gr.val(gr, example_genes, val=NULL)), 1000001)
+    ## check 'if (inherits(target, 'GRangesList'))''
+    ## I get errors: e.g. 'gr.val(grl1, example_genes)'
 
 })
 
@@ -402,8 +479,6 @@ test_that('gr.dist', {
 
 })
 
-
-## grl.stripnames; not exported in dev
 
 
 ## rle.query
@@ -443,6 +518,8 @@ test_that("grl.unlist", {
     expect_equal(max(mcols(gg)$grl.ix), length(grl.hiC))
     ## check 'if (length(grl) == 0)'
     expect_equal(length(grl.unlist(GRangesList())), 0)
+    ## check 'if (is(grl, 'GRanges'))'
+    expect_equal(grl.unlist(gr2)[1]$grl.ix, 1)
 
 
 })
@@ -468,6 +545,11 @@ test_that("rrbind", {
     gr2 = GRanges(1, IRanges(c(1,9), c(6,14)), strand=c('+','-'), seqinfo=Seqinfo("1", 25), field=c(1,2))
     expect_that(ncol(rrbind(mcols(gr), mcols(gr2))) > 0, is_true())
     expect_equal(ncol(rrbind(mcols(gr), mcols(gr2), union=FALSE)), 0)
+    ## check 'if (any(mix <- sapply(dfs, class) == 'matrix')){'
+    expect_equal(dim(rrbind( mcols(gr), matrix(gr2dt(gr2))))[1], 6)
+    expect_equal(dim(rrbind( mcols(gr), matrix(gr2dt(gr2))))[2], 1)
+    ## check 'if (is.null(rout)){'
+    expect_equal(rrbind(mcols(GRanges()), mcols(GRanges()), mcols(GRanges())), data.frame())
 
 })
 
@@ -476,7 +558,7 @@ test_that("rrbind", {
 test_that('gr.sub', {
     
     gr1  = GRanges('chr1', IRanges(c(3,7,13), c(5,9,16)), strand=c('+','-','-'), seqinfo=Seqinfo("chr1", 25), name=c("A","B","C"))
-    expect_error(gr.sub(gr1), NA)
+    expect_error(gr.sub(gr1), NA)  ## check works
     ## check 'if (is.null(tmp.gr))'
     expect_equal(length(gr.sub(GRanges())), 0)
 
@@ -493,6 +575,8 @@ test_that('seg2gr', {
 test_that('standardize_segs', {
 
     expect_error(standardize_segs(gr2))
+    expect_error(standardize_segs(gr2dt(gr2)))
+    expect_error(standardize_segs(gr2dt(gr2), chr=TRUE))
     
 })
 
@@ -714,8 +798,7 @@ test_that("gr.match", {
     ## ignore strand is successfully passed
     expect_error(gr.match(gr1, gr2, ignore.strand = FALSE))
     ## check 'if (length(query)>max.slice)'
-    expect_equal(length(gr.match(gr1, gr2, max.slice=1)), 2)
-
+    expect_equal(as.numeric(length(gr.match(gr1, gr2, max.slice=1))), 2)
 
 })
 
@@ -1304,62 +1387,92 @@ test_that('grl.hiC', {
 
 
 
-
-
-
-
-
-
 ## XT Yao function
 #### gr.breaks
+test_that('gr.breaks', {
+    ## check 'if (is.null(bps)) {'
+    expect_equal(width(gr.breaks(bps=NULL, gr2)[1]), 6)
+    ## check 'if (is.null(query)){'
+    ## expect_error(gr.breaks(bps=gr2, query=NULL)) ## Trying chromosomes 1-22 and X, Y. Error in (function (classes, fdef, mtable) :
+    expect_equal(length(gr.breaks(bps=gr2, query=NULL)), 28)
+    expect_error(gr.breaks(bps=gr2, query=grl1[1:10]))  ## Error in (function (...)  : all elements in '...' must be GRanges objects
+    expect_error(gr.breaks(bps=GRanges('1:10075-2000100'), query=grl2))  ## Error: 'query' must be a GRanges object.
+    expect_equal(width(gr.breaks(gr, gr2)[1]), 2)
+    expect_equal(width(gr.breaks(gr, gr2)[2]), 4)
+    expect_equal(width(gr.breaks(gr, gr2)[3]), 3)
+    expect_equal(width(gr.breaks(gr, gr2)[4]), 2)
+
+})
+
+
+
 
 
 ## XT, ra.dedup
 ## Jan 18, correspondence from XT 'leave that internal for now'
 
+test_that('ra.dedup', {
+    ## check 'if (!is(grl, "GRangesList")){'
+    expect_error(ra.dedup(GRanges()))
+    ## check 'if (length(grl)==0 | length(grl)==1){'
+    expect_equal(ra.dedup(GRangesList()), GRangesList())
+    expect_equal(ra.dedup(grl2[1:2])[[1]]$bin[1], 4678)
+    expect_equal(ra.dedup(grl2[1:2])[[2]]$bin[1], 4713)
+
+})
+
 
 ## XT, ra.duplicated
 ## Jan 18, correspondence from XT 'leave that internal for now'
+test_that('ra.duplicated', {
+    ## check 'if (!is(grl, "GRangesList")){'
+    expect_error(ra.duplicated(GRanges()))
+    ## check 'if (length(grl)==0){'
+    expect_equal(ra.duplicated(GRangesList()), logical(0))
+    expect_equal(as.logical(ra.duplicated(grl1[1:2])), c(FALSE, FALSE))
 
+})
 
 
 ## XT plans to re-write, Jan 18
-## test_that('ra.overlaps', {
-##
-##    gr = GRanges(1, IRanges(c(3,7), c(5,9)), strand=c('+','-'))
-##    gr1 = GRanges(1, IRanges(c(10,20), width=5), strand=c("+", "-"))
-##    gr2 = GRanges(1, IRanges(c(1,9), c(6,14)), strand=c('+','-'))
-##    grl1 = GRangesList("gr"=gr, "gr1"=gr1)
-##    grl2 = GRangesList("gr1"=gr1, "gr2"=gr2)
-##    foobar = suppressWarnings(grl.bind(grl1, grl2))
-##    ro = ra.overlaps(grl1, grl2)
-##    expect_equal(class(ro), "matrix")
-##    expect_equal(nrow(ro), 2)
-##    expect_equal(ncol(ro), 2)
-##    expect_equal(nrow(ra.overlaps(grl2, grl2)), length(grl2))
-##
-## })
-## test_that("ra.overlaps handles empty",{
-##     
-##     ## test empty inputs and no overlaps inputs
-##     gr = GRanges(1, IRanges(c(10,20), width=5), strand=c("+", "-"))
-##     grl1 = GRangesList("gr1" = gr)
-##     expect_equal(ra.overlaps(GRangesList(), grl1)[1], NA)
-##     expect_equal(ra.overlaps(grl2[2:3], grl1)[1], NA)
-##     
-## })  
-## test_that("ra.overlaps handles wrong signs", {
-## 
-##     ## make one that overlaps, but wrong signs
-##     gr = GRanges(1, IRanges(c(3,7), c(5,9)), strand=c('+','-'))
-##     gr1 = GRanges(1, IRanges(c(10,20), width=5), strand=c("+", "-"))
-##     gr2 = GRanges(1, IRanges(c(1,9), c(6,14)), strand=c('+','-'))
-##     grl1 = GRangesList("gr" = gr, "gr1" = gr1, "gr2" = gr2)
-##     grl3 <- grl1[2]
-##     strand(grl3[[1]]) <- c("+", "-")
-##     expect_equal(ra.overlaps(grl3, grl2)[1], NA)
-## 
-##  })
+test_that('ra.overlaps', {
+
+    gr = GRanges(1, IRanges(c(3,7), c(5,9)), strand=c('+','-'))
+    gr1 = GRanges(1, IRanges(c(10,20), width=5), strand=c("+", "-"))
+    gr2 = GRanges(1, IRanges(c(1,9), c(6,14)), strand=c('+','-'))
+    grl1 = GRangesList("gr"=gr, "gr1"=gr1)
+    grl2 = GRangesList("gr1"=gr1, "gr2"=gr2)
+    foobar = suppressWarnings(grl.bind(grl1, grl2))
+    ro = ra.overlaps(grl1, grl2)
+    expect_equal(class(ro), "matrix")
+    expect_equal(nrow(ro), 2)
+    expect_equal(ncol(ro), 2)
+    expect_equal(nrow(ra.overlaps(grl2, grl2)), length(grl2))
+
+ })
+
+test_that("ra.overlaps handles empty",{
+     
+    ## test empty inputs and no overlaps inputs
+    gr = GRanges(1, IRanges(c(10,20), width=5), strand=c("+", "-"))
+    grl1 = GRangesList("gr1" = gr)
+    expect_equal(ra.overlaps(GRangesList(), grl1)[1], NA)
+    expect_equal(ra.overlaps(grl2[2:3], grl1)[1], NA)
+    
+})  
+
+test_that("ra.overlaps handles wrong signs", {
+ 
+    ## make one that overlaps, but wrong signs
+    gr = GRanges(1, IRanges(c(3,7), c(5,9)), strand=c('+','-'))
+    gr1 = GRanges(1, IRanges(c(10,20), width=5), strand=c("+", "-"))
+    gr2 = GRanges(1, IRanges(c(1,9), c(6,14)), strand=c('+','-'))
+    grl1 = GRangesList("gr" = gr, "gr1" = gr1, "gr2" = gr2)
+    grl3 <- grl1[2]
+    strand(grl3[[1]]) <- c("+", "-")
+    expect_equal(ra.overlaps(grl3, grl2)[1], NA)
+ 
+})
 
 
 

@@ -142,6 +142,7 @@ gr2dt = function(x)
 {
     ## new approach just directly instantiating data table
     cmd = 'data.frame(';
+
     if (is(x, 'GRanges'))
     {
         ## as.data.table complains if duplicated row names
@@ -320,6 +321,10 @@ gr.start = function(x, width = 1, force = FALSE, ignore.strand = TRUE, clip = TR
 #' @export
 dt2gr = function(dt, key = NULL, seqlengths = hg_seqlengths(), seqinfo = Seqinfo()) {
 
+    if (!inherits(dt, 'data.frame') & !inherits(dt, 'data.table')){
+        stop("Error: Input needs to be data.table or data.frame")
+    }
+
     out = tryCatch({
         rr <- IRanges(dt$start, dt$end)
         if (!'strand' %in% colnames(dt)){
@@ -334,9 +339,7 @@ dt2gr = function(dt, key = NULL, seqlengths = hg_seqlengths(), seqinfo = Seqinfo
         else if (inherits(dt, 'data.frame')){
             mc <- as.data.frame(dt[, setdiff(colnames(dt), c('start', 'end', 'seqnames', 'strand')), drop = FALSE])
         }
-        else{
-            warning("Warning: Needs to be data.table or data.frame")
-        }
+
         if (nrow(mc)){
             mcols(out) <- mc
         }
@@ -556,8 +559,8 @@ gr.rand = function(w, genome)
 #' (e.g. \code{shift}, \code{reduce}, \code{restrict}, \code{shift}, \code{resize}, \code{flank})
 #'
 #' @param gr \code{GRanges} to trim
-#' @param starts Number of bases to trim off of the front\code{[1]}
-#' @param ends Number of bases to trim off of the back\code{[1]}
+#' @param starts integer Beginning of interval trimmed; Number of bases to trim off of the front\code{[1]}
+#' @param ends integer End of interval trimmed
 #' @examples
 #'
 #' ## trim the first 20 and last 50 bases
@@ -672,15 +675,12 @@ gr.sample = function(gr, k, wid = 100, replace = TRUE)
     else
     {
         gr.df = data.frame(chr = as.character(seqnames(gr)), start = start(gr), end = end(gr))
-        gr.df$k = k;
+        ##gr.df$k = k;
         gr.df$length = wid
         gr.df$replace = replace
-        tmp = lapply(1:length(gr), function(i)
-        {
-            if (!gr.df$replace[i])
-            {
-                if (!is.na(k[i]))
-                {
+        tmp = lapply(1:length(gr), function(i){
+            if (!gr.df$replace[i]){
+                if (!is.na(k[i])){
                     w = floor(width(gr)[i]/wid)
                     k[i] = min(k[i], w)
                     if (k[i]>0) {
@@ -695,7 +695,7 @@ gr.sample = function(gr, k, wid = 100, replace = TRUE)
                 }
             }
             else{
-                s = (gr.df$end[i]-gr.df$start[i]-gr.df$wid[i])*stats::runif(k[i])+gr.df$start[i]
+                s = (gr.df$end[i]-gr.df$start[i]-gr.df$length[i])*stats::runif(k[i])+gr.df$start[i]
             }
 
             return(data.frame(chr = gr.df$chr[i], start=s, end =s+wid-1, strand = as.character(strand(gr)[i]), query.id = i))
@@ -1298,6 +1298,40 @@ gr.stripstrand = function(gr)
 }
 
 
+
+#' @name gr.flipstrand
+#' @title Flip strand on \code{GRanges}
+#' @description
+#'
+#' Flip strand on \code{GRanges}
+#'
+#' @param gr \code{GRanges} pile with strands to be flipped
+#' @return \code{GRanges} with flipped strands (+ to -, * to *, - to *)
+#' @examples
+#' gr.flipstrand(GRanges(1, IRanges(c(10,10,10),20), strand=c("+","*","-")))
+#' @export
+gr.flipstrand= function(gr)
+{
+
+    if (!is(gr, 'GRanges')){
+        stop('Error: GRanges input only')
+    }
+
+    if (length(gr)==0){
+        return(gr)
+    }
+
+    which = cbind(1:length(gr), TRUE)[,2] == 1
+
+    if (any(which)){
+        strand(gr)[which] = c('*'='*', '+'='-', '-'='+')[as.character(strand(gr))][which]
+    }
+
+    return(gr)
+}
+
+
+
 #' @name gr.pairflip
 #' @title Create pairs of ranges and their strand-inverse
 #' @description
@@ -1312,7 +1346,7 @@ gr.stripstrand = function(gr)
 gr.pairflip = function(gr)
 {
     strand(gr)[strand(gr) =='*'] = '+';
-    return(split(c(gr, gr.strandflip(gr)), rep(c(1:length(gr)), 2)))
+    return(split(c(gr, gr.flipstrand(gr)), rep(c(1:length(gr)), 2)))
 }
 
 
@@ -1339,9 +1373,15 @@ gr.pairflip = function(gr)
 gr.tile = function(gr, width = 1e3)
 {
     numw = tile.id = query.id = NULL ## getting past NOTE
-    if (!is(gr, 'GRanges')){
+    if (is(gr, 'data.table')){
+        message('Executing dt2gr() on input \n');
+        gr = dt2gr(gr);
+    }
+    else if (!is(gr, 'GRanges')){
+        message('Executing si2gr() on input \n');
         gr = si2gr(gr);
     }
+
 
     ix = which(width(gr) > 0)
     gr = gr[ix]
@@ -1927,37 +1967,6 @@ gr.dist = function(gr1, gr2 = NULL, ignore.strand = FALSE, ...)
 
     return(out)
 }
-
-
-
-## not exported in dev branch
-## #' @name grl.stripnames
-## # ' @title Remove \code{GRanges} names inside a \code{GRangesList}
-## #' @description
-## #'
-## #' Remove \code{GRanges} names inside a \code{GRangesList}
-## #'
-## #' @param grl \code{GRangesList} with names elements
-## #' @return \code{GRangesList} where \code{GRanges} have no names
-#### grl.stripnames = function(grl)
-#### {
-####     ele = tryCatch(as.data.frame(grl)$element, error = function(e) NULL)
-####     if (is.null(ele))
-####     {
-####         ele = unlist(lapply(1:length(grl), function(x) rep(x, length(grl[[x]]))))
-####     }
-####
-####     gr = unlist(grl);
-####     names(gr) = NULL;
-####
-####     out = split(gr, ele);
-####     values(out) = values(grl)
-####     names(out) = names(grl)
-####
-####     return(out)
-#### }
-
-
 
 
 #' @name rle.query
@@ -3060,17 +3069,18 @@ gr.sum = function(gr, field = NULL, mean = FALSE)
 gr.collapse = function(gr, pad = 1)
 {
     tmp = gr.findoverlaps(gr + pad, gr + pad, ignore.strand = FALSE)
-    m = rep(FALSE, length(gr));
+    m = rep(FALSE, length(gr))
+    m[tmp$query.id[tmp$query.id == (tmp$subject.id-1)]] = TRUE
 
-    m[ tmp$query.id[tmp$query.id == (tmp$subject.id-1)] ] = TRUE
-
-    ## will not collapse if two intersecting ranges are in the wrong "order" (i.e. not increasing (decreasing) on pos (neg) strand
-    m[ which( (strand(gr)[-length(gr)] == '+' & (start(gr)[-length(gr)] > start(gr)[-1]) ) | (strand(gr)[-length(gr)] == '-' & (end(gr)[-length(gr)] < end(gr)[-1]))) ] = FALSE
+    ## will not collapse if two intersecting ranges are in the wrong "order" (ie not increasing (decreasing) on pos (neg) strand
+    m[which((strand(gr)[-length(gr)] == '+' & (start(gr)[-length(gr)] > start(gr)[-1])) |
+            (strand(gr)[-length(gr)] == '-' & (end(gr)[-length(gr)] < end(gr)[-1])))] = FALSE
 
     m = as(m, 'IRanges')
 
-    if (length(m)>0){
-        end(m) = end(m) + 1
+    if (length(m)>0)
+    {
+        end(m) = end(m)+1
         tmp = cbind(start(gr)[start(m)], end(gr)[start(m)], start(gr)[end(m)], end(gr)[end(m)])
         s = pmin(start(gr)[start(m)], end(gr)[start(m)], start(gr)[end(m)], end(gr)[end(m)])
         e = pmax(start(gr)[start(m)], end(gr)[start(m)], start(gr)[end(m)], end(gr)[end(m)])
@@ -3682,6 +3692,8 @@ gr.setdiff = function(query, subject, ignore.strand = TRUE, by = NULL, ...)
     return(out)
 }
 
+
+
 #' @name gr.simplify
 #' @title Calculates pairwise distance for rearrangements represented by \code{GRangesList} objects
 #' @description
@@ -3861,5 +3873,329 @@ anchorlift = function(query, subject, window = 1e9, by = NULL, seqname = "Anchor
     }
 
     return(out)
+}
+
+
+#' @name gr.breaks
+#' @title gr.breaks
+#' @description
+#'
+#' Break GRanges at given breakpoints into disjoint gr
+#'
+#' @author Xiaotong Yao
+#' @import GenomicRanges
+#' @param bps \code{GRanges} of width 1, locations of the bp; if any element width
+#' larger than 1, both boundary will be considered individual breakpoints
+#' @param query a disjoint \code{GRanges} object to be broken
+#' @return \code{GRanges} disjoint object at least the same length as query,
+#' with a metadata column \code{qid} indicating input index where new segment is from
+#' @export
+gr.breaks = function(bps=NULL, query=NULL){
+   ## ALERT: big change! input parameter shuffled!
+   ## if bps not provided, return back-traced disjoin wrapper
+   if (is.null(bps)) {
+       message("Argument 'bps' not provided")
+       return(query)
+   }
+   else {
+       ## only when bps is given do we care about what query is
+       if (is.null(query)){
+           message("Trying chromosomes 1-22 and X, Y.")
+           query = hg_seqlengths()
+           if (is.null(query)){
+               message("Default BSgenome not found, let's hardcode it.")
+               cs = system.file("extdata",
+                                "hg19.regularChr.chrom.sizes", package = "gUtils")
+               query = read.delim(cs, header=FALSE, sep="\t")
+               query = setNames(sl$V2, sl$V1)
+           }
+           query = gr.stripstrand(si2gr(query))
+       }
+
+       ## in case query is not a GRanges
+       if (!is(query, "GRanges")){
+           stop("Error: 'query' must be a GRanges object.")
+       }
+
+       ## preprocess query
+       if (!isDisjoint(query)){
+           warning("Warning: Query GRanges not disjoint.")
+           queryDj = disjoin(query)
+           queryDj$qid = queryDj %N% query ## only retain the first occurence
+           values(queryDj) = cbind(values(queryDj),
+                                   as.data.table(values(query))[queryDj$qid])
+           query = queryDj
+       }
+       else {
+           if ("qid" %in% colnames(values(query))){
+               warning("Warning: 'qid' col in query overwritten.")
+           }
+           query$qid = seq_along(query)
+       }
+
+       ## preprocess bps
+       ## having meta fields? remove them!
+       bps = bps[, c()]
+
+       ## remove things outside of ref
+       oo.seqlength = which(start(bps)<1 | end(bps)>seqlengths(bps)[as.character(seqnames(bps))])
+       if (length(oo.seqlength)>0){
+           warning("Warning: Some breakpoints out of chr lengths. Removing.")
+           bps = bps[-oo.seqlength]
+       }
+
+       if (any(!is.null(names(bps)))){
+           warning("Warning: Removing row names from bps.")
+           names(bps) = NULL
+       }
+
+       ## having strand info? remove it!
+       if (any(strand(bps)!="*")){
+           warning("Warning: Some breakpoints have strand info. Force to '*'.")
+           bps = gr.stripstrand(bps)
+       }
+
+       ## solve three edge cases
+       if (any(w.0 <- (width(bps)<1))){
+           warning("Warning: Some breakpoint width==0.")
+           ## right bound smaller coor
+           ## and there's no negative width GR allowed
+           bps[which(w.0)] = gr.start(bps[which(w.0)]) %-% 1
+       }
+       if (any(w.2 <- (width(bps)==2))){
+           warning("Warning: Some breakpoint width==2.")
+           ## this is seen as breakpoint by spanning two bases
+           bps[which(w.2)] = gr.start(bps[which(w.2)])
+       }
+       if (any(w.l <- (width(bps)>2))){
+           ## some not a point? turn it into a point
+           warning("Warning: Some breakpoint width>1.")
+           rbps = gr.end(bps[which(w.l)])
+           lbps = gr.start(bps[which(w.l)])
+           start(lbps) = pmax(start(lbps)-1, 1)
+           bps = c(bps[which(!w.l)], streduce(c(lbps, rbps)))
+       }
+
+       bps$inQuery = bps %^% query
+       if (any(bps$inQuery==F)){
+           warning("Warning: Some breakpoint not within query ranges.")
+       }
+
+       ## label and only consider breakpoints not already at the boundary of query
+       bps$inner = bps$inQuery
+       bps$inner[which(bps %^% gr.start(query) | bps %^% gr.end(query))]=F
+       ## maybe no inner bp at all, then no need to proceed
+       if (!any(bps$inner)){
+           return(query)
+       }
+       bpsInner = bps %Q% (inner==T)
+       ## map query and inner breakpoints
+       qbMap = gr.findoverlaps(query, bpsInner)
+       mappedQ = seq_along(query) %in% qbMap$query.id
+       ## raw coors to construct ranges from
+       tmpRange = data.table(qid2 = qbMap$query.id,
+                             startFrom = start(query[qbMap$query.id]),
+                             breakAt = start(bpsInner[qbMap$subject.id]),
+                             upTo = end(query[qbMap$query.id]))
+       tmpCoor = tmpRange[, .(pos=sort(unique(c(startFrom, breakAt, upTo)))), by=qid2]
+
+       ## construct new ranges
+       newRange = tmpCoor[, .(start=pos[-which.max(pos)],
+                              end=pos[-which.min(pos)]), by=qid2]
+       newRange[, ":="(chr = as.vector(seqnames(query)[qid2]),
+                       strand = as.vector(strand(query)[qid2]))]
+       newRange$start = newRange[, ifelse(start==min(start), start, start+1)]
+
+       ## put together the mapped and broken
+       newGr = GRanges(newRange, seqinfo = seqinfo(query))
+       values(newGr) = values(query)[newGr$qid2, , drop=F] ## preserve the input metacol
+       ## with the intact not mapped part of query
+       output = sort(c(newGr, query[!mappedQ]))
+       ## %Q% (order(strand, seqnames, start))
+       ## browser()
+       return(output)
+   }
+}
+
+
+
+
+
+#' @name ra.dedup
+#' @title ra.dedup
+#' @description
+#'
+#' Deduplicates rearrangements represented by \code{GRangesList} objects
+#'
+#' Determines overlaps between two or more piles of rearrangement junctions (as named or numbered arguments) +/- padding
+#' and will merge those that overlap into single junctions in the output, and then keep track for each output junction which
+#' of the input junctions it was "seen in" using logical flag  meta data fields prefixed by "seen.by." and then the argument name
+#' (or "seen.by.ra" and the argument number)
+#'
+#' @author Xiaotong Yao
+#' @param grl GRangesList representing rearrangements to be merged
+#' @param pad non-negative integer specifying padding (default = 500)
+#' @param ignore.strand whether to ignore strand (implies all strand information will be ignored, use at your own risk)
+#' @return \code{GRangesList} of merged junctions with meta data fields specifying which of the inputs each outputted junction was "seen.by"
+#' @examples
+#'
+#' @export
+ra.dedup = function(grl, pad=500, ignore.strand=FALSE){
+
+   if (!is(grl, "GRangesList")){
+       stop("Error: Input must be GRangesList!")
+   }
+
+   ##if (any(elementNROWS(grl)!=2)){
+   ##    stop("Error: Each element must be length 2!")
+   ##}
+
+   if (length(grl)==0 | length(grl)==1){
+       return(grl)
+   }
+
+   if (length(grl) > 1){
+       ix.pair = as.data.table(
+          ra.overlaps(grl, grl, pad=pad, ignore.strand = ignore.strand))[ra1.ix!=ra2.ix]
+       if (nrow(ix.pair)==0){
+           return(grl)
+       }
+       else {
+           dup.ix = unique(rowMax(as.matrix(ix.pair)))
+           return(grl[-dup.ix])
+       }
+   }
+}
+
+
+
+
+
+
+#' @name ra.duplicated
+#' @title ra.duplicated
+#' @description
+#'
+#' Show if junctions are Deduplicated
+#'
+#' Determines overlaps between two or more piles of rearrangement junctions (as named or numbered arguments) +/- padding
+#' and will merge those that overlap into single junctions in the output, and then keep track for each output junction which
+#' of the input junctions it was "seen in" using logical flag  meta data fields prefixed by "seen.by." and then the argument name
+#' (or "seen.by.ra" and the argument number)
+#'
+#' @author Xiaotong Yao
+#' @param grl GRangesList representing rearrangements to be merged
+#' @param pad non-negative integer specifying padding
+#' @param ignore.strand whether to ignore strand (implies all strand information will be ignored, use at your own risk)
+#' @return \code{GRangesList} of merged junctions with meta data fields specifying which of the inputs each outputted junction was "seen.by"
+#' @name ra.duplicated
+#' @examples
+#'
+#' @export
+ra.duplicated = function(grl, pad=500, ignore.strand=FALSE){
+
+   if (!is(grl, "GRangesList")){
+       stop("Error: Input must be GRangesList!")
+   }
+
+   ##if (any(elementNROWS(grl)!=2)){
+   ##    stop("Error: Each element must be length 2!")
+   ##}
+
+   if (length(grl)==0){
+       return(logical(0))
+   }
+
+   if (length(grl)==1){
+       return(FALSE)
+   }
+
+   if (length(grl)>1){
+
+       ix.pair = as.data.table(ra.overlaps(grl, grl, pad=pad, ignore.strand = ignore.strand))[ra1.ix!=ra2.ix]
+
+       if (nrow(ix.pair)==0){
+           return(rep(FALSE, length(grl)))
+       }
+       else {
+           dup.ix = unique(rowMax(as.matrix(ix.pair)))
+           return(seq_along(grl) %in% dup.ix)
+       }
+   }
+}
+
+
+
+
+
+
+
+#' @name ra.overlaps
+#' @title ra.overlaps
+#' @description
+#'
+#' Determines overlaps between two piles of rearrangement junctions ra1 and ra2 (each GRangesLists of signed locus pairs)
+#' against each other, returning a sparseMatrix that is T at entry ij if junction i overlaps junction j.
+#'
+#' if argument pad = 0 (default) then only perfect overlap will validate, otherwise if pad>0 is given, then
+#' padded overlap is allowed
+#'
+#' strand matters, though we test overlap of both ra1[i] vs ra2[j] and gr.flipstrand(ra2[j])
+#'
+#' @param ra1 \code{GRangesList} with rearrangement set 1
+#' @param ra2 \code{GRangesList} with rearrangement set 2
+#' @param pad Amount to pad the overlaps by. Larger is more permissive. Default is exact (0)
+#' @param arr.ind Default TRUE
+#' @param ignore.strand Ignore rearrangement orientation when doing overlaps. Default FALSE
+#' @param ... params to be sent to \code{\link{gr.findoverlaps}}
+#' @name ra.overlaps
+#' @export
+ra.overlaps = function(ra1, ra2, pad = 0, arr.ind = TRUE, ignore.strand=FALSE, ...)
+{
+    bp1 = grl.unlist(ra1) + pad
+    bp2 = grl.unlist(ra2) + pad
+    ix = gr.findoverlaps(bp1, bp2, ignore.strand = ignore.strand, ...)
+
+    .make_matches = function(ix, bp1, bp2)
+    {
+        if (length(ix) == 0){
+            return(NULL)
+        }
+        tmp.match = cbind(bp1$grl.ix[ix$query.id], bp1$grl.iix[ix$query.id], bp2$grl.ix[ix$subject.id], bp2$grl.iix[ix$subject.id])
+        tmp.match.l = lapply(split(1:nrow(tmp.match), paste(tmp.match[,1], tmp.match[,3])), function(x) tmp.match[x, , drop = F])
+
+        ## match only occurs if each range in a ra1 junction matches a different range in the ra2 junction
+        matched.l = sapply(tmp.match.l, function(x) all(c('11','22') %in% paste(x[,2], x[,4], sep = '')) | all(c('12','21') %in% paste(x[,2], x[,4], sep = '')))
+
+        return(do.call('rbind', lapply(tmp.match.l[matched.l], function(x) cbind(x[,1], x[,3])[!duplicated(paste(x[,1], x[,3])), , drop = F])))
+    }
+
+
+    tmp = .make_matches(ix, bp1, bp2)
+
+    if (is.null(tmp)){
+        if (arr.ind){
+            return(matrix())
+        }
+        else{
+            return(Matrix::sparseMatrix(length(ra1), length(ra2), x = 0))
+        }
+    }
+
+    rownames(tmp) = NULL
+
+    colnames(tmp) = c('ra1.ix', 'ra2.ix')
+
+    if (arr.ind) {
+        ro = tmp[order(tmp[,1], tmp[,2]), ]
+        if (class(ro)=='integer'){
+            ro <- matrix(ro, ncol=2, nrow=1, dimnames=list(c(), c('ra1.ix', 'ra2.ix')))
+        }
+        return(ro)
+    }
+    else {
+        ro = Matrix::sparseMatrix(tmp[,1], tmp[,2], x = 1, dims = c(length(ra1), length(ra2)))
+        return(ro)
+    }
 }
 
