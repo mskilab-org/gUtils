@@ -9,14 +9,14 @@ Description: R package providing additional capabilities and speed for GenomicRa
 biocViews:
 Depends:
     R (>= 3.1.0),
-    GenomicRanges (>= 1.18),
-    data.table (>= 1.9)
+    GenomicRanges (>= 1.30),
+    data.table (>= 1.10)
 Imports:
-    IRanges (>= 2.0),
+    IRanges (>= 2.12),
     S4Vectors (>= 0.4),
-    GenomeInfoDb (>= 1.2),
+    GenomeInfoDb (>= 1.13),
     parallel,
-    BiocGenerics(>= 0.12),
+    BiocGenerics(>= 0.24),
     methods,
     Matrix,
     stringr
