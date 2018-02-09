@@ -2073,7 +2073,7 @@ rle.query = function(subject.rle, query.gr, chunksize = 1e9, mc.cores = 1, verbo
 #' @param ... Additional parameters to be passed on to \code{GenomicRanges::findOverlaps}
 #' @return boolean vector of match status
 #' @export
-grl.in = function(grl, windows, some = FALSE, only = FALSE, logical = TRUE, exact = FALSE, ignore.strand = TRUE, ...)
+grl.in = function(grl, windows, some = FALSE, only = FALSE, logical = TRUE, exact = FALSE, ignore.strand = TRUE, maxgap = -1L, ...)
 {
     grl.iid = grl.id = NULL ## for getting past NOTE
 
@@ -2102,7 +2102,7 @@ grl.in = function(grl, windows, some = FALSE, only = FALSE, logical = TRUE, exac
     gr = grl.unlist(grl)
     if (logical)
     {
-        h = tryCatch(GenomicRanges::findOverlaps(gr, windows, ignore.strand = ignore.strand, ...), error = function(e) NULL)
+        h = tryCatch(GenomicRanges::findOverlaps(gr, windows, ignore.strand = ignore.strand, maxgap = maxgap,...), error = function(e) NULL)
         if (!is.null(h)){
             m = data.table(query.id = queryHits(h), subject.id = subjectHits(h))
         }
