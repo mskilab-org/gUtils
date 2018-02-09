@@ -2599,7 +2599,7 @@ gr.nochr = function(gr) {
 #' @param ... Additional arguments sent to \code{IRanges::findOverlaps}.
 #' @return \code{GRanges} pile of the intersection regions, with \code{query.id} and \code{subject.id} marking sources
 #' @export
-gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE, qcol = NULL, scol = NULL, type = 'any', by = NULL, return.type = 'same', max.chunk = 1e13, verbose = FALSE, mc.cores = 1, ...)
+gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE, qcol = NULL, scol = NULL, type = 'any', by = NULL, return.type = 'same', max.chunk = 1e13, verbose = FALSE, mc.cores = 1, maxgap = -1L, ...)
 {
 
     subject.id = query.id = i.start = i.end = NULL ## for NOTE
@@ -2692,14 +2692,14 @@ gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE, 
     }
 
     ## perform the actual overlaps
-    h <- tryCatch(GenomicRanges::findOverlaps(query, subject, type = type, ignore.strand = ignore.strand, ...), error = function(e) NULL)
+    h <- tryCatch(GenomicRanges::findOverlaps(query, subject, type = type, ignore.strand = ignore.strand, maxgap = maxgap, ...), error = function(e) NULL)
     ## if any seqlengths badness happens overrride
     if (is.null(h))
     {
         warning('seqlength mismatch .. no worries, just letting you know')
         query = gr.fix(query, subject)
         subject = gr.fix(subject, query)
-        h <- GenomicRanges::findOverlaps(query, subject, type = type, ignore.strand = ignore.strand, ...)
+        h <- GenomicRanges::findOverlaps(query, subject, type = type, ignore.strand = ignore.strand, maxgap = maxgap, ...)
     }
 
     r <- ranges(h, ranges(query), ranges(subject))
