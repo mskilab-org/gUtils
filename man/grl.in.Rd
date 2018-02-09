@@ -5,7 +5,7 @@
 \title{Check intersection of \code{GRangesList} with windows on genome}
 \usage{
 grl.in(grl, windows, some = FALSE, only = FALSE, logical = TRUE,
-  exact = FALSE, ignore.strand = TRUE, ...)
+  exact = FALSE, ignore.strand = TRUE, maxgap = -1L, ...)
 }
 \arguments{
 \item{grl}{\code{GRangesList} object to query for membership in \code{windows}}
