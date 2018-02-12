@@ -2080,7 +2080,9 @@ rle.query = function(subject.rle, query.gr, chunksize = 1e9, mc.cores = 1, verbo
 #' @param some boolean Will return \code{TRUE} for \code{GRangesList} elements that intersect at least on window range (default = FALSE)
 #' @param only boolean Will return \code{TRUE} for \code{GRangesList} elements only if there are no elements of query that fail to intersect with windows (default = FALSE)
 #' @param logical boolean Will return logical otherwise will return numeric vector of number of windows overlapping each grl (default = TRUE)
-#' @param exact boolean Will return exact intersection
+#' @param exact boolean Will return exact intersection (default = FALSE)
+#' @param ignore.strand boolean Will return exact intersection (default = TRUE)
+#' @param maxgap integer maxgap is interpreted as the max gap allowed between two ranges to be considered as overlapping. See documentation for IRanges::findOverlaps() (default = -1L)
 #' @param ... Additional parameters to be passed on to \code{GenomicRanges::findOverlaps}
 #' @return boolean vector of match status
 #' @export
@@ -2597,7 +2599,7 @@ gr.nochr = function(gr) {
 #' @importFrom S4Vectors queryHits subjectHits
 #' @param query Query \code{GRanges} pile
 #' @param subject Subject \code{GRanges} pile
-#' @param ignore.strand Don't consider strand information during overlaps. (default = TRUE)
+#' @param ignore.strand boolean Strand ignored (default = TRUE)
 #' @param first boolean Flag if TRUE restricts to only the first match of the subject. If FALSE will return all matches. (default = FALSE)
 #' @param qcol \code{character} vector of query meta-data columns to add to results (default = NULL)
 #' @param scol \code{character} vector of subject meta-data columns to add to results (default = NULL)
@@ -2874,6 +2876,8 @@ grl.eval = function(grl, expr, condition = NULL)
 #' @param all boolean Flag whether to include left and right joins
 #' @param all.query boolean Flag whether to do a left join (default = all)
 #' @param all.subject boolean Flag whether to do a right join (default = all)
+#' @param ignore.strand boolean Strand information ignored (default = TRUE)
+#' @param verbose boolean 
 #' @return GRanges merged on 'by' vector
 #' @export
 gr.merge = function(query, subject, by = NULL, all = FALSE, all.query = all, all.subject = all, ignore.strand = TRUE, verbose = FALSE, ... )
@@ -3117,7 +3121,7 @@ gr.collapse = function(gr, pad = 1)
 #' @param query Query \code{GRanges} pile
 #' @param subject Subject \code{GRanges} pile
 #' @param max.slice max slice of query to match at a time
-#' @param verbose whether to give verbose output
+#' @param verbose whether to give verbose outputx
 #' @importFrom parallel mclapply
 #' @param ... Additional arguments to be passed along to \code{\link{gr.findoverlaps}}.
 #' @return Vector of length = \code{length(query)} with subject indices of *first* subject in query, or NA if none found.
