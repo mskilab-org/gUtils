@@ -2719,7 +2719,7 @@ gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE, 
 
 
     ## r <- ranges(h, ranges(query), ranges(subject))
-    r <- overlapsRanges(ranges(query), ranges(subject), h)
+    r <- overlapsRanges(GenomicRanges::ranges(query), GenomicRanges::ranges(subject), h)
     h.df <- data.table(start = start(r), end = end(r), query.id = queryHits(h),
                      subject.id = subjectHits(h), seqnames = as.character(seqnames(query)[queryHits(h)]))
 
