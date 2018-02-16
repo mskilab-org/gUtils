@@ -824,7 +824,7 @@ grbind = function(x, ...)
     bare.grs = lapply(grs, function(x) gr.fix(x[,c()], sl.new))
 
     ##out = tryCatch(do.call('c', bare.grs), error = function(e) NULL) ## this is annoyingly not working
-    out <- dt2gr(rbindlist(lapply(bare.grs, gr2dt)))
+    out <- dt2gr(rbindlist(lapply(bare.grs, gr2dt)), seqlengths = sl.new)
 
     ix <- (sapply(vals, ncol)==0)
     if (any(ix)){
@@ -1027,12 +1027,13 @@ gr.string = function(gr, add.chr = FALSE, mb = FALSE, round = 3, other.cols = c(
 
     str = ifelse(as.logical(strand(gr)!='*'), as.character(strand(gr)), '')
 
+    
     if (mb){
         return(paste(sn, ':', round(start(gr)/1e6, round), '-', round(end(gr)/1e6, round), str, other.str, sep = ''))
     }
     else{
         if (pretty){
-            return(paste(sn, ':', stringr::str_trim(prettyNum(start(gr), big.mark = ',')), '-', stringr::str_trim(prettyNum(end(gr), big.mark = ',')), str, other.str, sep = ''))
+            return(paste(sn, ':', stringr::str_trim(format(start(gr), big.mark = ',')), '-', stringr::str_trim(format(end(gr), big.mark = ',')), str, other.str, sep = ''))
         }
         else{
             return(paste(sn, ':', start(gr), '-', end(gr), str, other.str, sep = ''))
@@ -2075,46 +2076,47 @@ rle.query = function(subject.rle, query.gr, chunksize = 1e9, mc.cores = 1, verbo
 #' @export
 grl.in = function(grl, windows, some = FALSE, only = FALSE, logical = TRUE, exact = FALSE, ignore.strand = TRUE, ...)
 {
-    grl.iid = grl.id = NULL ## for getting past NOTE
+  grl.iid = grl.id = NULL ## for getting past NOTE
 
-    if (length(grl)==0){
+  if (length(grl)==0){
 
-        if (logical){
-            return(logical())
-        }
-        else{
-            return(numeric())
-        }
+    if (logical){
+      return(logical())
     }
-
-    if (length(windows)==0)
-    {
-        if (logical){
-            return(rep(FALSE, length(grl)))
-        }
-        else{
-            return(rep(0, length(grl)))
-        }
+    else{
+      return(numeric())
     }
+  }
 
-    numwin = length(windows);
-
-    gr = grl.unlist(grl)
-    if (logical)
-    {
-        h = tryCatch(GenomicRanges::findOverlaps(gr, windows, ignore.strand = ignore.strand, ...), error = function(e) NULL)
-        if (!is.null(h)){
-            m = data.table(query.id = queryHits(h), subject.id = subjectHits(h))
-        }
-        else{
-            m = gr2dt(gr.findoverlaps(gr, windows, ignore.strand = ignore.strand, ...))
-        }
+  if (length(windows)==0)
+  {
+    if (logical){
+      return(rep(FALSE, length(grl)))
     }
-    else
-    {
-        m = gr2dt(gr.findoverlaps(gr, windows, ignore.strand = ignore.strand, ...))
+    else{
+      return(rep(0, length(grl)))
     }
+  }
 
+  numwin = length(windows);
+
+  gr = grl.unlist(grl)
+  if (logical)
+  {
+    h = tryCatch(GenomicRanges::findOverlaps(gr, windows, ignore.strand = ignore.strand, ...), error = function(e) NULL)
+    if (!is.null(h)){
+      m = data.table(query.id = queryHits(h), subject.id = subjectHits(h))
+    }
+    else{
+      m = gr2dt(gr.findoverlaps(gr, windows, ignore.strand = ignore.strand, ...))
+    }
+  }
+  else
+  {
+    some = TRUE
+    m = gr2dt(gr.findoverlaps(gr, windows, ignore.strand = ignore.strand, ...))
+  }
+    
     if (exact){
         m = m[start == start(gr)[query.id] & start == start(windows)[subject.id] & end == end(gr)[query.id] & end == end(windows)[subject.id], ]
     }
@@ -2702,7 +2704,9 @@ gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE, 
         h <- GenomicRanges::findOverlaps(query, subject, type = type, ignore.strand = ignore.strand, ...)
     }
 
-    r <- ranges(h, ranges(query), ranges(subject))
+ ##  r <- ranges(h, query = ranges(query), subject = ranges(subject))
+  r <- overlapsRanges(hits = h, query = ranges(query), subject = ranges(subject))
+
     h.df <- data.table(start = start(r), end = end(r), query.id = queryHits(h),
                      subject.id = subjectHits(h), seqnames = as.character(seqnames(query)[queryHits(h)]))
 
