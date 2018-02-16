@@ -1142,29 +1142,40 @@ grl.string = function(grl, mb= FALSE, sep = ',', ...)
 }
 
 
+
+
+
+#' @name gr.flipstrand
+#' @title Flip strand on \code{GRanges}
+#' @description
+#'
 #' Flip strand on \code{GRanges}
 #'
-#' @name gr.flipstrand
 #' @param gr \code{GRanges} pile with strands to be flipped
 #' @return \code{GRanges} with flipped strands (+ to -, * to *, - to *)
 #' @examples
+#'
 #' gr.flipstrand(GRanges(1, IRanges(c(10,10,10),20), strand=c("+","*","-")))
+#'
 #' @export
-gr.flipstrand <- function(gr)
-                 {
-                     if (!is(gr, 'GRanges'))
-                         stop('GRanges input only')
+gr.flipstrand =function(gr){
 
-                     if (length(gr)==0)
-                         return(gr)
+    if (!is(gr, 'GRanges')){
+        stop('Error: GRanges input only. Please check the documentation.')
+    }
 
-                     which = cbind(1:length(gr), TRUE)[,2] == 1
+    if (length(gr)==0){
+        return(gr)
+    }
 
-                     if (any(which))
-                         strand(gr)[which] = c('*'='*', '+'='-', '-'='+')[as.character(strand(gr))][which]
+    which = cbind(1:length(gr), TRUE)[,2] == 1
 
-                     return(gr)
-                 }
+    if (any(which)){
+        strand(gr)[which] = c('*'='*', '+'='-', '-'='+')[as.character(strand(gr))][which]
+    }
+
+    return(gr)
+}
 
 
 #' @name gr.fix
@@ -2070,11 +2081,13 @@ rle.query = function(subject.rle, query.gr, chunksize = 1e9, mc.cores = 1, verbo
 #' @param some boolean Will return \code{TRUE} for \code{GRangesList} elements that intersect at least on window range (default = FALSE)
 #' @param only boolean Will return \code{TRUE} for \code{GRangesList} elements only if there are no elements of query that fail to intersect with windows (default = FALSE)
 #' @param logical boolean Will return logical otherwise will return numeric vector of number of windows overlapping each grl (default = TRUE)
-#' @param exact boolean Will return exact intersection
+#' @param exact boolean Will return exact intersection (default = FALSE)
+#' @param ignore.strand boolean Will return exact intersection (default = TRUE)
+#' @param maxgap integer maxgap is interpreted as the max gap allowed between two ranges to be considered as overlapping. See documentation for IRanges::findOverlaps() (default = -1L)
 #' @param ... Additional parameters to be passed on to \code{GenomicRanges::findOverlaps}
 #' @return boolean vector of match status
 #' @export
-grl.in = function(grl, windows, some = FALSE, only = FALSE, logical = TRUE, exact = FALSE, ignore.strand = TRUE, ...)
+grl.in = function(grl, windows, some = FALSE, only = FALSE, logical = TRUE, exact = FALSE, ignore.strand = TRUE, maxgap = -1L, ...)
 {
   grl.iid = grl.id = NULL ## for getting past NOTE
 
@@ -2088,10 +2101,18 @@ grl.in = function(grl, windows, some = FALSE, only = FALSE, logical = TRUE, exac
     }
   }
 
-  if (length(windows)==0)
-  {
-    if (logical){
-      return(rep(FALSE, length(grl)))
+    numwin = length(windows);
+
+    gr = grl.unlist(grl)
+    if (logical)
+    {
+        h = tryCatch(GenomicRanges::findOverlaps(gr, windows, ignore.strand = ignore.strand, maxgap = maxgap,...), error = function(e) NULL)
+        if (!is.null(h)){
+            m = data.table(query.id = queryHits(h), subject.id = subjectHits(h))
+        }
+        else{
+            m = gr2dt(gr.findoverlaps(gr, windows, ignore.strand = ignore.strand, ...))
+        }
     }
     else{
       return(rep(0, length(grl)))
@@ -2588,7 +2609,7 @@ gr.nochr = function(gr) {
 #' @importFrom S4Vectors queryHits subjectHits
 #' @param query Query \code{GRanges} pile
 #' @param subject Subject \code{GRanges} pile
-#' @param ignore.strand Don't consider strand information during overlaps. (default = TRUE)
+#' @param ignore.strand boolean Strand ignored (default = TRUE)
 #' @param first boolean Flag if TRUE restricts to only the first match of the subject. If FALSE will return all matches. (default = FALSE)
 #' @param qcol \code{character} vector of query meta-data columns to add to results (default = NULL)
 #' @param scol \code{character} vector of subject meta-data columns to add to results (default = NULL)
@@ -2601,7 +2622,7 @@ gr.nochr = function(gr) {
 #' @param ... Additional arguments sent to \code{IRanges::findOverlaps}.
 #' @return \code{GRanges} pile of the intersection regions, with \code{query.id} and \code{subject.id} marking sources
 #' @export
-gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE, qcol = NULL, scol = NULL, type = 'any', by = NULL, return.type = 'same', max.chunk = 1e13, verbose = FALSE, mc.cores = 1, ...)
+gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE, qcol = NULL, scol = NULL, type = 'any', by = NULL, return.type = 'same', max.chunk = 1e13, verbose = FALSE, mc.cores = 1, maxgap = -1L, ...)
 {
 
     subject.id = query.id = i.start = i.end = NULL ## for NOTE
@@ -2694,19 +2715,19 @@ gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE, 
     }
 
     ## perform the actual overlaps
-    h <- tryCatch(GenomicRanges::findOverlaps(query, subject, type = type, ignore.strand = ignore.strand, ...), error = function(e) NULL)
+    h <- tryCatch(GenomicRanges::findOverlaps(query, subject, type = type, ignore.strand = ignore.strand, maxgap = maxgap, ...), error = function(e) NULL)
     ## if any seqlengths badness happens overrride
     if (is.null(h))
     {
         warning('seqlength mismatch .. no worries, just letting you know')
         query = gr.fix(query, subject)
         subject = gr.fix(subject, query)
-        h <- GenomicRanges::findOverlaps(query, subject, type = type, ignore.strand = ignore.strand, ...)
+        h <- GenomicRanges::findOverlaps(query, subject, type = type, ignore.strand = ignore.strand, maxgap = maxgap, ...)
     }
 
- ##  r <- ranges(h, query = ranges(query), subject = ranges(subject))
-  r <- overlapsRanges(hits = h, query = ranges(query), subject = ranges(subject))
 
+    ## r <- ranges(h, ranges(query), ranges(subject))
+    r <- overlapsRanges(ranges(query), ranges(subject), h)
     h.df <- data.table(start = start(r), end = end(r), query.id = queryHits(h),
                      subject.id = subjectHits(h), seqnames = as.character(seqnames(query)[queryHits(h)]))
 
@@ -2867,6 +2888,8 @@ grl.eval = function(grl, expr, condition = NULL)
 #' @param all boolean Flag whether to include left and right joins
 #' @param all.query boolean Flag whether to do a left join (default = all)
 #' @param all.subject boolean Flag whether to do a right join (default = all)
+#' @param ignore.strand boolean Strand information ignored (default = TRUE)
+#' @param verbose boolean 
 #' @return GRanges merged on 'by' vector
 #' @export
 gr.merge = function(query, subject, by = NULL, all = FALSE, all.query = all, all.subject = all, ignore.strand = TRUE, verbose = FALSE, ... )
@@ -3110,7 +3133,7 @@ gr.collapse = function(gr, pad = 1)
 #' @param query Query \code{GRanges} pile
 #' @param subject Subject \code{GRanges} pile
 #' @param max.slice max slice of query to match at a time
-#' @param verbose whether to give verbose output
+#' @param verbose whether to give verbose outputx
 #' @importFrom parallel mclapply
 #' @param ... Additional arguments to be passed along to \code{\link{gr.findoverlaps}}.
 #' @return Vector of length = \code{length(query)} with subject indices of *first* subject in query, or NA if none found.
