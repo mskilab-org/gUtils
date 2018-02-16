@@ -1558,7 +1558,7 @@ gr.val = function(query, target, val = NULL, mean = TRUE, weighted = mean, na.rm
         values(target)[, val[!ix]] = 1
     }
 
-    if (length(query)>max.slice){
+    if (length(query) > max.slice){
         verbose = TRUE
         ix.l = split(1:length(query), ceiling(as.numeric((1:length(query)/max.slice))))
         return(do.call('grbind', parallel::mclapply(ix.l, function(ix) {
