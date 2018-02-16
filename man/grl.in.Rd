@@ -5,7 +5,7 @@
 \title{Check intersection of \code{GRangesList} with windows on genome}
 \usage{
 grl.in(grl, windows, some = FALSE, only = FALSE, logical = TRUE,
-  exact = FALSE, ignore.strand = TRUE, maxgap = -1L, ...)
+  exact = FALSE, ignore.strand = TRUE, ...)
 }
 \arguments{
 \item{grl}{\code{GRangesList} object to query for membership in \code{windows}}
@@ -22,9 +22,9 @@ grl.in(grl, windows, some = FALSE, only = FALSE, logical = TRUE,
 
 \item{ignore.strand}{boolean Will return exact intersection (default = TRUE)}
 
-\item{maxgap}{integer maxgap is interpreted as the max gap allowed between two ranges to be considered as overlapping. See documentation for IRanges::findOverlaps() (default = -1L)}
-
 \item{...}{Additional parameters to be passed on to \code{GenomicRanges::findOverlaps}}
+
+\item{maxgap}{integer maxgap is interpreted as the max gap allowed between two ranges to be considered as overlapping. See documentation for IRanges::findOverlaps() (default = -1L)}
 }
 \value{
 boolean vector of match status

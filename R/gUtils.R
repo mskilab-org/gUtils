@@ -795,7 +795,7 @@ grbind = function(x, ...)
     bare.grs = lapply(grs, function(x) gr.fix(x[,c()], sl.new))
 
     ##out = tryCatch(do.call('c', bare.grs), error = function(e) NULL) ## this is annoyingly not working
-    out <- dt2gr(rbindlist(lapply(bare.grs, gr2dt)))
+    out <- dt2gr(rbindlist(lapply(bare.grs, gr2dt)), seqlengths = sl.new)
 
     ix <- (sapply(vals, ncol)==0)
     if (any(ix)){
@@ -994,12 +994,15 @@ gr.string = function(gr, add.chr = FALSE, mb = FALSE, round = 3, other.cols = c(
 
     str = ifelse(as.logical(strand(gr)!='*'), as.character(strand(gr)), '')
 
+    
     if (mb){
         return(paste(sn, ':', round(start(gr)/1e6, round), '-', round(end(gr)/1e6, round), str, other.str, sep = ''))
-    } else{
+    }
+    else{
         if (pretty){
-            return(paste(sn, ':', stringr::str_trim(prettyNum(start(gr), big.mark = ',')), '-', stringr::str_trim(prettyNum(end(gr), big.mark = ',')), str, other.str, sep = ''))
-        } else{
+            return(paste(sn, ':', stringr::str_trim(format(start(gr), big.mark = ',')), '-', stringr::str_trim(format(end(gr), big.mark = ',')), str, other.str, sep = ''))
+        }
+        else{
             return(paste(sn, ':', start(gr), '-', end(gr), str, other.str, sep = ''))
         }
     }
@@ -1983,8 +1986,9 @@ rle.query = function(subject.rle, query.gr, chunksize = 1e9, mc.cores = 1, verbo
 #' @param ... Additional parameters to be passed on to \code{GenomicRanges::findOverlaps}
 #' @return boolean vector of match status
 #' @export
-grl.in = function(grl, windows, some = FALSE, only = FALSE, logical = TRUE, exact = FALSE, ignore.strand = TRUE, maxgap = -1L, ...)
+grl.in = function(grl, windows, some = FALSE, only = FALSE, logical = TRUE, exact = FALSE, ignore.strand = TRUE, ...)
 {
+
     grl.iid = grl.id = NULL ## for getting past NOTE
 
     if (length(grl)==0){
@@ -1996,8 +2000,7 @@ grl.in = function(grl, windows, some = FALSE, only = FALSE, logical = TRUE, exac
         }
     }
 
-    if (length(windows)==0)
-    {
+    if (length(windows)==0){
         if (logical){
             return(rep(FALSE, length(grl)))
         } else{
@@ -2005,21 +2008,22 @@ grl.in = function(grl, windows, some = FALSE, only = FALSE, logical = TRUE, exac
         }
     }
 
+
     numwin = length(windows);
 
     gr = grl.unlist(grl)
-    if (logical)
-    {
-        h = tryCatch(GenomicRanges::findOverlaps(gr, windows, ignore.strand = ignore.strand, maxgap = maxgap,...), error = function(e) NULL)
+    if (logical){
+        h = tryCatch(GenomicRanges::findOverlaps(gr, windows, ignore.strand = ignore.strand, ...), error = function(e) NULL)
         if (!is.null(h)){
             m = data.table(query.id = queryHits(h), subject.id = subjectHits(h))
         } else{
             m = gr2dt(gr.findoverlaps(gr, windows, ignore.strand = ignore.strand, ...))
         }
     } else{
+        some = TRUE
         m = gr2dt(gr.findoverlaps(gr, windows, ignore.strand = ignore.strand, ...))
     }
-
+    
     if (exact){
         m = m[start == start(gr)[query.id] & start == start(windows)[subject.id] & end == end(gr)[query.id] & end == end(windows)[subject.id], ]
     }
@@ -2034,11 +2038,13 @@ grl.in = function(grl, windows, some = FALSE, only = FALSE, logical = TRUE, exac
 
     if (some){
         tmp = as.data.frame(m[, length(unique(grl.iid)), by = grl.id])
-    } else if (only){
+    }
+    else if (only){
         return(base::mapply(function(x, y) length(setdiff(x, y))==0,
                             split(1:length(gr), factor(gr$grl.ix, 1:length(grl))),
                             split(m$query.id, factor(m$grl.id, 1:length(grl)))))
-    } else{
+    }
+    else{
         tmp = stats::aggregate(formula = subject.id ~ grl.id, data = m, FUN = function(x) numwin-length(setdiff(1:numwin, x)))
     }
 
@@ -2051,6 +2057,8 @@ grl.in = function(grl, windows, some = FALSE, only = FALSE, logical = TRUE, exac
 
     return(out)
 }
+
+
 
 
 
@@ -2594,7 +2602,10 @@ gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE, 
         h <- GenomicRanges::findOverlaps(query, subject, type = type, ignore.strand = ignore.strand, maxgap = maxgap, ...)
     }
 
-    r <- ranges(h, ranges(query), ranges(subject))
+
+
+    ## r <- ranges(h, ranges(query), ranges(subject))
+    r <- overlapsRanges(GenomicRanges::ranges(query), GenomicRanges::ranges(subject), h)
     h.df <- data.table(start = start(r), end = end(r), query.id = queryHits(h),
                      subject.id = subjectHits(h), seqnames = as.character(seqnames(query)[queryHits(h)]))
 
