@@ -455,34 +455,6 @@ test_that("gr.tile.map", {
 })
 
 
-> example_genes
-GRanges object with 18812 ranges and 2 metadata columns:
-          seqnames               ranges strand |        name exonCount
-             <Rle>            <IRanges>  <Rle> | <character> <integer>
-      [1]        1     [ 69090,  70008]      + |       OR4F5         1
-      [2]        1     [367658, 368597]      + |      OR4F16         1
-      [3]        1     [367658, 368597]      + |       OR4F3         1
-      [4]        1     [367658, 368597]      + |      OR4F29         1
-      [5]        1     [861321, 879533]      + |      SAMD11        14
-      ...      ...                  ...    ... .         ...       ...
-  [18808]        Y [24314966, 24327116]      - |      RBMY1J        12
-  [18809]        Y [25281356, 25344947]      - |        DAZ4        23
-  [18810]        Y [25281356, 25344947]      - |        DAZ1        28
-  [18811]        Y [26192212, 26193835]      - |       CDY1B         1
-  [18812]        Y [26192212, 26193835]      - |        CDY1         1
-  -------
-  seqinfo: 25 sequences from hg19 genome
-> gr.val(example_genes, grl2)
-Error: subscript contains invalid names
-In addition: Warning message:
-"ranges" method for Hits objects is deprecated. Please use
-  overlapsRanges() instead. 
-> gr.val(grl.unlist(example_genes), grl2)
-Error: subscript contains invalid names
-In addition: Warning message:
-"ranges" method for Hits objects is deprecated. Please use
-  overlapsRanges() instead. 
-> 
 
 
 
