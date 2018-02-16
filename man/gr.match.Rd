@@ -13,7 +13,7 @@ gr.match(query, subject, max.slice = Inf, verbose = FALSE, ...)
 
 \item{max.slice}{max slice of query to match at a time}
 
-\item{verbose}{whether to give verbose output}
+\item{verbose}{whether to give verbose outputx}
 
 \item{...}{Additional arguments to be passed along to \code{\link{gr.findoverlaps}}.}
 }

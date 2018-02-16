@@ -18,7 +18,11 @@ grl.in(grl, windows, some = FALSE, only = FALSE, logical = TRUE,
 
 \item{logical}{boolean Will return logical otherwise will return numeric vector of number of windows overlapping each grl (default = TRUE)}
 
-\item{exact}{boolean Will return exact intersection}
+\item{exact}{boolean Will return exact intersection (default = FALSE)}
+
+\item{ignore.strand}{boolean Will return exact intersection (default = TRUE)}
+
+\item{maxgap}{integer maxgap is interpreted as the max gap allowed between two ranges to be considered as overlapping. See documentation for IRanges::findOverlaps() (default = -1L)}
 
 \item{...}{Additional parameters to be passed on to \code{GenomicRanges::findOverlaps}}
 }
