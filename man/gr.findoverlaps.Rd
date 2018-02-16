@@ -14,7 +14,7 @@ gr.findoverlaps(query, subject, ignore.strand = TRUE, first = FALSE,
 
 \item{subject}{Subject \code{GRanges} pile}
 
-\item{ignore.strand}{Don't consider strand information during overlaps. (default = TRUE)}
+\item{ignore.strand}{boolean Strand ignored (default = TRUE)}
 
 \item{first}{boolean Flag if TRUE restricts to only the first match of the subject. If FALSE will return all matches. (default = FALSE)}
 

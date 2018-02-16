@@ -19,6 +19,10 @@ gr.merge(query, subject, by = NULL, all = FALSE, all.query = all,
 \item{all.query}{boolean Flag whether to do a left join (default = all)}
 
 \item{all.subject}{boolean Flag whether to do a right join (default = all)}
+
+\item{ignore.strand}{boolean Strand information ignored (default = TRUE)}
+
+\item{verbose}{boolean}
 }
 \value{
 GRanges merged on 'by' vector
