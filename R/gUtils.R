@@ -2218,11 +2218,11 @@ rrbind = function (..., union = TRUE, as.data.table = FALSE)
 #' Apply gsub to seqlevels of gr, by default removing 'chr', and "0.1" suffixes, and replacing "MT" with "M"
 #'
 #' @param gr \code{GRanges} to switch out seqlevels for
-#' @param a vector of regular expressions of things to substitute out (default = c("(^chr)(\\.1$)", "MT"))
+#' @param a vector of regular expressions of things to substitute out (default = c("^chr", "MT"))
 #' @param b vector of values to substitute in (default = c("", "M"))
 #' @return GRanges with substitutions
 #' @export
-gr.sub = function (gr, a = c("(^chr)(\\.1$)", "MT"), b = c("", "M"))
+gr.sub = function (gr, a = c("^chr", "MT"), b = c("", "M"))
 {
     subs = cbind(a, b)
     tmp.gr = tryCatch(
@@ -2269,7 +2269,7 @@ gr.sub = function (gr, a = c("(^chr)(\\.1$)", "MT"), b = c("", "M"))
             }
         }
     }
-  return(tmp.gr)
+    return(tmp.gr)
 }
 
 
