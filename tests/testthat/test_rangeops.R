@@ -24,12 +24,12 @@ test_that("hg_seqlengths()", {
     Sys.setenv(DEFAULT_BSGENOME = "incorrect")
     expect_error(hg_seqlengths())
     ## set DEFAULT_BSGENOME as hg19
-    ## Sys.setenv(DEFAULT_BSGENOME = "BSgenome.Hsapiens.UCSC.hg19::Hsapiens")
-    ## expect_identical(as.numeric(length(hg_seqlengths())), 25)
-    ## ee = structure(names="1", 249250621L)
-    ## expect_identical(hg_seqlengths(Hsapiens)[1], ee)
-    ## expect_equal(names(hg_seqlengths(Hsapiens, chr=TRUE)[1]), "chr1")
-    ## expect_equal(length(hg_seqlengths(Hsapiens, include.junk = TRUE)), 93)
+    Sys.setenv(DEFAULT_BSGENOME = "BSgenome.Hsapiens.UCSC.hg19::Hsapiens")
+    expect_equal(as.numeric(length(hg_seqlengths())), 25)
+    ee = structure(names="1", 249250621L)
+    expect_equal(hg_seqlengths(Hsapiens)[1], ee)
+    expect_equal(names(hg_seqlengths(Hsapiens, chr=TRUE)[1]), "chr1")
+    expect_equal(length(hg_seqlengths(Hsapiens, include.junk = TRUE)), 93)
 
 })
 
@@ -640,10 +640,12 @@ test_that('seg2gr', {
 
 ## standardize_segs
 test_that('standardize_segs', {
-
-    expect_error(standardize_segs(gr2))
-    expect_error(standardize_segs(gr2dt(gr2)))
-    expect_error(standardize_segs(gr2dt(gr2), chr=TRUE))
+    
+    ## default
+    expect_equal(dim(standardize_segs(gr2))[1], 2)
+    expect_equal(dim(standardize_segs(gr2))[2], 6)
+    ## chr = TRUE
+    expect_equal(standardize_segs(gr2, chr = TRUE)$chr[1], 'chr1')
     
 })
 

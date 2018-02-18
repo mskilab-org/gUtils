@@ -2379,7 +2379,7 @@ seg2gr = function(segs, seqlengths = NULL, seqinfo = Seqinfo())
 #' }
 #'
 #' @import GenomicRanges
-#' @param seg data.frame or data.table of segments with fields denoting chromosome, start, end, and other metadata.
+#' @param seg data.frame or data.table or GRanges of segments with fields denoting chromosome, start, end, and other metadata.
 #' @param chr boolean Flag to force add chromosomes (default = FALSE)
 #' @return data.frame or data.table with standardized segments
 #' @export
@@ -2390,8 +2390,16 @@ standardize_segs = function(seg, chr = FALSE)
         seg = as.data.frame(seg, stringsAsFactors = FALSE)
     }
 
-    if (!is(seg, 'data.frame') & !is(seg, 'data.table')){
-        stop("Error: input 'segs' must be type data.frame or data.table. Please see the documentation for information.")
+    if (is(seg, 'GRanges')){
+        seg = as.data.frame(gr2dt(seg))
+    }
+
+    if (is(seg, 'data.table')){
+        seg = as.data.frame(seg)
+    }
+
+    if (!is(seg, 'data.frame') & !is(seg, 'data.table') & !is(seg, 'GRanges')){
+        stop("Error: input 'segs' must be type data.frame, data.table or GRanges. Please see the documentation for information.")
     }
 
     val = NULL;
@@ -2404,8 +2412,9 @@ standardize_segs = function(seg, chr = FALSE)
         strand = c('strand', 'str', 'strand', 'Strand', 'Str')
     )
 
+    
     if (is.null(val)){
-        val = seg[, setdiff(names(seg), unlist(field.aliases)), drop = FALSE]
+        val = seg[, setdiff(names(seg), unlist(field.aliases)), drop = FALSE] 
     }
 
     seg = seg[, intersect(names(seg), unlist(field.aliases)), drop = FALSE]
@@ -2415,6 +2424,7 @@ standardize_segs = function(seg, chr = FALSE)
             names(seg)[names(seg) %in% field.aliases[[field]]] = field;
         }
     }
+    
 
     if (chr){
         if (!is.null(seg$chr)){
