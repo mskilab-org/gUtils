@@ -625,6 +625,7 @@ test_that('gr.sub', {
     expect_equal(as.integer(seqnames(gr.sub(gr1)))[1], 1)
     gr2  = GRanges('chrX', IRanges(c(3,7,13), c(5,9,16)), strand=c('+','-','-'), seqinfo=Seqinfo("chrX", 25), name=c("A","B","C"))
     expect_equal(as.character(seqnames(gr.sub(gr2))[1]), "X")
+    expect_equal(length(gr.sub(GRanges())), 0)
 
 })
 
