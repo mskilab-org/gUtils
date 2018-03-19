@@ -246,12 +246,10 @@ gr.start = function(x, width = 1, force = FALSE, ignore.strand = TRUE, clip = TR
                             )
             }
         } else{
-            if (ignore.strand)
-            {
+            if (ignore.strand){
                 st = start(x)
                 en = pmin(as.vector(start(x))+width-1, seqlengths(x)[as.character(seqnames(x))], na.rm = TRUE)
-            }
-            else{
+            } else{
                 st = ifelse(as.logical(strand(x)=='+'),
                             as.vector(start(x)),
                             pmax(as.vector(end(x))-width+1, 1)
