@@ -1156,10 +1156,11 @@ gr.flipstrand =function(gr){
 #' @param genome Genome to fix to: \code{Seqinfo}, \code{BSgenome}, \code{GRanges} (w/seqlengths), \code{GRangesList} (w/seqlengths) (default = NULL)
 #' @param gname string Name of the genome (optional, just appends to \code{Seqinfo} of the output) (default = NULL)
 #' @param drop boolean Remove ranges that are not present in the supplied genome (default = FALSE)
+#' @param pruning.mode string Controls how to prune x. Four pruning modes are currently defined: "error", "coarse", "fine", and "tidy". See GenomeInfoDb documentation.
 #' @return \code{GRanges} pile with the fixed \code{Seqinfo}
 #' @importFrom GenomeInfoDb Seqinfo seqinfo keepSeqlevels seqlevels seqlengths seqlevels<- seqlengths<- genome<- seqnames
 #' @export
-gr.fix = function(gr, genome = NULL, gname = NULL, drop = FALSE)
+gr.fix = function(gr, genome = NULL, gname = NULL, drop = FALSE, pruning.mode = "coarse")
 {
     sn = V1 = NULL ## NOTE fix
 
@@ -1183,7 +1184,7 @@ gr.fix = function(gr, genome = NULL, gname = NULL, drop = FALSE)
             }
         }
 
-        seqlevels(gr) = names(lens)
+        seqlevels(gr, pruning.mode = "coarse") = names(lens)
         seqlengths(gr) = lens;
     } else{
         if (length(gr)>0){
@@ -1200,7 +1201,7 @@ gr.fix = function(gr, genome = NULL, gname = NULL, drop = FALSE)
         }
         
         if (drop){
-            gr = keepSeqlevels(gr, seqlevels(gr)[!is.na(seqlengths(gr))])
+            gr = keepSeqlevels(gr, seqlevels(gr)[!is.na(seqlengths(gr))], pruning.mode = "coarse")
         }
 
     }

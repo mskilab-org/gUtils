@@ -4,7 +4,8 @@
 \alias{gr.fix}
 \title{"Fixes" \code{seqlengths} / \code{seqlevels}}
 \usage{
-gr.fix(gr, genome = NULL, gname = NULL, drop = FALSE)
+gr.fix(gr, genome = NULL, gname = NULL, drop = FALSE,
+  pruning.mode = "coarse")
 }
 \arguments{
 \item{gr}{\code{GRanges} object to fix}
@@ -14,6 +15,8 @@ gr.fix(gr, genome = NULL, gname = NULL, drop = FALSE)
 \item{gname}{string Name of the genome (optional, just appends to \code{Seqinfo} of the output) (default = NULL)}
 
 \item{drop}{boolean Remove ranges that are not present in the supplied genome (default = FALSE)}
+
+\item{pruning.mode}{string Controls how to prune x. Four pruning modes are currently defined: "error", "coarse", "fine", and "tidy". See GenomeInfoDb documentation.}
 }
 \value{
 \code{GRanges} pile with the fixed \code{Seqinfo}
