@@ -4,12 +4,12 @@
 \alias{gr.sub}
 \title{Apply \code{gsub} to seqlevels of a \code{GRanges}}
 \usage{
-gr.sub(gr, a = c("(^chr)(\\\\.1$)", "MT"), b = c("", "M"))
+gr.sub(gr, a = c("^chr", "MT"), b = c("", "M"))
 }
 \arguments{
 \item{gr}{\code{GRanges} to switch out seqlevels for}
 
-\item{a}{vector of regular expressions of things to substitute out (default = c("(^chr)(\\.1$)", "MT"))}
+\item{a}{vector of regular expressions of things to substitute out (default = c("^chr", "MT"))}
 
 \item{b}{vector of values to substitute in (default = c("", "M"))}
 }

@@ -1,3 +1,4 @@
+
 library(gUtils)
 library(BSgenome.Hsapiens.UCSC.hg19)
 
@@ -13,6 +14,8 @@ gr2 = GRanges(1, IRanges(c(1,9), c(6,14)), strand=c('+','-'), seqinfo=Seqinfo("1
 dt = data.table(seqnames=1, start=c(2,5,10), end=c(3,8,15))
 
 
+
+
 test_that("hg_seqlengths()", {
     
     Sys.setenv(DEFAULT_BSGENOME = "")
@@ -21,14 +24,16 @@ test_that("hg_seqlengths()", {
     Sys.setenv(DEFAULT_BSGENOME = "incorrect")
     expect_error(hg_seqlengths())
     ## set DEFAULT_BSGENOME as hg19
-    ## Sys.setenv(DEFAULT_BSGENOME = "BSgenome.Hsapiens.UCSC.hg19::Hsapiens")
-    ## expect_identical(as.numeric(length(hg_seqlengths())), 25)
-    ## ee = structure(names="1", 249250621L)
-    ## expect_identical(hg_seqlengths(Hsapiens)[1], ee)
-    ## expect_equal(names(hg_seqlengths(Hsapiens, chr=TRUE)[1]), "chr1")
-    ## expect_equal(length(hg_seqlengths(Hsapiens, include.junk = TRUE)), 93)
+    Sys.setenv(DEFAULT_BSGENOME = "BSgenome.Hsapiens.UCSC.hg19::Hsapiens")
+    expect_equal(as.numeric(length(hg_seqlengths())), 25)
+    ee = structure(names="1", 249250621L)
+    expect_equal(hg_seqlengths(Hsapiens)[1], ee)
+    expect_equal(names(hg_seqlengths(Hsapiens, chr=TRUE)[1]), "chr1")
+    expect_equal(length(hg_seqlengths(Hsapiens, include.junk = TRUE)), 93)
 
 })
+
+
 
 
 test_that("gr2dt", {
@@ -48,6 +53,7 @@ test_that("gr2dt", {
     expect_equal(gr2dt(NULL), data.table())
     
 })
+
 
 
 
@@ -74,6 +80,8 @@ test_that("gr.start", {
 })
 
 
+
+
 test_that("dt2gr", {
 
     Sys.setenv(DEFAULT_BSGENOME = "BSgenome.Hsapiens.UCSC.hg19::Hsapiens")
@@ -90,6 +98,8 @@ test_that("dt2gr", {
     expect_error(dt2gr(GRanges()))
 
 })
+
+
 
 
 test_that("gr.end", {
@@ -110,12 +120,16 @@ test_that("gr.end", {
 })
 
 
+
+
 test_that("gr.mid", {
     
     gr = GRanges(1, IRanges(c(3,7,13), c(5,9,16)), strand=c('+','-','-'), seqinfo=Seqinfo("1", 25), name=c("A","B","C"))
     expect_identical(start(gr.mid(gr)), c(4L,8L,14L))
 
 })
+
+
 
 
 test_that('gr.rand', {
@@ -130,6 +144,8 @@ test_that('gr.rand', {
     expect_equal(length(gr.rand(c(3,5), ref)), 2)
 
 })
+
+
 
 
 test_that('gr.trim', {
@@ -171,6 +187,8 @@ test_that("gr.sample", {
 })
 
 
+
+
 test_that("gr.sample without replace", {
     
     set.seed(123)
@@ -203,9 +221,14 @@ test_that("si2gr", {
     expect_equal(length(si2gr(BSgenome.Hsapiens.UCSC.hg19::Hsapiens)), 93)   
     ## check ' else if (!is(si, 'Seqinfo'))'
     expect_equal(length(si2gr(GRanges(si))), 25)   
+    ## check  if (is(si, 'vector')){
+    expect_equal(length(si2gr(seqlengths(si))), 25)
+    expect_equal(length(seqlengths(gr2)), 1)
 
 
 })
+
+
 
 
 test_that("grbind", {
@@ -220,6 +243,8 @@ test_that("grbind", {
     expect_equal(grbind(data.frame(),data.frame(),data.frame()), NULL)
 
 })
+
+
 
 
 test_that("grl.bind", {
@@ -289,6 +314,8 @@ test_that("gr.string", {
 })
 
 
+
+
 test_that('grl.reduce', {
 
     gr = GRanges(1, IRanges(c(3,7), c(5,9)), strand=c('+','-'))
@@ -301,6 +328,8 @@ test_that('grl.reduce', {
     expect_equal(suppressWarnings(width(grl.reduce(grl1, 2000, clip=TRUE)[[2]])), 25)
 
 })
+
+
 
 
 test_that("grl.string", {
@@ -319,6 +348,8 @@ test_that("grl.string", {
 })
 
 
+
+
 test_that("gr.fix", {
 
     gg = GRanges(c("X",1), IRanges(c(1,2), width=1))
@@ -328,6 +359,8 @@ test_that("gr.fix", {
     expect_equal(as.integer(seqnames(gr.fix(grl1[1])[1])), 5)
 
 })
+
+
 
 
 test_that("gr.fix with null genome", {
@@ -340,6 +373,8 @@ test_that("gr.fix with null genome", {
     expect_identical(genome(seqinfo(gr.fix(gg, gname='gen'))), es)
 
 })
+
+
 
 
 test_that("gr.flatten", {
@@ -361,11 +396,15 @@ test_that("gr.flatten", {
 })
 
 
+
+
 test_that('gr.stripstrand', {
 
     expect_identical(as.character(strand(gr.stripstrand(gr))), c('*', '*', '*'))
 
 })
+
+
 
 
 test_that('gr.pairflip', {
@@ -377,6 +416,8 @@ test_that('gr.pairflip', {
 })
 
 
+
+
 test_that('gr.flipstrand', {
 
     expect_identical(as.character(strand(gr.flipstrand(gr))), c("-","+","+"))
@@ -384,6 +425,8 @@ test_that('gr.flipstrand', {
     expect_equal(length(gr.flipstrand(GRanges())), 0)
 
 })
+
+
 
 
 test_that("gr.tile", {
@@ -399,6 +442,8 @@ test_that("gr.tile", {
 })
 
 
+
+
 test_that("gr.tile.map", {
 
     gr1 = gr.tile(GRanges(1, IRanges(1,100)), width=10)
@@ -408,6 +453,9 @@ test_that("gr.tile.map", {
     expect_equal(length(unlist(gg)), 20)
 
 })
+
+
+
 
 
 ## gr.val = function(query, target, val = NULL, mean = TRUE, weighted = mean, na.rm = FALSE, by = NULL, by.prefix = val, merge = FALSE,   
@@ -449,6 +497,8 @@ test_that("gr.val", {
 })
 
 
+
+
 test_that('gr.duplicated', {
 
     gr = GRanges(c(1,1,1), IRanges(c(2,5,5), width=1), val=c(1,2,3))
@@ -459,12 +509,16 @@ test_that('gr.duplicated', {
 })
 
 
+
+
 test_that('gr.dice', {
     
     gr  = GRanges(1, IRanges(c(3,7,13), c(5,9,16)), strand=c('+','-','-'), seqinfo=Seqinfo("1", 25), name=c("A","B","C"))
     expect_equal(length(gr.dice(gr)[[3]]), 4)
 
 })
+
+
 
 
 
@@ -478,6 +532,7 @@ test_that('gr.dist', {
     expect_equal(dim(gr.dist(gr)), c(3, 3))
 
 })
+
 
 
 
@@ -510,6 +565,8 @@ test_that('grl.in', {
 })
 
 
+
+
 test_that("grl.unlist", {
 
     gg <- grl.unlist(grl.hiC)
@@ -525,6 +582,8 @@ test_that("grl.unlist", {
 })
 
 
+
+
 test_that("grl.pivot", {
 
     gg <- grl.pivot(grl.hiC)
@@ -537,6 +596,8 @@ test_that("grl.pivot", {
     expect_equal(length(grl.pivot(GRangesList())[[2]]), 0)
 
 })
+
+
 
 
 test_that("rrbind", {
@@ -554,15 +615,21 @@ test_that("rrbind", {
 })
 
 
+
+
 ## gr.sub
 test_that('gr.sub', {
     
     gr1  = GRanges('chr1', IRanges(c(3,7,13), c(5,9,16)), strand=c('+','-','-'), seqinfo=Seqinfo("chr1", 25), name=c("A","B","C"))
-    expect_error(gr.sub(gr1), NA)  ## check works
-    ## check 'if (is.null(tmp.gr))'
+    expect_equal(length(as.integer(seqnames(gr.sub(gr1)))), 3)
+    expect_equal(as.integer(seqnames(gr.sub(gr1)))[1], 1)
+    gr2  = GRanges('chrX', IRanges(c(3,7,13), c(5,9,16)), strand=c('+','-','-'), seqinfo=Seqinfo("chrX", 25), name=c("A","B","C"))
+    expect_equal(as.character(seqnames(gr.sub(gr2))[1]), "X")
     expect_equal(length(gr.sub(GRanges())), 0)
 
 })
+
+
 
 ## seg2gr
 test_that('seg2gr', {
@@ -571,14 +638,20 @@ test_that('seg2gr', {
 
 })
 
+
+
 ## standardize_segs
 test_that('standardize_segs', {
-
-    expect_error(standardize_segs(gr2))
-    expect_error(standardize_segs(gr2dt(gr2)))
-    expect_error(standardize_segs(gr2dt(gr2), chr=TRUE))
+    
+    ## default
+    expect_equal(dim(standardize_segs(gr2))[1], 2)
+    expect_equal(dim(standardize_segs(gr2))[2], 6)
+    ## chr = TRUE
+    expect_equal(standardize_segs(gr2, chr = TRUE)$chr[1], 'chr1')
     
 })
+
+
 
 
 test_that("gr.nochr", {
@@ -586,6 +659,8 @@ test_that("gr.nochr", {
     expect_identical(gr.nochr(gr.chr(example_genes)), example_genes)
 
 })
+
+
 
 ## gr.findoverlaps() tests
 test_that("gr.findoverlaps", {
@@ -613,6 +688,9 @@ test_that("gr.findoverlaps", {
 
 })
 
+
+
+
 test_that("gr.findoverlaps, return as data.table", {
 
     example_dnase = GRanges(1, IRanges(c(562757, 564442, 564442), c(563203, 564813, 564813)), strand = c("-", "+", "+"))
@@ -623,6 +701,9 @@ test_that("gr.findoverlaps, return as data.table", {
     expect_identical(colnames(fo), c("start", "end", "query.id", "subject.id", "seqnames", "strand"))
 
 })
+
+
+
 
 test_that("gr.findoverlaps chunk", {
 
@@ -635,6 +716,9 @@ test_that("gr.findoverlaps chunk", {
 
 })
 
+
+
+
 test_that("gr.findoverlaps, input data.table", {
 
     example_genes = GRanges(2, IRanges(c(233101, 233101, 231023, 231023, 229966), c(233229, 233229, 231191, 231191, 230044)), strand = c("-"), type = c("exon", "CDS", "exon", "CDS", "exon"))
@@ -643,6 +727,8 @@ test_that("gr.findoverlaps, input data.table", {
     expect_equal(class(suppressWarnings(gr.findoverlaps(gr2dt(example_genes), example_genes, max.chunk = 1e7)))[1], "data.table")
 
 })
+
+
 
 test_that("gr.findoverlaps ignore.strand", {
 
@@ -661,6 +747,8 @@ test_that("gr.findoverlaps ignore.strand", {
     expect_that(!any(strand(example_dnase2)[fo1$query.id] != strand(example_genes)[fo1$subject.id]), is_true())
 
 })
+
+
 
 test_that("gr.findoverlap by", {
     
@@ -684,6 +772,8 @@ test_that('grl.eval', {
 })
 
 
+
+
 ## gr.merge
 test_that('gr.merge', {
 
@@ -698,6 +788,8 @@ test_that('gr.merge', {
     ## by
     expect_equal(length((gr.merge(sv1, sv2, all=TRUE, by='bin'))), 2)
 })
+
+
 
 
 ## gr.disjoint
@@ -722,6 +814,8 @@ test_that('gr.disjoin', {
 })
 
 
+
+
 ## gr.in 
 test_that('gr.in', {
 
@@ -732,6 +826,8 @@ test_that('gr.in', {
     expect_equal(as.numeric(table(gr.in(sv1, sv2))[2]), 3)
 
 })
+
+
 
 
 ## gr.sum
@@ -762,6 +858,8 @@ test_that('gr.sum', {
 })
 
 
+
+
 ## gr.collapse  
 test_that('gr.collapse', {
     
@@ -787,6 +885,8 @@ test_that('gr.collapse', {
 })
 
 
+
+
 test_that("gr.match", {
     
     ## gives back overlapping matches
@@ -802,6 +902,8 @@ test_that("gr.match", {
     expect_error(gr.match(gr1, gr2, max.slice=1), NA)
 
 })
+
+
 
 
 test_that('%+% works', {
@@ -823,6 +925,8 @@ test_that('%+% works', {
 })
 
 
+
+
 test_that('%-% works', {
     
     expect_warning(gr %-% 20000) ## GRanges object contains 3 out-of-bound ranges located on sequence 1.
@@ -840,6 +944,8 @@ test_that('%-% works', {
     expect_equal(end(gr_neg), c(8, 12, 19))
 
 })
+
+
 
 
 ## a %&% b # strand agnostic
@@ -866,6 +972,8 @@ test_that('%&% works', {
 })
 
 
+
+
 ## a %&&% b # strand specific
 ## Return the subset of ranges in a that overlap with at least one range in b.
 test_that('%&&% works', {
@@ -881,6 +989,7 @@ test_that('%&&% works', {
     expect_equal(length(gr_A %&&% gr_B), 0)
 
 })
+
 
 
 ## %O% ## strand-agnostic
@@ -922,6 +1031,7 @@ test_that('%OO% works', {
 })
 
 
+
 ## %o%
 ## strand-agnostic
 ## Returns a length(a) numeric vector whose item i is the fraction of the width of a[i] that overlaps at least one range in b.
@@ -939,6 +1049,7 @@ test_that('%o% works', {
 })
 
 
+
 ## %oo%
 ## strand-specific
 ## Returns a length(a) numeric vector whose item i is the fraction of the width of a[i] that overlaps at least one range in b.
@@ -954,6 +1065,7 @@ test_that('%oo% works', {
     expect_equal(gr_B %oo% gr_A, c(0, 0, 0, 0, 0))  
 
 })
+
 
 
 ## %N%

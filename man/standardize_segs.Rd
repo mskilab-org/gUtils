@@ -7,7 +7,7 @@
 standardize_segs(seg, chr = FALSE)
 }
 \arguments{
-\item{seg}{data.frame or data.table of segments with fields denoting chromosome, start, end, and other metadata.}
+\item{seg}{data.frame or data.table or GRanges of segments with fields denoting chromosome, start, end, and other metadata.}
 
 \item{chr}{boolean Flag to force add chromosomes (default = FALSE)}
 }
