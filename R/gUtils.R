@@ -4091,3 +4091,57 @@ ra.overlaps = function(ra1, ra2, pad = 0, arr.ind = TRUE, ignore.strand=FALSE, .
     }
 }
 
+
+grl.expand = function(grl, expand_win) {
+    tmp_vals = mcols(grl)
+    tmp_gr = unlist(grl)
+    tmp_gr = tmp_gr + expand_win
+    new_grl = relist(tmp_gr, grl)
+    mcols(new_grl) = tmp_vals
+    return(new_grl)
+}
+
+grl.shrink = function(grl, shrink_win) {
+    tmp_vals = mcols(grl)
+    tmp_gr = unlist(grl)
+    tmp_gr = tmp_gr - shrink_win
+    new_grl = relist(tmp_gr, grl)
+    mcols(new_grl) = tmp_vals
+    return(new_grl)
+
+}
+
+grl.start = function(grl, width = 1, force = FALSE, ignore.strand = TRUE, clip = TRUE) {
+    tmp_vals = mcols(grl)
+    tmp_gr = unlist(grl)
+    tmp_gr = gr.start(tmp_gr, width, force, ignore.strand, clip)
+    new_grl = relist(tmp_gr, grl)
+    mcols(new_grl) = tmp_vals
+    return(new_grl)
+}
+
+grl.end = function(grl, width = 1, force = FALSE, ignore.strand = TRUE, clip = TRUE) {
+    tmp_vals = mcols(grl)
+    tmp_gr = unlist(grl)
+    tmp_gr = gr.end(tmp_gr, width, force, ignore.strand, clilp)
+    new_grl = relist(tmp_gr, grl)
+    mcols(new_grl) = tmp_vals
+    return(new_grl)
+}
+
+
+
+setMethod(`+`, 'GRangesList', function(e1, e2) {
+    return(grl.expand(e1, e2))
+})
+
+setMethod(`-`, 'GRangesList', function(e1, e2) {
+    return(grl.shrink(e1, e2))
+})
+
+
+
+
+
+
+
