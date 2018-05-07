@@ -1588,6 +1588,20 @@ test_that("ra.overlaps handles wrong signs", {
 })
 
 
+## grl.expand
+
+
+
+## grl.shrink
+
+
+
+## grl.start
+
+
+
+## grl.end
+
 
 
 

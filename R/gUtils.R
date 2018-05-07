@@ -3049,13 +3049,16 @@ gr.match = function(query, subject, max.slice = Inf, verbose = FALSE, ...)
 
 
 
+
+
+
 #' @name %+%
-#' @title Nudge GRanges right
+#' @title Shift GRanges right
 #' @description
 #'
 #' Operator to shift GRanges right "sh" bases
 #'
-#' @return shifted granges
+#' @return shifted GRanges
 #' @rdname gr.nudge-shortcut
 #' @exportMethod %+%
 #' @aliases %+%,GRanges-method
@@ -3067,6 +3070,49 @@ setMethod("%+%", signature(gr = 'GRanges'), function(gr, sh) {
     start(gr) = start(gr)+sh
     return(gr)
 })
+
+
+
+#' @name %++%
+#' @title Shift GRangesList right
+#' @description
+#'
+#' Operator to shift GRangesList right "sh" bases
+#'
+#' @return shifted GRangesList
+#' @exportMethod %++%
+#' @aliases %++%, GRangesList-method
+#' @export
+setGeneric('%++%', function(grl, ...) standardGeneric('%++%'))
+setMethod("%++%", signature(grl = 'GRangesList'), function(grl, sh) {
+    tmp_vals = mcols(grl)
+    tmp_grl = unlist(grl)
+    start(tmp_grl) = start(tmp_grl)+sh
+    end(tmp_grl) = end(tmp_grl)+sh
+    new_grl = relist(tmp_grl, grl)
+    mcols(new_grl) = tmp_vals
+    return(new_grl)
+})
+
+
+
+#' @name ++
+#' @title Expand GRangesList left and right
+#' @description
+#'
+#' Operator to shift GRangesList left and right "sh" bases
+#'
+#' @return shifted GRangesList
+#' @rdname grl.expand-shortcut
+#' @exportMethod ++
+#' @aliases ++,GRangesList-method
+#' @author Kevin Hadi
+#' @export
+setGeneric('++', function(grl, ...) standardGeneric('++'))
+setMethod('++', signature(grl = 'GRangesList'), function(grl, sh) {
+    return(grl.expand(grl, sh))
+})
+
 
 
 
@@ -3089,6 +3135,54 @@ setMethod("%-%", signature(gr = 'GRanges'), function(gr, sh) {
     end(gr) = end(gr)-sh
     return(gr)
 })
+
+
+
+
+
+#' @name %--%
+#' @title Shift GRangesList left
+#' @description
+#'
+#' Operator to shift GRangesList left "sh" bases
+#'
+#' @return shifted GRangesList
+#' @exportMethod %--%
+#' @aliases %--%, GRangesList-method
+#' @export
+setGeneric('%--%', function(grl, ...) standardGeneric('%--%'))
+setMethod("%--%", signature(grl = 'GRangesList'), function(grl, sh) {
+    tmp_vals = mcols(grl)
+    tmp_grl = unlist(grl)
+    start(tmp_grl) = start(tmp_grl)-sh
+    end(tmp_grl) = end(tmp_grl)-sh
+    new_grl = relist(tmp_grl, grl)
+    mcols(new_grl) = tmp_vals
+    return(new_grl)
+})
+
+
+
+#' @name --
+#' @title Shrink GRangesList left and right
+#' @description
+#'
+#' Operator to shrink GRangesList left and right "sh" bases
+#'
+#' @return shifted GRangesList
+#' @rdname grl.shrink-shortcut
+#' @exportMethod --
+#' @aliases --,GRangesList-method
+#' @author Kevin Hadi
+#' @export
+setGeneric('--', function(grl, ...) standardGeneric('--'))
+setMethod('--', signature(grl = 'GRangesList'), function(grl, sh) {
+    return(grl.shrink(grl, sh))
+})
+
+
+
+
 
 
 
@@ -3942,10 +4036,6 @@ ra.dedup = function(grl, pad=500, ignore.strand=FALSE){
        stop("Error: Input must be GRangesList!")
    }
 
-   ##if (any(elementNROWS(grl)!=2)){
-   ##    stop("Error: Each element must be length 2!")
-   ##}
-
    if (length(grl)==0 | length(grl)==1){
        return(grl)
    }
@@ -4092,15 +4182,45 @@ ra.overlaps = function(ra1, ra2, pad = 0, arr.ind = TRUE, ignore.strand=FALSE, .
 }
 
 
+
+
+
+#' @name grl.expand
+#' @title grl.expand
+#' @description
+#'
+#' Function wrapping around the + operator
+#' for GRanges objects to work on GRangesLists.
+#' Expands window of element GRanges within GRangesList
+#'
+#' @param grl \code{GRangesList}
+#' @param expand_win \code{integer}
+#' @return GRangesList with added window
+#' @export
 grl.expand = function(grl, expand_win) {
     tmp_vals = mcols(grl)
     tmp_gr = unlist(grl)
-    tmp_gr = tmp_gr + expand_win
+    tmp_gr = tmp_gr + expand_win  ## should maybe catch this is window 
     new_grl = relist(tmp_gr, grl)
     mcols(new_grl) = tmp_vals
     return(new_grl)
 }
 
+
+
+
+#' @name grl.shrink
+#' @title grl.srhink
+#' @description
+#'
+#' Function wrapping around the - operator
+#' for GRanges objects to work on GRangesLists.
+#' Shrnks window of element GRanges within GRangesList
+#'
+#' @param grl \code{GRangesList}
+#' @param shrink_win \code{integer}
+#' @return GRangesList with shrunken windows
+#' @export
 grl.shrink = function(grl, shrink_win) {
     tmp_vals = mcols(grl)
     tmp_gr = unlist(grl)
@@ -4111,6 +4231,21 @@ grl.shrink = function(grl, shrink_win) {
 
 }
 
+
+
+#' @name grl.start
+#' @title grl.start
+#' @description
+#'
+#' details here
+#'
+#' @param grl something here 
+#' @param width someting here
+#' @param force boolean someting here
+#' @param ignore.strand boolean someting here
+#' @param clip boolean someting here
+#' @name grl.start
+#' @export
 grl.start = function(grl, width = 1, force = FALSE, ignore.strand = TRUE, clip = TRUE) {
     tmp_vals = mcols(grl)
     tmp_gr = unlist(grl)
@@ -4120,6 +4255,22 @@ grl.start = function(grl, width = 1, force = FALSE, ignore.strand = TRUE, clip =
     return(new_grl)
 }
 
+
+
+
+#' @name grl.end
+#' @title grl.end
+#' @description
+#'
+#' details here
+#'
+#' @param grl something here 
+#' @param width someting here
+#' @param force boolean someting here
+#' @param ignore.strand boolean someting here
+#' @param clip boolean someting here
+#' @name grl.end
+#' @export
 grl.end = function(grl, width = 1, force = FALSE, ignore.strand = TRUE, clip = TRUE) {
     tmp_vals = mcols(grl)
     tmp_gr = unlist(grl)
@@ -4128,18 +4279,6 @@ grl.end = function(grl, width = 1, force = FALSE, ignore.strand = TRUE, clip = T
     mcols(new_grl) = tmp_vals
     return(new_grl)
 }
-
-
-
-setMethod(`+`, 'GRangesList', function(e1, e2) {
-    return(grl.expand(e1, e2))
-})
-
-setMethod(`-`, 'GRangesList', function(e1, e2) {
-    return(grl.shrink(e1, e2))
-})
-
-
 
 
 

@@ -3,12 +3,12 @@
 \name{\%+\%}
 \alias{\%+\%}
 \alias{\%+\%,GRanges-method}
-\title{Nudge GRanges right}
+\title{Shift GRanges right}
 \usage{
 gr \%+\% ...
 }
 \value{
-shifted granges
+shifted GRanges
 }
 \description{
 Operator to shift GRanges right "sh" bases
