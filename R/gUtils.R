@@ -49,11 +49,12 @@ NULL
 #' @param genome A \code{BSgenome} or object with a \code{seqlengths} accessor. Default is hg19, but loads with warning unless explicitly provided
 #' @param chr Flag for whether to keep "chr". Default FALSE
 #' @param include.junk Flag for whether to not trim to only 1-22, X, Y, M. Default FALSE
+#' @param sort Flag to sort the seqlevels from 1-22, X, Y, M in that order. Default TRUE
 #' @return Named integer vector with elements corresponding to the genome seqlengths
 #' @importFrom utils read.delim
 #' @author Marcin Imielinski
 #' @export
-hg_seqlengths = function(genome = NULL, chr = FALSE, include.junk = FALSE)
+hg_seqlengths = function(genome = NULL, chr = FALSE, include.junk = FALSE, sort = TRUE)
 {
     sl = NULL
     if (is.null(genome)) {
@@ -78,6 +79,9 @@ hg_seqlengths = function(genome = NULL, chr = FALSE, include.junk = FALSE)
 
     if (is.null(sl))
         sl = seqlengths(genome)
+
+    if (sort)
+        sl = sl[sortSeqlevels(names(sl), T)]
 
     if (!chr)
         names(sl) = gsub('chr', '', names(sl))
@@ -1011,7 +1015,8 @@ gr.fix = function(gr, genome = NULL, gname = NULL,  drop = FALSE)
                                         #       lens = lens[names(genome)]
                                         #   }
 
-        seqlevels(gr, force = TRUE) = names(lens)
+        ## seqlevels(gr, force = TRUE) = names(lens)
+        seqlevels(gr) = names(lens)
         seqlengths(gr) = lens;
     }
     else
@@ -1740,7 +1745,7 @@ rle.query = function(subject.rle, query.gr, verbose = FALSE, mc.cores = 1, chunk
 #' @param ... Additional parameters to be passed on to \code{GenomicRanges::findOverlaps}
 #' @name grl.in
 #' @export
-grl.in <- function(grl, windows, some = FALSE, only = FALSE, logical = TRUE, ignore.strand = TRUE, ...)
+grl.in <- function(grl, windows, some = FALSE, only = FALSE, logical = TRUE, ignore.strand = TRUE, maxgap = -1L, minoverlap = 0L, ...)
 {
     grl.iid = grl.id = NULL ## for getting past NOTE
 
@@ -1755,7 +1760,7 @@ grl.in <- function(grl, windows, some = FALSE, only = FALSE, logical = TRUE, ign
     gr = grl.unlist(grl)
     if (logical)
     {
-        h = tryCatch(GenomicRanges::findOverlaps(gr, windows, ignor.strand = ignore.strand, ...), error = function(e) NULL)
+        h = tryCatch(GenomicRanges::findOverlaps(gr, windows, ignor.strand = ignore.strand, maxgap = maxgap, minoverlap = minoverlap, ...), error = function(e) NULL)
         if (!is.null(h))
             m = data.table(query.id = queryHits(h), subject.id = subjectHits(h))
         else
@@ -2215,6 +2220,8 @@ gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE,
          max.chunk = 1e13,
          verbose = FALSE,
          mc.cores = 1,
+         maxgap = -1L,
+         minoverlap = 0L,
          ...)
 {
 
@@ -2293,13 +2300,13 @@ gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE,
   }
 
   ## perform the actual overlaps
-  h <- tryCatch(GenomicRanges::findOverlaps(query, subject, type = type, ignore.strand = ignore.strand, ...), error = function(e) NULL)
+  h <- tryCatch(GenomicRanges::findOverlaps(query, subject, type = type, ignore.strand = ignore.strand, maxgap = -1L, minoverlap = 0L, ...), error = function(e) NULL)
   if (is.null(h)) ## if any seqlengths badness happens overrride
   {
     warning('seqlength mismatch .. no worries, just letting you know')
     query = gr.fix(query, subject)
     subject = gr.fix(subject, query)
-    h <- GenomicRanges::findOverlaps(query, subject, type = type, ignore.strand = ignore.strand, ...)
+    h <- GenomicRanges::findOverlaps(query, subject, type = type, ignore.strand = ignore.strand, maxgap = -1L, minoverlap = 0L, ...)
   }
 
   r <- ranges(h, ranges(query), ranges(subject))
@@ -3105,7 +3112,7 @@ setMethod("%^^%", signature(x = "GRanges"), function(x, y) {
 #' @aliases %$$%,GRanges-method
 #' @author Marcin Imielinski
 #' @param x See \link{gr.val}
-#' @param ... See \link{gr.val}
+c#' @param ... See \link{gr.val}
 setGeneric('%$$%', function(x, ...) standardGeneric('%$$%'))
 setMethod("%$$%", signature(x = "GRanges"), function(x, y) {
     if (is.character(y))
@@ -3695,5 +3702,163 @@ gr.breaks = function(bps=NULL, query=NULL){
         ## %Q% (order(strand, seqnames, start))
         ## browser()
         return(output)
+    }
+}
+
+
+#' @name grl.expand
+#' @title grl.expand
+#' @description
+#'
+#' Function wrapping around the `+` operator
+#' for GRanges objects to work on GRangesLists.
+#' Expands window of element GRanges within GRangesList
+#'
+#' @param grl \code{GRangesList} 
+#' @param expand_win \code{integer}
+#' @return GRangesList with added window
+#' @author Kevin Hadi
+#' @export
+grl.expand = function(grl, expand_win) {
+    tmp_vals = mcols(grl)
+    tmp_gr = unlist(grl)
+    tmp_gr = tmp_gr + expand_win
+    new_grl = relist(tmp_gr, grl)
+    mcols(new_grl) = tmp_vals
+    return(new_grl)
+}
+
+#' @name grl.shrink
+#' @title grl.shrink
+#' @description
+#'
+#' Function wrapping around the `-` operator
+#' for GRanges objects to work on GRangesLists.
+#' Shrnks window of element GRanges within GRangesList
+#'
+#' @param grl \code{GRangesList} 
+#' @param shrink_win \code{integer}
+#' @return GRangesList with shrunken windows
+#' @author Kevin Hadi
+#' @export
+grl.shrink = function(grl, shrink_win) {
+    tmp_vals = mcols(grl)
+    tmp_gr = unlist(grl)
+    tmp_gr = tmp_gr - shrink_win
+    new_grl = relist(tmp_gr, grl)
+    mcols(new_grl) = tmp_vals
+    return(new_grl)
+}
+
+
+
+#' @name +
+#' @title adding functionality to GRangesLists
+#' @description
+#'
+#' Adding operator to GRangesList 
+#'
+#' @return extended grangeslist
+#' @rdname grl.expand shortcut
+#' @exportMethod +
+#' @aliases +, GRangesList method 
+#' @author Kevin Hadi
+#' @export
+setMethod(`+`, 'GRangesList', function(e1, e2) {
+    return(grl.expand(e1, e2))
+})
+
+
+#' @name -
+#' @title adding functionality to GRangesLists
+#' @description
+#'
+#' Adding operator to GRangesList 
+#'
+#' @return extended grangeslist
+#' @rdname grl.shrink shortcut
+#' @exportMethod -
+#' @aliases -, GRangesList method 
+#' @author Kevin Hadi
+#' @export
+setMethod(`-`, 'GRangesList', function(e1, e2) {
+    return(grl.shrink(e1, e2))
+})
+
+#' @name grl.start
+#' @title Get the left ends of a \code{GRangesList}
+#' @description
+#'
+#' Function wrapping around gr.start to work
+#' on GRangesLists
+#'
+#' @param grl \code{GRangesList} object containing GRanges to operate on 
+#' @param width integer Specify subranges of greater width including the start of the range. (default = 1)
+#' @param force boolean Allows returned \code{GRangesList} to have ranges outside of its \code{Seqinfo} bounds. (default = FALSE)
+#' @param ignore.strand boolean If set to \code{FALSE}, will extend '-' strands from the other direction (default = TRUE)
+#' @param clip boolean Trims returned \code{GRangesList} so that it does not extend beyond bounds of the input \code{GRanges} (default = TRUE)
+#' @return \code{GRangesList} object of width 1 ranges representing start of each genomic range in the input.
+#' @importFrom GenomicRanges GRangesList
+#' @return \code{GRangesList} object of width 1+ ranges representing start of each genomic range in the input.
+#' @export
+grl.start = function(grl, width = 1, force = FALSE, ignore.strand = TRUE, clip = TRUE) {
+    tmp_vals = mcols(grl)
+    tmp_gr = unlist(grl)
+    tmp_gr = gr.start(tmp_gr, width, force, ignore.strand, clip)
+    new_grl = relist(tmp_gr, grl)
+    mcols(new_grl) = tmp_vals
+    return(new_grl)
+}
+
+
+#' @name grl.end
+#' @title Get the right ends of a \code{GRangesList}
+#' @description
+#'
+#' Function wrapping around gr.end to work on
+#' GRangesLists
+#' 
+#' @param x \code{GRangesList} object containing GRanges to operate on
+#' @param width integer Specify subranges of greater width including the start of the range. (default = 1)
+#' @param force boolean Allows returned \code{GRangesList} to have ranges outside of its \code{Seqinfo} bounds. (default = FALSE)
+#' @param ignore.strand boolean If set to \code{FALSE}, will extend '-' strands from the other direction. (default = TRUE)
+#' @param clip boolean Trims returned \code{GRangesList} so that it does not extend beyond bounds of the input (default = TRUE)
+#' @return GRangesList object of width = \code{width} ranges representing end of each genomic range in the input.
+#' @importFrom GenomeInfoDb seqlengths
+#' @importFrom GenomicRanges strand seqnames values<- values
+#' @export
+grl.end = function(grl, width = 1, force = FALSE, ignore.strand = TRUE, clip = TRUE) {
+    tmp_vals = mcols(grl)
+    tmp_gr = unlist(grl)
+    tmp_gr = gr.end(tmp_gr, width, force, ignore.strand, clilp)
+    new_grl = relist(tmp_gr, grl)
+    mcols(new_grl) = tmp_vals
+    return(new_grl)
+}
+
+
+#' @name grl.findoverlaps
+#' @title grl.findoverlaps
+#' @description
+#'
+#' Function wrapping around %&% operator
+#' that allows finding overlaps within GRangesLists
+#' 
+#' @param grl \code{GRangesList} object
+#' @param windows GRanges windows to find overlaps
+#' @param as.grl logical indicating whether to return GRangesList 
+#' @param split_by_field which metadata field to resplit by if as.grl = TRUE
+#' @return GRangesList object if as.grl = TRUE, or GRanges object with "group" and "group_name" metadata fields
+#' @export
+grl.findoverlaps = function(grl, windows, as.grl = TRUE, split_by_field = "group_name") {
+    overgr = dt2gr(as.data.frame(grl))
+    overgr = gUtils::`%&%`(overgr, windows)
+    split_by = mcols(overgr)[[split_by_field]]
+    if (as.grl) {
+        mcols(overgr)[["group"]] = NULL
+        mcols(overgr)[["group_name"]] = NULL
+        return(split(overgr, split_by))
+    } else {
+        return(overgr)
     }
 }
