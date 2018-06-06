@@ -850,7 +850,7 @@ grl.bind = function(...)
     grls = list(...)
 
     ## check the input
-    if(any(sapply(grls, function(x) class(x) != "GRangesList"))){
+    if(any(sapply(grls, function(x) !inherits(x, "GRangesList")))){
         stop("Error: All inputs must be a GRangesList")
     }
 
@@ -1093,7 +1093,7 @@ grl.string = function(grl, mb= FALSE, sep = ',', ...)
         return(gr.string(grl, mb=mb, ...))
     }
 
-    if (class(grl) != "GRangesList"){
+    if (!inherits(grl, "GRangesList")){
         stop("Error: Input must be GRangesList (or GRanges, which is sent to gr.string)")
     }
 
@@ -3803,16 +3803,16 @@ gr.breaks = function(bps=NULL, query=NULL){
    } else {
        ## only when bps is given do we care about what query is
        if (is.null(query)){
-           message("Trying chromosomes 1-22 and X, Y.")
-           query = hg_seqlengths()
-           if (is.null(query)){
-               message("Default BSgenome not found, let's hardcode it.")
-               cs = system.file("extdata",
-                                "hg19.regularChr.chrom.sizes", package = "gUtils")
-               query = read.delim(cs, header=FALSE, sep="\t")
-               query = setNames(sl$V2, sl$V1)
-           }
-           query = gr.stripstrand(si2gr(query))
+           ## message("Trying chromosomes 1-22 and X, Y.")
+           ## query = hg_seqlengths()
+           ## if (is.null(query)){
+           ##     message("Default BSgenome not found, let's hardcode it.")
+           ##     cs = system.file("extdata",
+           ##                      "hg19.regularChr.chrom.sizes", package = "gUtils")
+           ##     query = read.delim(cs, header=FALSE, sep="\t")
+           ##     query = setNames(sl$V2, sl$V1)
+           ## }
+           query = gr.stripstrand(si2gr(seqinfo(bps)))
        }
 
        ## in case query is not a GRanges
