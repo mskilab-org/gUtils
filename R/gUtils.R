@@ -184,9 +184,13 @@ gr2dt = function(x)
 
     cmd = paste(cmd, ')', sep = '')
 
-    out = tryCatch(data.table::as.data.table(eval(parse(text =cmd))), error = function(e) NULL)
+    out = tryCatch(data.table::as.data.table(eval(parse(text =cmd))), error = function(e) NULL)    
 
-    if (is.null(out)){
+    nr = 0
+    if (!is.null(out)) { nr = nrow(out) }
+
+    if (nr != length(x))
+    {
         out = as.data.table(x)
     }
 
@@ -1571,7 +1575,7 @@ gr.val = function(query, target, val = NULL, mean = TRUE, weighted = mean, na.rm
         ix.l = split(1:length(query), ceiling(as.numeric((1:length(query)/max.slice))))
         return(do.call('grbind', parallel::mclapply(ix.l, function(ix) {
             if (verbose){
-                cat(sprintf('Processing %s to %s of %s\n', min(ix), max(ix), length(query)))
+                cat(sprintf('Processing intervals %s to %s of %s\n', min(ix), max(ix), length(query)))
             }
             gr.val(query[ix, ], target = target, val= val, mean = mean, weighted = weighted, na.rm = na.rm, verbose = TRUE, by = by, FUN = FUN, merge = merge, ...)
         }, mc.cores = mc.cores)))
@@ -1630,7 +1634,7 @@ gr.val = function(query, target, val = NULL, mean = TRUE, weighted = mean, na.rm
     }
 
     if (verbose){
-        cat(sprintf('aggregating hits\n'))
+#        cat(sprintf('aggregating hits\n'))
     }
 
     vals = val
@@ -2663,9 +2667,8 @@ gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE, 
     }
 
     ## format into correct output format
-    if (return.type=='GRanges') {
-
-        out.gr = dt2gr(h.df)
+  if (return.type=='GRanges') {
+        out.gr = dt2gr(h.df, seqlengths = seqlengths(query))
 
         if (!is.null(qcol)){
             values(out.gr) = cbind(as.data.frame(values(out.gr)), as.data.frame(values(query)[out.gr$query.id, qcol, drop = FALSE]))
@@ -2919,11 +2922,18 @@ gr.disjoin = function(x, ..., ignore.strand = TRUE)
 #' @export
 gr.in = function(query, subject, ...)
 {
-    tmp = gr.findoverlaps(query, subject, ...)
-    out = rep(FALSE, length(query))
-    out[tmp$query.id] = TRUE
 
-    return(out)
+  if (is(query, 'character'))
+    query = parse.gr(query)
+
+  if (is(subject, 'character'))
+    subject = parse.gr(subject)
+    
+  tmp = gr.findoverlaps(query, subject, ...)
+  out = rep(FALSE, length(query))
+  out[tmp$query.id] = TRUE
+  
+  return(out)
 }
 
 
@@ -3034,13 +3044,13 @@ gr.match = function(query, subject, max.slice = Inf, verbose = FALSE, ...)
 
     if (length(query)>max.slice)
     {
-        verbose = TRUE
         ix.l = split(1:length(query), ceiling(as.numeric((1:length(query)/max.slice))))
         return(do.call('c', parallel::mclapply(ix.l, function(ix) {
             if (verbose){
                 cat(sprintf('Processing %s to %s\n', min(ix), max(ix)))
             }
-            gr.match(query[ix, ], subject, verbose = TRUE, ...)
+ 
+            gr.match(query[ix, ], subject, verbose = verbose, ...)
         })))
     }
 
@@ -3802,18 +3812,19 @@ gr.breaks = function(bps=NULL, query=NULL){
        return(query)
    } else {
        ## only when bps is given do we care about what query is
-       if (is.null(query)){
-           message("Trying chromosomes 1-22 and X, Y.")
-           query = hg_seqlengths()
-           if (is.null(query)){
-               message("Default BSgenome not found, let's hardcode it.")
-               cs = system.file("extdata",
-                                "hg19.regularChr.chrom.sizes", package = "gUtils")
-               query = read.delim(cs, header=FALSE, sep="\t")
-               query = setNames(sl$V2, sl$V1)
-           }
-           query = gr.stripstrand(si2gr(query))
-       }
+     if (is.null(query)){
+       query = seqlengths(bps)
+       ## message("Trying chromosomes 1-22 and X, Y.")
+       ## query = hg_seqlengths()
+       ## if (is.null(query)){
+       ##     message("Default BSgenome not found, let's hardcode it.")
+       ##     cs = system.file("extdata",
+       ##                      "hg19.regularChr.chrom.sizes", package = "gUtils")
+       ##     query = read.delim(cs, header=FALSE, sep="\t")
+       ##     query = setNames(sl$V2, sl$V1)
+       ## }
+       ## query = gr.stripstrand(si2gr(query))
+     }
 
        ## in case query is not a GRanges
        if (!is(query, "GRanges")){
@@ -3930,8 +3941,6 @@ gr.breaks = function(bps=NULL, query=NULL){
 
 
 
-
-
 #' @name ra.dedup
 #' @title ra.dedup
 #' @description
@@ -3970,9 +3979,11 @@ ra.dedup = function(grl, pad=500, ignore.strand=FALSE){
           ra.overlaps(grl, grl, pad=pad, ignore.strand = ignore.strand))[ra1.ix!=ra2.ix]
        if (nrow(ix.pair)==0){
            return(grl)
-       } else {
-           dup.ix = unique(rowMax(as.matrix(ix.pair)))
-           return(grl[-dup.ix])
+       }
+       else {
+         ##           dup.ix = unique(rowMax(as.matrix(ix.pair)))
+         dup.ix = unique(apply(as.matrix(ix.pair), 1, max))
+         return(grl[-dup.ix])
        }
    }
 }
@@ -4026,9 +4037,11 @@ ra.duplicated = function(grl, pad=500, ignore.strand=FALSE){
 
        if (nrow(ix.pair)==0){
            return(rep(FALSE, length(grl)))
-       } else {
-           dup.ix = unique(rowMax(as.matrix(ix.pair)))
-           return(seq_along(grl) %in% dup.ix)
+       }
+       else {
+         ##           dup.ix = unique(rowMax(as.matrix(ix.pair)))
+         dup.ix = unique(apply(as.matrix(ix.pair), 1, max))
+         return(seq_along(grl) %in% dup.ix)
        }
    }
 }
@@ -4079,13 +4092,14 @@ ra.overlaps = function(ra1, ra2, pad = 0, arr.ind = TRUE, ignore.strand=FALSE, .
         return(do.call('rbind', lapply(tmp.match.l[matched.l], function(x) cbind(x[,1], x[,3])[!duplicated(paste(x[,1], x[,3])), , drop = F])))
     }
 
-
     tmp = .make_matches(ix, bp1, bp2)
 
     if (is.null(tmp)){
         if (arr.ind){
-            return(matrix())
-        } else{
+
+            return(as.matrix(data.table(ra1.ix = as.numeric(NA), ra2.ix = as.numeric(NA))))
+        }
+        else{
             return(Matrix::sparseMatrix(length(ra1), length(ra2), x = 0))
         }
     }
@@ -4095,7 +4109,7 @@ ra.overlaps = function(ra1, ra2, pad = 0, arr.ind = TRUE, ignore.strand=FALSE, .
     colnames(tmp) = c('ra1.ix', 'ra2.ix')
 
     if (arr.ind) {
-        ro = tmp[order(tmp[,1], tmp[,2]), ]
+        ro = tmp[order(tmp[,1], tmp[,2]), , drop = FALSE]
         if (class(ro)=='integer'){
             ro <- matrix(ro, ncol=2, nrow=1, dimnames=list(c(), c('ra1.ix', 'ra2.ix')))
         }
