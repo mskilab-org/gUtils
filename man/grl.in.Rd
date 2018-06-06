@@ -5,25 +5,35 @@
 \title{Check intersection of \code{GRangesList} with windows on genome}
 \usage{
 grl.in(grl, windows, some = FALSE, only = FALSE, logical = TRUE,
-  ignore.strand = TRUE, ...)
+  exact = FALSE, ignore.strand = TRUE, ...)
 }
 \arguments{
 \item{grl}{\code{GRangesList} object to query for membership in \code{windows}}
 
 \item{windows}{\code{GRanges} pile of windows}
 
-\item{some}{Will return \code{TRUE} for \code{GRangesList} elements that intersect at least on window range [FALSE]}
+\item{some}{boolean Will return \code{TRUE} for \code{GRangesList} elements that intersect at least on window range (default = FALSE)}
 
-\item{only}{Will return \code{TRUE} for \code{GRangesList} elements only if there are no elements of query that fail to interesect with windows [FALSE]}
+\item{only}{boolean Will return \code{TRUE} for \code{GRangesList} elements only if there are no elements of query that fail to intersect with windows (default = FALSE)}
 
-\item{logical}{will return logical otherwise will return numeric vector of number of windows overlapping each grl}
+\item{logical}{boolean Will return logical otherwise will return numeric vector of number of windows overlapping each grl (default = TRUE)}
+
+\item{exact}{boolean Will return exact intersection (default = FALSE)}
+
+\item{ignore.strand}{boolean Will return exact intersection (default = TRUE)}
 
 \item{...}{Additional parameters to be passed on to \code{GenomicRanges::findOverlaps}}
+
+\item{maxgap}{integer maxgap is interpreted as the max gap allowed between two ranges to be considered as overlapping. See documentation for IRanges::findOverlaps() (default = -1L)}
+}
+\value{
+boolean vector of match status
 }
 \description{
+Check intersection of \code{GRangesList} with windows on genome
+
 Like %in% for grl but now will return a logical vector that is true at position if i
 only if the ranges in grl[i] intersect <<all>>, <<some>>, <<only>>  windows in the subject
-}
-\details{
-eg can use to identify read pairs whose ends are contained inside two genes)
+
+e.g. can use to identify read pairs whose ends are contained inside two genes)
 }
