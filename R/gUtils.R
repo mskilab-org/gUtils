@@ -320,9 +320,15 @@ dt2gr = function(dt, key = NULL, seqlengths = hg_seqlengths(), seqinfo = Seqinfo
         ff <- factor(dt$seqnames, levels=unique(dt$seqnames))
         out <- GRanges(seqnames=ff, ranges=rr, strand=sf, seqlengths = seqlengths)
         if (inherits(dt, 'data.table')){
-            mc <- as.data.frame(dt[, setdiff(colnames(dt), c('start', 'end', 'seqnames', 'strand')), with=FALSE])
+            mc <- as.data.frame(dt[, setdiff(colnames(dt),
+                                             c('start', 'end', 'seqnames', 'strand',
+                                               'width', 'seqlevels', 'seqlengths', 'element')),
+                                   with=FALSE])
         } else if (inherits(dt, 'data.frame')){
-            mc <- as.data.frame(dt[, setdiff(colnames(dt), c('start', 'end', 'seqnames', 'strand')), drop = FALSE])
+            mc <- as.data.frame(dt[, setdiff(colnames(dt),
+                                             c('start', 'end', 'seqnames', 'strand',
+                                               'width', 'seqlevels', 'seqlengths', 'element')),
+                                   drop = FALSE])
         }
 
         if (nrow(mc)){
@@ -3814,20 +3820,20 @@ gr.breaks = function(bps=NULL, query=NULL){
            stop("Error: 'query' must be a GRanges object.")
        }
 
-       ## preprocess query
-       if (!isDisjoint(query)){
-           warning("Warning: Query GRanges not disjoint.")
-           queryDj = disjoin(query)
-           queryDj$qid = queryDj %N% query ## only retain the first occurence
-           values(queryDj) = cbind(values(queryDj),
-                                   as.data.table(values(query))[queryDj$qid])
-           query = queryDj
-       } else {
-           if ("qid" %in% colnames(values(query))){
-               warning("Warning: 'qid' col in query overwritten.")
-           }
-           query$qid = seq_along(query)
-       }
+       ## ## preprocess query
+       ## if (!isDisjoint(query)){
+       ##     warning("Warning: Query GRanges not disjoint.")
+       ##     queryDj = disjoin(query)
+       ##     queryDj$qid = queryDj %N% query ## only retain the first occurence
+       ##     values(queryDj) = cbind(values(queryDj),
+       ##                             as.data.table(values(query))[queryDj$qid])
+       ##     query = queryDj
+       ## } else {
+       ##     if ("qid" %in% colnames(values(query))){
+       ##         warning("Warning: 'qid' col in query overwritten.")
+       ##     }
+       query$qid = seq_along(query)
+       ## }
 
        ## preprocess bps
        ## having meta fields? remove them!
@@ -3835,6 +3841,7 @@ gr.breaks = function(bps=NULL, query=NULL){
 
        ## remove things outside of ref
        oo.seqlength = which(start(bps)<1 | end(bps)>seqlengths(bps)[as.character(seqnames(bps))])
+       
        if (length(oo.seqlength)>0){
            warning("Warning: Some breakpoints out of chr lengths. Removing.")
            bps = bps[-oo.seqlength]
@@ -3853,19 +3860,24 @@ gr.breaks = function(bps=NULL, query=NULL){
 
        ## solve three edge cases
        if (any(w.0 <- (width(bps)<1))){
-           warning("Warning: Some breakpoint width==0.")
+           warning("Warning: Some breakpoint width==0. Discard.")
            ## right bound smaller coor
            ## and there's no negative width GR allowed
-           bps[which(w.0)] = gr.start(bps[which(w.0)]) %-% 1
+           ## bps[which(w.0)] = gr.start(bps[which(w.0)]) %-% 1
+           bps = bps[-which(w.0)]
        }
+
        if (any(w.2 <- (width(bps)==2))){
-           warning("Warning: Some breakpoint width==2.")
+           warning("Warning: Some breakpoint width>2. Will tear them apart and treat as two breakpoints.")
            ## this is seen as breakpoint by spanning two bases
-           bps[which(w.2)] = gr.start(bps[which(w.2)])
+           bps = c(bps[-which(w.2)],
+                   gr.start(bps[which(w.2)]),
+                   gr.end(bps[which(w.2)]))
        }
+       
        if (any(w.l <- (width(bps)>2))){
            ## some not a point? turn it into a point
-           warning("Warning: Some breakpoint width>1.")
+           warning("Warning: Some breakpoint width>2. Treat them as segmentations.")
            rbps = gr.end(bps[which(w.l)])
            lbps = gr.start(bps[which(w.l)])
            start(lbps) = pmax(start(lbps)-1, 1)
@@ -3873,18 +3885,20 @@ gr.breaks = function(bps=NULL, query=NULL){
        }
 
        bps$inQuery = bps %^% query
-       if (any(bps$inQuery==F)){
+       if (any(bps$inQuery==FALSE)){
            warning("Warning: Some breakpoint not within query ranges.")
        }
 
        ## label and only consider breakpoints not already at the boundary of query
-       bps$inner = bps$inQuery
-       bps$inner[which(bps %^% gr.start(query) | bps %^% gr.end(query))]=F
+       bps$inner = bps$inQuery ## out of query automatically FALSE
+       bps$inner[which(bps %^% gr.start(query) | bps %^% gr.end(query))]=FALSE
+       
        ## maybe no inner bp at all, then no need to proceed
        if (!any(bps$inner)){
            return(query)
        }
        bpsInner = bps %Q% (inner==T)
+
        ## map query and inner breakpoints
        qbMap = gr.findoverlaps(query, bpsInner)
        mappedQ = seq_along(query) %in% qbMap$query.id
@@ -3896,11 +3910,12 @@ gr.breaks = function(bps=NULL, query=NULL){
        tmpCoor = tmpRange[, .(pos=sort(unique(c(startFrom, breakAt, upTo)))), by=qid2]
 
        ## construct new ranges
-       newRange = tmpCoor[, .(start=pos[-which.max(pos)],
-                              end=pos[-which.min(pos)]), by=qid2]
-       newRange[, ":="(chr = as.vector(seqnames(query)[qid2]),
+       newRange = tmpCoor[, .(tmp.start=pos[-which.max(pos)],
+                              end=pos[-which.min(pos)]),
+                          by=qid2]
+       newRange[, ":="(seqnames = as.vector(seqnames(query)[qid2]),
                        strand = as.vector(strand(query)[qid2]))]
-       newRange$start = newRange[, ifelse(start==min(start), start, start+1)]
+       newRange[, start := ifelse(tmp.start==min(tmp.start), tmp.start, tmp.start+1), by=qid2]
 
        ## put together the mapped and broken
        newGr = GRanges(newRange, seqinfo = seqinfo(query))
