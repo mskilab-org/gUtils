@@ -41,18 +41,3 @@ section will describe and demonstrate the functionality ``gUtils`` provides for 
    grbind(gr, gr2) ## SUCCESS. Adds NA for missing fields
    ## GenomicRanges::c does this already for GRangesList
 
-grlbind
-
-dtgr
-
-grdt
-
-si2gr
-
-gr.flatten
-
-grl.unlist
-
-grl.pivot
-
-rrbind
