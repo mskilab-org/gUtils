@@ -1469,7 +1469,7 @@ test_that('anchorlift', {
     expect_equal(anchor1[2]$bin, 4678)   
     ## 'window' argument
     ## error if over 1e9
-    expect_null(anchorlift(gr, gr2, window=1.1e9))
+    expect_error(anchorlift(gr, gr2, window=1.1e9))
     ## include.values
     expect_equal(dim(gr2dt(suppressWarnings(anchorlift(sv1, sv2, by='bin', include.values = FALSE))))[2], 7)  ## check only 7 columns
 
