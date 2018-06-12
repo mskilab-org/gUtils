@@ -3433,7 +3433,7 @@ setMethod("%_%", signature(x = "GRanges"), function(x, y) {
 #' @export
 #' @author Marcin Imielinski
 setGeneric('%Q%', function(x, ...) standardGeneric('%Q%'))
-setMethod("%Q%", signature(x = "GRanges"), function(x, y, calling_env = parent.frame(4)) {
+setMethod("%Q%", signature(x = "GRanges"), function(x, y) {
     condition_call  = substitute(y)
     ## serious R voodoo gymnastics .. but I think finally hacked it to remove ghosts
     ## create environment that combines the calling env with the granges env
@@ -3447,7 +3447,38 @@ setMethod("%Q%", signature(x = "GRanges"), function(x, y, calling_env = parent.f
     }
     return(x[ix])
 })
-setMethod(`%Q%`, signature(x = "GRangesList"), function(x, y) {
+setMethod("%Q%", signature(x = "GRangesList"), function(x, y) {
+    condition_call  = substitute(y)
+    ## serious R voodoo gymnastics .. but I think finally hacked it to remove ghosts
+    ## create environment that combines the calling env with the granges env
+    env = as(c(as.list(parent.frame(2)), as.list(mcols(x))), 'environment')
+    parent.env(env) = parent.frame()
+    ix = tryCatch(eval(condition_call, env), error = function(e) NULL)
+    if (is.null(ix))
+    {
+        condition_call  = substitute(y)
+        ix = eval(condition_call, GenomicRanges::as.data.frame(x))
+    }
+    return(x[ix])
+})
+
+
+#' @name %QQ%
+#' @title query ranges by applying an expression to GRanges metadata within a GRangesList
+#' @description
+#'
+#' grl %QQ% query returns the subsets of GRanges elements within grl that matches meta data statement in query
+#'
+#' @return subset of grl that matches query
+#' @rdname gr.query
+#' @docType methods
+#' @aliases %QQ%,GRanges-method
+#' @param x \code{GRangesList}
+#' @param y expression querying metadata columns evaluating to a logical or integer matching to a subset of GRanges elements of x 
+#' @export
+#' @author Kevin Hadi
+setGeneric('%QQ%', function(x, ...) standardGeneric('%QQ%'))
+setMethod(`%QQ%`, signature(x = "GRangesList"), function(x, y) {
     tmp_vals = mcols(x)
     tmp_gr = unlist(x, use.names = FALSE)
     tmp_nm = names(tmp_gr)
