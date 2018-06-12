@@ -3470,7 +3470,7 @@ setMethod("%Q%", signature(x = "GRangesList"), function(x, y) {
 #' grl %QQ% query returns the subsets of GRanges elements within grl that matches meta data statement in query
 #'
 #' @return subset of grl that matches query
-#' @rdname gr.query
+#' @rdname grl.query
 #' @docType methods
 #' @aliases %QQ%,GRanges-method
 #' @param x \code{GRangesList}
@@ -3498,7 +3498,7 @@ setMethod(`%QQ%`, signature(x = "GRangesList"), function(x, y) {
     names(tmp_gr) = tmp_nm[ix]
     ret_grl = split(tmp_gr, split_by)
     grl_id = unique(split_by)
-    names(ret_grl) = names(grl)[grl_id]
+    names(ret_grl) = names(x)[grl_id]
     mcols(ret_grl) = tmp_vals[grl_id,]
     return(ret_grl)
 })
