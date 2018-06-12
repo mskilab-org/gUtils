@@ -1405,7 +1405,7 @@ gr.tile = function(gr, width = 1e3)
 #' @author Marcin Imielinski
 #' @export
 gr.tile.map = function(query, subject, verbose = FALSE)
-
+{
 
     ## munlist (also in skitools, but added here to uncouple from this dependency)
     ##
@@ -3138,6 +3138,23 @@ setMethod("%&%", signature(x = 'GRanges'), function(x, y) {
     }
     return(x[gr.in(x, y)])
 })
+setMethod("%&%", signature(x = 'GRangesList'), function(x, y) {
+    if (is.character(y)){
+        y = parse.gr(y)
+    }
+    gr = unlist(x, use.names = FALSE)
+    if (inherits(y, "GRanges")) {
+        w_in = gr.in(gr, y)
+    } else if (inherits(y, "GRangesList")) {
+        w_in = gr.in(gr, unlist(y))
+    }
+    split_by = rep(1:length(x), times = elementNROWS(x))[w_in]
+    grl_ix = unique(split_by)
+    ret_grl = split(gr[w_in], split_by)
+    names(ret_grl) = names(x)[grl_ix]
+    return(ret_grl)
+})
+
 
 
 
@@ -3162,7 +3179,22 @@ setMethod("%&&%", signature(x = "GRanges"), function(x, y) {
     }
     return(x[gr.in(x, y, ignore.strand = FALSE)])
 })
-
+setMethod("%&&%", signature(x = 'GRangesList'), function(x, y) {
+    if (is.character(y)){
+        y = parse.gr(y)
+    }
+    gr = unlist(x, use.names = FALSE)
+    if (inherits(y, "GRanges")) {
+        w_in = gr.in(gr, y, ignore.strand = FALSE)
+    } else if (inherits(y, "GRangesList")) {
+        w_in = gr.in(gr, unlist(y), ignore.strand = FALSE)
+    }
+    split_by = rep(1:length(x), times = elementNROWS(x))[w_in]
+    grl_ix = unique(split_by)
+    ret_grl = split(gr[w_in], split_by)
+    names(ret_grl) = names(x)[grl_ix]
+    return(ret_grl)
+})
 
 
 
@@ -3401,7 +3433,7 @@ setMethod("%_%", signature(x = "GRanges"), function(x, y) {
 #' @export
 #' @author Marcin Imielinski
 setGeneric('%Q%', function(x, ...) standardGeneric('%Q%'))
-setMethod("%Q%", signature(x = "GRanges"), function(x, y) {
+setMethod("%Q%", signature(x = "GRanges"), function(x, y, calling_env = parent.frame(4)) {
     condition_call  = substitute(y)
     ## serious R voodoo gymnastics .. but I think finally hacked it to remove ghosts
     ## create environment that combines the calling env with the granges env
@@ -3414,6 +3446,30 @@ setMethod("%Q%", signature(x = "GRanges"), function(x, y) {
         ix = eval(condition_call, GenomicRanges::as.data.frame(x))
     }
     return(x[ix])
+})
+setMethod(`%Q%`, signature(x = "GRangesList"), function(x, y) {
+    tmp_vals = mcols(x)
+    tmp_gr = unlist(x, use.names = FALSE)
+    tmp_nm = names(tmp_gr)
+    tmp_gr = setNames(tmp_gr, NULL)
+    mcols(tmp_gr)[["split_by"]] = rep(1:length(x), times = elementNROWS(x))
+    condition_call  = substitute(y)
+    env = as(c(as.list(parent.frame(2)), as.list(as.data.frame(tmp_gr))), 'environment')
+    parent.env(env) = parent.frame()
+    ix = tryCatch(eval(condition_call, env), error = function(e) NULL)
+    if (is.null(ix))
+    {
+        condition_call  = substitute(y)
+        ix = eval(condition_call, GenomicRanges::as.data.frame(tmp_gr))
+    }
+    tmp_gr = tmp_gr[ix]
+    split_by = rep(1:length(x), times = elementNROWS(x))[ix]
+    names(tmp_gr) = tmp_nm[ix]
+    ret_grl = split(tmp_gr, split_by)
+    grl_id = unique(split_by)
+    names(ret_grl) = names(grl)[grl_id]
+    mcols(ret_grl) = tmp_vals[grl_id,]
+    return(ret_grl)
 })
 
 
@@ -4073,4 +4129,138 @@ ra.overlaps = function(ra1, ra2, pad = 0, arr.ind = TRUE, ignore.strand=FALSE, .
         return(ro)
     }
 }
+
+
+
+#' @name grl.expand
+#' @title grl.expand
+#' @description
+#'
+#' Function wrapping around the `+` operator
+#' for GRanges objects to work on GRangesLists.
+#' Expands window of element GRanges within GRangesList
+#'
+#' @param grl \code{GRangesList} 
+#' @param expand_win \code{integer}
+#' @return GRangesList with added window
+#' @author Kevin Hadi
+#' @export
+grl.expand = function(grl, expand_win) {
+    tmp_vals = mcols(grl)
+    tmp_gr = unlist(grl, use.names = FALSE)
+    tmp_gr = tmp_gr + expand_win
+    new_grl = relist(tmp_gr, grl)
+    mcols(new_grl) = tmp_vals
+    return(new_grl)
+}
+
+#' @name grl.shrink
+#' @title grl.shrink
+#' @description
+#'
+#' Function wrapping around the `-` operator
+#' for GRanges objects to work on GRangesLists.
+#' Shrnks window of element GRanges within GRangesList
+#'
+#' @param grl \code{GRangesList} 
+#' @param shrink_win \code{integer}
+#' @return GRangesList with shrunken windows
+#' @author Kevin Hadi
+#' @export
+grl.shrink = function(grl, shrink_win) {
+    tmp_vals = mcols(grl)
+    tmp_gr = unlist(grl, use.names = FALSE)
+    tmp_gr = tmp_gr - shrink_win
+    new_grl = relist(tmp_gr, grl)
+    mcols(new_grl) = tmp_vals
+    return(new_grl)
+}
+
+
+
+#' @name +
+#' @title adding functionality to GRangesLists
+#' @description
+#'
+#' Adding operator to GRangesList 
+#'
+#' @return extended grangeslist
+#' @rdname grl.expand shortcut
+#' @exportMethod +
+#' @aliases +, GRangesList method 
+#' @author Kevin Hadi
+#' @export
+setMethod(`+`, 'GRangesList', function(e1, e2) {
+    return(grl.expand(e1, e2))
+})
+
+
+#' @name -
+#' @title adding functionality to GRangesLists
+#' @description
+#'
+#' Adding operator to GRangesList 
+#'
+#' @return extended grangeslist
+#' @rdname grl.shrink shortcut
+#' @exportMethod -
+#' @aliases -, GRangesList method 
+#' @author Kevin Hadi
+#' @export
+setMethod(`-`, 'GRangesList', function(e1, e2) {
+    return(grl.shrink(e1, e2))
+})
+
+#' @name grl.start
+#' @title Get the left ends of a \code{GRangesList}
+#' @description
+#'
+#' Function wrapping around gr.start to work
+#' on GRangesLists
+#'
+#' @param grl \code{GRangesList} object containing GRanges to operate on 
+#' @param width integer Specify subranges of greater width including the start of the range. (default = 1)
+#' @param force boolean Allows returned \code{GRangesList} to have ranges outside of its \code{Seqinfo} bounds. (default = FALSE)
+#' @param ignore.strand boolean If set to \code{FALSE}, will extend '-' strands from the other direction (default = TRUE)
+#' @param clip boolean Trims returned \code{GRangesList} so that it does not extend beyond bounds of the input \code{GRanges} (default = TRUE)
+#' @return \code{GRangesList} object of width 1 ranges representing start of each genomic range in the input.
+#' @importFrom GenomicRanges GRangesList
+#' @return \code{GRangesList} object of width 1+ ranges representing start of each genomic range in the input.
+#' @export
+grl.start = function(grl, width = 1, force = FALSE, ignore.strand = TRUE, clip = TRUE) {
+    tmp_vals = mcols(grl)
+    tmp_gr = unlist(grl, use.names = FALSE)
+    tmp_gr = gr.start(tmp_gr, width, force, ignore.strand, clip)
+    new_grl = relist(tmp_gr, grl)
+    mcols(new_grl) = tmp_vals
+    return(new_grl)
+}
+
+
+#' @name grl.end
+#' @title Get the right ends of a \code{GRangesList}
+#' @description
+#'
+#' Function wrapping around gr.end to work on
+#' GRangesLists
+#' 
+#' @param x \code{GRangesList} object containing GRanges to operate on
+#' @param width integer Specify subranges of greater width including the start of the range. (default = 1)
+#' @param force boolean Allows returned \code{GRangesList} to have ranges outside of its \code{Seqinfo} bounds. (default = FALSE)
+#' @param ignore.strand boolean If set to \code{FALSE}, will extend '-' strands from the other direction. (default = TRUE)
+#' @param clip boolean Trims returned \code{GRangesList} so that it does not extend beyond bounds of the input (default = TRUE)
+#' @return GRangesList object of width = \code{width} ranges representing end of each genomic range in the input.
+#' @importFrom GenomeInfoDb seqlengths
+#' @importFrom GenomicRanges strand seqnames values<- values
+#' @author Kevin Hadi
+#' @export
+grl.end = function(grl, width = 1, force = FALSE, ignore.strand = TRUE, clip = TRUE) {
+    tmp_vals = mcols(grl)
+    tmp_gr = unlist(grl, use.names = FALSE)
+    tmp_gr = gr.end(tmp_gr, width, force, ignore.strand, clilp)
+    new_grl = relist(tmp_gr, grl)
+    mcols(new_grl) = tmp_vals
+    return(new_grl)
+}
+
 
