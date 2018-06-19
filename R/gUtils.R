@@ -853,8 +853,9 @@ grl.bind = function(...)
     ## currently will loose gr level features
     grls = list(...)
 
-    ## check the input
-    if(any(sapply(grls, function(x) class(x) != "GRangesList"))){
+  ## check the input
+  if (any(sapply(grls, function(x) !inherits(x, 'GRangesList')))){
+#    if(any(sapply(grls, function(x) class(x) != "GRangesList"))){
         stop("Error: All inputs must be a GRangesList")
     }
 
@@ -1571,13 +1572,12 @@ gr.val = function(query, target, val = NULL, mean = TRUE, weighted = mean, na.rm
     }
 
     if (length(query) > max.slice){
-        verbose = TRUE
         ix.l = split(1:length(query), ceiling(as.numeric((1:length(query)/max.slice))))
         return(do.call('grbind', parallel::mclapply(ix.l, function(ix) {
             if (verbose){
                 cat(sprintf('Processing intervals %s to %s of %s\n', min(ix), max(ix), length(query)))
             }
-            gr.val(query[ix, ], target = target, val= val, mean = mean, weighted = weighted, na.rm = na.rm, verbose = TRUE, by = by, FUN = FUN, merge = merge, ...)
+            gr.val(query[ix, ], target = target, val= val, mean = mean, weighted = weighted, na.rm = na.rm, verbose = verbose, by = by, FUN = FUN, merge = merge, ...)
         }, mc.cores = mc.cores)))
     }
 
@@ -1952,7 +1952,8 @@ rle.query = function(subject.rle, query.gr, chunksize = 1e9, mc.cores = 1, verbo
             {
                 subject.rle[[chr]] = c(subject.rle[[chr]], Rle(NA, m - length(subject.rle[[chr]])))
             }
-            out[unlist(as.integer(out.ix[ix]))] = subject.rle[[chr]][rix]
+            ## out[unlist(as.integer(out.ix[ix]))] = subject.rle[[chr]][rix] ### previously (before as.integer of IRanges ceased to be supported)
+            out[out.ix[ix]] = subject.rle[[chr]][rix]
         }
 
         if('-' %in% as.character(strand(query.gr)))
