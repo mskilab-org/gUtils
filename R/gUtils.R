@@ -3138,7 +3138,8 @@ setMethod("%&%", signature(x = 'GRanges'), function(x, y) {
     }
     return(x[gr.in(x, y)])
 })
-setMethod("%&%", signature(x = 'GRangesList'), function(x, y) {
+
+.grlandfun = function(x, y) {
     if (is.character(y)){
         y = parse.gr(y)
     }
@@ -3153,10 +3154,9 @@ setMethod("%&%", signature(x = 'GRangesList'), function(x, y) {
     ret_grl = split(gr[w_in], split_by)
     names(ret_grl) = names(x)[grl_ix]
     return(ret_grl)
-})
-
-
-
+}
+setMethod("%&%", signature(x = 'GRangesList'), .grlandfun)
+setMethod("%&%", signature(x = 'CompressedGRangesList'), .grlandfun)
 
 
 #' @name %&&%
@@ -3179,7 +3179,8 @@ setMethod("%&&%", signature(x = "GRanges"), function(x, y) {
     }
     return(x[gr.in(x, y, ignore.strand = FALSE)])
 })
-setMethod("%&&%", signature(x = 'GRangesList'), function(x, y) {
+
+.grlandfunsign = function(x, y) {
     if (is.character(y)){
         y = parse.gr(y)
     }
@@ -3194,7 +3195,9 @@ setMethod("%&&%", signature(x = 'GRangesList'), function(x, y) {
     ret_grl = split(gr[w_in], split_by)
     names(ret_grl) = names(x)[grl_ix]
     return(ret_grl)
-})
+}
+setMethod("%&&%", signature(x = 'GRangesList'), .grlandfunsign)
+setMethod("%&&%", signature(x = 'CompressedGRangesList'), .grlandfunsign)
 
 
 
@@ -3447,7 +3450,8 @@ setMethod("%Q%", signature(x = "GRanges"), function(x, y) {
     }
     return(x[ix])
 })
-setMethod("%Q%", signature(x = "GRangesList"), function(x, y) {
+
+.qgrlfun =  function(x, y) {
     condition_call  = substitute(y)
     ## serious R voodoo gymnastics .. but I think finally hacked it to remove ghosts
     ## create environment that combines the calling env with the granges env
@@ -3460,25 +3464,12 @@ setMethod("%Q%", signature(x = "GRangesList"), function(x, y) {
         ix = eval(condition_call, GenomicRanges::as.data.frame(x))
     }
     return(x[ix])
-})
+}
 
+setMethod("%Q%", signature(x = "GRangesList"),.qgrlfun)
+setMethod("%Q%", signature(x = "CompressedGRangesList"), .qgrlfun)
 
-#' @name %QQ%
-#' @title query ranges by applying an expression to GRanges metadata within a GRangesList
-#' @description
-#'
-#' grl %QQ% query returns the subsets of GRanges elements within grl that matches meta data statement in query
-#'
-#' @return subset of grl that matches query
-#' @rdname grl.query
-#' @docType methods
-#' @aliases %QQ%,GRanges-method
-#' @param x \code{GRangesList}
-#' @param y expression querying metadata columns evaluating to a logical or integer matching to a subset of GRanges elements of x 
-#' @export
-#' @author Kevin Hadi
-setGeneric('%QQ%', function(x, ...) standardGeneric('%QQ%'))
-setMethod(`%QQ%`, signature(x = "GRangesList"), function(x, y) {
+.qqgrlfun = function(x, y) {
     tmp_vals = mcols(x)
     tmp_gr = unlist(x, use.names = FALSE)
     tmp_nm = names(tmp_gr)
@@ -3501,7 +3492,25 @@ setMethod(`%QQ%`, signature(x = "GRangesList"), function(x, y) {
     names(ret_grl) = names(x)[grl_id]
     mcols(ret_grl) = tmp_vals[grl_id,]
     return(ret_grl)
-})
+}
+
+#' @name %QQ%
+#' @title query ranges by applying an expression to GRanges metadata within a GRangesList
+#' @description
+#'
+#' grl %QQ% query returns the subsets of GRanges elements within grl that matches meta data statement in query
+#'
+#' @return subset of grl that matches query
+#' @rdname grl.query
+#' @docType methods
+#' @aliases %QQ%,GRanges-method
+#' @param x \code{GRangesList}
+#' @param y expression querying metadata columns evaluating to a logical or integer matching to a subset of GRanges elements of x 
+#' @export
+#' @author Kevin Hadi
+setGeneric('%QQ%', function(x, ...) standardGeneric('%QQ%'))
+setMethod(`%QQ%`, signature(x = "GRangesList"), .qqgrlfun)
+setMethod(`%QQ%`, signature(x = "CompressedGRangesList"), .qqgrlfun)
 
 
 
@@ -3531,8 +3540,6 @@ setMethod("%^%", signature(x = "GRanges"), function(x, y) {
     }
     return(gr.in(x, y))
 })
-
-
 
 
 #' @name %$%
