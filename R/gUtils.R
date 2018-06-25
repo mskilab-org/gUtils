@@ -2350,6 +2350,10 @@ seg2gr = function(segs, seqlengths = NULL, seqinfo = Seqinfo())
         segs$pos1 = as.numeric(segs$pos1)
         segs$pos2 = as.numeric(segs$pos2)
 
+        ## only convert valid ranges
+        valid.ix = which(!is.na(segs$pos1) & !is.na(segs$pos2))
+        segs = segs[valid.ix, , drop=FALSE]
+        
         out = GRanges(seqnames = segs$chr, ranges = IRanges(segs$pos1, segs$pos2),strand = segs$strand, seqlengths = seqlengths)
 
     } else{
