@@ -1770,8 +1770,14 @@ gr.val = function(query, target, val = NULL, mean = TRUE, weighted = mean, na.rm
                     colnames(values(query)) = new.names
                 }
             } else{
-                for (val in levels(factor(subject$by))){
-                    values(query)[, val] = NA
+                if(is.null(by.prefix)){
+                    for (val in levels(factor(values(target)[, by]))){
+                        values(query)[, val] = NA
+                    }
+                } else {
+                    for (val in levels(factor(values(target)[, by]))){
+                        values(query)[, paste(by.prefix, val, sep='.')] = NA
+                    }
                 }
             }
         }
