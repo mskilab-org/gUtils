@@ -523,6 +523,8 @@ test_that("gr.tile.map", {
 test_that("gr.val", {
 
     gr = GRanges(1, IRanges(1e6, 2e6))
+    gr2 <- GRanges(1, IRanges(c(1, 300, 5000), c(50, 500, 5600)), 
+                   transcript_type = c("mRNA", "snoRNA", "lncRNA"))
     expect_equal(colnames(mcols(gr.val(gr, example_genes, val = 'name'))), "name")
     ## check val = NULL
     expect_equal(width(gr.val(gr, example_genes)), 1000001)
@@ -552,7 +554,13 @@ test_that("gr.val", {
     expect_equal(width(gr.val(gr, example_genes, val=NULL)), 1000001)
     ## check 'if (inherits(target, 'GRangesList'))''
     ## I get errors: e.g. 'gr.val(grl1, example_genes)'
-
+    ## check empty non-overlapping case transfers levels to columns
+    expect_identical(mcols(gr.val(gr, gr2, by = 'transcript_type', by.prefix = NULL)),
+                     DataFrame(lncRNA=NA, mRNA=NA, snoRNA=NA))
+    ## check empyt non-overlapping case with by.prefix
+    expect_identical(mcols(gr.val(gr, gr2, by = 'transcript_type', by.prefix = "tx_type")),
+                     DataFrame(tx_type.lncRNA=NA, tx_type.mRNA=NA, tx_type.snoRNA=NA))
+    
 })
 
 
