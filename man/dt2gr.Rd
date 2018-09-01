@@ -4,7 +4,7 @@
 \alias{dt2gr}
 \title{Convert data.table to GRanges}
 \usage{
-dt2gr(dt, key = NULL, seqlengths = hg_seqlengths(), seqinfo = Seqinfo())
+dt2gr(dt, key = NULL, seqlengths = NULL, seqinfo = Seqinfo())
 }
 \arguments{
 \item{dt}{data.table or data.frame to convert to \code{GRanges}}

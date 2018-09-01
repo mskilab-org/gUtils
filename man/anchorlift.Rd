@@ -5,7 +5,7 @@
 \title{anchorlift}
 \usage{
 anchorlift(query, subject, window = 1e+09, by = NULL, seqname = "Anchor",
-  include.values = TRUE)
+  include.values = TRUE, verbose = TRUE, ...)
 }
 \arguments{
 \item{query}{GRanges that will be lifted around the subject}

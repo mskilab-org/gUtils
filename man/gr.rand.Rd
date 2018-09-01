@@ -24,7 +24,7 @@ This function is currently quite slow, needs optimization
 \examples{
 
 ## Generate 5 non-overlapping regions of width 10 on hg19
-gr.rand(rep(10,5), BSgenome.Hsapiens.UCSC.hg19::Hsapiens)
+gr.rand(rep(10,5), si2gr(hg_seqlengths()))
 
 }
 \author{

@@ -5,7 +5,7 @@
 \alias{\%+\%,GRanges-method}
 \title{Nudge GRanges right}
 \usage{
-gr \%+\% ...
+gr \%+\% x
 }
 \value{
 shifted granges
