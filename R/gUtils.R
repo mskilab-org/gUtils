@@ -101,7 +101,7 @@ hg_seqlengths = function(genome = NULL, chr = FALSE, include.junk = FALSE)
 
   if (nchar(dbs) == 0)
   {
-    warning('hg_seqlengths: supply genome seqlengths or set default with env variable DEFAULT_BSGENOME (e.g. Sys.setenv(DEFAULT_BSGENOME = "BSgenome.Hsapiens.UCSC.hg19::Hsapiens").  DEFAULT_BSGENOME can also be set to a path or URL of a tab delimited text *.chrom.sizes file')
+    warning('hg_seqlengths: supply genome seqlengths or set default with env variable DEFAULT_GENOME (e.g. Sys.setenv(DEFAULT_GENOME = "BSgenome.Hsapiens.UCSC.hg19::Hsapiens").  DEFAULT_BSGENOME can also be set to a path or URL of a tab delimited text *.chrom.sizes file')
     return(NULL)
   } else{
     tmp = suppressWarnings(tryCatch(read.delim(dbs, header = FALSE), error= function(e) NULL))
@@ -507,6 +507,8 @@ gr.mid = function(x)
 #' @importFrom GenomeInfoDb seqinfo seqnames<-
 #' @importFrom GenomicRanges gaps ranges ranges<-
 #' @examples
+#'
+#' Sys.setenv(DEFAULT_GENOME = "http://mskilab.com/gUtils/hg19/hg19.chrom.sizes")
 #'
 #' ## Generate 5 non-overlapping regions of width 10 on hg19
 #' gr.rand(rep(10,5), si2gr(hg_seqlengths()))
