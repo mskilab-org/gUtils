@@ -1,11 +1,8 @@
-
 library(gUtils)
-library(BSgenome.Hsapiens.UCSC.hg19)
-
 library(testthat)
 
-Sys.setenv(DEFAULT_BSGENOME = "BSgenome.Hsapiens.UCSC.hg19::Hsapiens")
-
+GENOME = "http://mskilab.com/gUtils/hg19/hg19.chrom.sizes"
+Sys.setenv(DEFAULT_BSGENOME = GENOME)
 
 context("unit testing gUtils operations")
 
@@ -13,27 +10,16 @@ gr = GRanges(1, IRanges(c(3,7,13), c(5,9,16)), strand=c('+','-','-'), seqinfo=Se
 gr2 = GRanges(1, IRanges(c(1,9), c(6,14)), strand=c('+','-'), seqinfo=Seqinfo("1", 25), field=c(1,2))
 dt = data.table(seqnames=1, start=c(2,5,10), end=c(3,8,15))
 
-
-
-
-test_that("hg_seqlengths()", {
-    
+test_that("hg_seqlengths()", {    
     Sys.setenv(DEFAULT_BSGENOME = "")
     expect_warning(hg_seqlengths(genome=NULL))
     ## throw error with incorrect DEFAULT_BSGENOME 
     Sys.setenv(DEFAULT_BSGENOME = "incorrect")
     expect_error(hg_seqlengths())
+    Sys.setenv(DEFAULT_BSGENOME = GENOME)
     ## set DEFAULT_BSGENOME as hg19
-    Sys.setenv(DEFAULT_BSGENOME = "BSgenome.Hsapiens.UCSC.hg19::Hsapiens")
     expect_equal(as.numeric(length(hg_seqlengths())), 25)
-    ee = structure(names="1", 249250621L)
-    expect_equal(hg_seqlengths(Hsapiens)[1], ee)
-    expect_equal(names(hg_seqlengths(Hsapiens, chr=TRUE)[1]), "chr1")
-    expect_equal(length(hg_seqlengths(Hsapiens, include.junk = TRUE)), 93)
-
 })
-
-
 
 
 test_that("gr2dt", {
@@ -84,7 +70,7 @@ test_that("gr.start", {
 
 test_that("dt2gr", {
 
-    Sys.setenv(DEFAULT_BSGENOME = "BSgenome.Hsapiens.UCSC.hg19::Hsapiens")
+    Sys.setenv(DEFAULT_BSGENOME = GENOME)
     dt <- data.table(seqnames=1, start=1, end=10, strand='+', name="A")
     expect_equal(as.character(strand(dt2gr(dt))), '+')
     expect_equal(start(dt2gr(dt)), 1)
@@ -140,7 +126,7 @@ test_that('gr.rand', {
     expect_equal(start(gg)[1], 59221325L)
     expect_error(gr.rand(c(3,500000000), si)) ## Error: Allocation failed. Supplied widths are likely too large
     ## check 'if (!is(genome, 'Seqinfo')){'
-    ref = si2gr(BSgenome.Hsapiens.UCSC.hg19::Hsapiens)
+    ref = si2gr(gg)
     expect_equal(length(gr.rand(c(3,5), ref)), 2)
 
 })
@@ -283,7 +269,6 @@ test_that("si2gr", {
     expect_equal(end(gg)[1], 249250621)
     expect_equal(as.character(strand(gg)[1]), "+")
     ## check 'if (is(si, 'BSgenome'))'
-    expect_equal(length(si2gr(BSgenome.Hsapiens.UCSC.hg19::Hsapiens)), 93)   
     ## check ' else if (!is(si, 'Seqinfo'))'
     expect_equal(length(si2gr(GRanges(si))), 25)   
     ## check  if (is(si, 'vector')){
@@ -418,7 +403,6 @@ test_that("gr.fix", {
 
     gg = GRanges(c("X",1), IRanges(c(1,2), width=1))
     expect_equal(length(seqlengths(gr.fix(gg, si))), 25)
-    expect_equal(length(seqlengths(gr.fix(gg, BSgenome.Hsapiens.UCSC.hg19::Hsapiens))), 95)
     ## check 'if (is(gr, 'GRangesList')){'
     expect_equal(as.integer(seqnames(gr.fix(grl1[1])[1])), 5)
 
@@ -523,6 +507,8 @@ test_that("gr.tile.map", {
 test_that("gr.val", {
 
     gr = GRanges(1, IRanges(1e6, 2e6))
+    gr2 <- GRanges(1, IRanges(c(1, 300, 5000), c(50, 500, 5600)), 
+                   transcript_type = c("mRNA", "snoRNA", "lncRNA"))
     expect_equal(colnames(mcols(gr.val(gr, example_genes, val = 'name'))), "name")
     ## check val = NULL
     expect_equal(width(gr.val(gr, example_genes)), 1000001)
@@ -552,7 +538,13 @@ test_that("gr.val", {
     expect_equal(width(gr.val(gr, example_genes, val=NULL)), 1000001)
     ## check 'if (inherits(target, 'GRangesList'))''
     ## I get errors: e.g. 'gr.val(grl1, example_genes)'
-
+    ## check empty non-overlapping case transfers levels to columns
+    expect_identical(mcols(gr.val(gr, gr2, by = 'transcript_type', by.prefix = NULL)),
+                     DataFrame(lncRNA=NA, mRNA=NA, snoRNA=NA))
+    ## check empyt non-overlapping case with by.prefix
+    expect_identical(mcols(gr.val(gr, gr2, by = 'transcript_type', by.prefix = "tx_type")),
+                     DataFrame(tx_type.lncRNA=NA, tx_type.mRNA=NA, tx_type.snoRNA=NA))
+    
 })
 
 
@@ -970,20 +962,15 @@ test_that('gr.collapse', {
 
 
 
-test_that("gr.match", {
-    
+test_that("gr.match", {  
     ## gives back overlapping matches
     gr1 = GRanges(1, IRanges(c(10,20), width=5), strand=c("+", "-"))
     gr2 = GRanges(1, IRanges(c(8,18, 100), width=5), strand=c("-", "+", "+"))
-
     expect_identical(suppressWarnings(gr.match(gr1, gr2)), c(1L,2L))
 
-
-    expect_error(gr.match(gr1, gr2, ignore.strand = FALSE))
     ## check 'if (length(query)>max.slice)'
     ##expect_equal(as.numeric(length(gr.match(gr1, gr2, max.slice=1))), 2)
     expect_error(gr.match(gr1, gr2, max.slice=1), NA)
-
 })
 
 
@@ -1478,39 +1465,9 @@ test_that('anchorlift', {
 
 ## tests for data functions
 
-
-
 ## hg_seqlengths()
 test_that('hg_seqlengths()', {
-
-    expect_equal(length(hg_seqlengths()), 25)
-    expect_equal(as.vector(hg_seqlengths()[1]), 249250621)
-    expect_equal(as.vector(hg_seqlengths()[2]), 243199373)
-    expect_equal(as.vector(hg_seqlengths()[3]), 198022430)
-    expect_equal(as.vector(hg_seqlengths()[4]), 191154276)
-    expect_equal(as.vector(hg_seqlengths()[5]), 180915260)
-    expect_equal(as.vector(hg_seqlengths()[6]), 171115067)
-    expect_equal(as.vector(hg_seqlengths()[7]), 159138663)
-    expect_equal(as.vector(hg_seqlengths()[8]), 146364022)
-    expect_equal(as.vector(hg_seqlengths()[9]), 141213431)
-    expect_equal(as.vector(hg_seqlengths()[10]), 135534747)
-    expect_equal(as.vector(hg_seqlengths()[11]), 135006516)
-    expect_equal(as.vector(hg_seqlengths()[12]), 133851895)
-    expect_equal(as.vector(hg_seqlengths()[13]), 115169878)
-    expect_equal(as.vector(hg_seqlengths()[14]), 107349540)
-    expect_equal(as.vector(hg_seqlengths()[15]), 102531392)
-    expect_equal(as.vector(hg_seqlengths()[16]), 90354753)
-    expect_equal(as.vector(hg_seqlengths()[17]), 81195210)
-    expect_equal(as.vector(hg_seqlengths()[18]), 78077248)
-    expect_equal(as.vector(hg_seqlengths()[19]), 59128983)
-    expect_equal(as.vector(hg_seqlengths()[20]), 63025520)
-    expect_equal(as.vector(hg_seqlengths()[21]), 48129895)
-    expect_equal(as.vector(hg_seqlengths()[22]), 51304566)
-    expect_equal(as.vector(hg_seqlengths()[23]), 155270560)
-    expect_equal(as.vector(hg_seqlengths()[24]), 59373566)
-    expect_equal(as.vector(hg_seqlengths()[25]), 16571)
-
-
+  expect_equal(hg_seqlengths(), c("1"=249250621, "2"=243199373, "3"=198022430, "4"=191154276, "5"=180915260, "6"=171115067, "7"=159138663, "X"=155270560, "8"=146364022, "9"=141213431, "10"=135534747, "11"=135006516, "12"=133851895, "13"=115169878, "14"=107349540, "15"=102531392, "16"=90354753, "17"=81195210, "18"=78077248, "20"=63025520, "Y"=59373566, "19"=59128983, "22"=51304566, "21"=48129895, "M"=16571))
 })
 
 
