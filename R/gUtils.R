@@ -1031,22 +1031,19 @@ gr.string = function(gr, add.chr = FALSE, mb = FALSE, round = 3, other.cols = c(
 
     str = ifelse(as.logical(strand(gr)!='*'), as.character(strand(gr)), '')
 
-    
+    ## XT debug: the lastest GRanges requires an extra ":" in between end and strand
     if (mb){
-        return(paste(sn, ':', round(start(gr)/1e6, round), '-', round(end(gr)/1e6, round), str, other.str, sep = ''))
+        return(paste(sn, ':', round(start(gr)/1e6, round), '-', round(end(gr)/1e6, round), ":", str, other.str, sep = ''))
     }
     else{
         if (pretty){
-            return(paste(sn, ':', stringr::str_trim(format(start(gr), big.mark = ',')), '-', stringr::str_trim(format(end(gr), big.mark = ',')), str, other.str, sep = ''))
+            return(paste(sn, ':', stringr::str_trim(format(start(gr), big.mark = ',')), '-', stringr::str_trim(format(end(gr), big.mark = ',')), ":", str, other.str, sep = ''))
         }
         else{
-            return(paste(sn, ':', start(gr), '-', end(gr), str, other.str, sep = ''))
+            return(paste(sn, ':', start(gr), '-', end(gr), ":", str, other.str, sep = ''))
         }
     }
 }
-
-
-
 
 #' @name grl.reduce
 #' @title grl.reduce

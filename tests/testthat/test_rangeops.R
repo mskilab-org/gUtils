@@ -351,15 +351,15 @@ test_that("gr.string", {
     expect_that(grepl("(+|-)", gr.string(example_genes)[1]), is_true())
     ## check 'if (length(gr)==0){'
     ## add.chr
-    expect_equal(gr.string(example_genes, add.chr=TRUE)[1], 'chr1:69090-70008+')
+    expect_equal(gr.string(example_genes, add.chr=TRUE)[1], 'chr1:69090-70008:+')
     ## mb
-    expect_equal(gr.string(example_genes[1], mb = TRUE), '1:0.069-0.07+')
+    expect_equal(gr.string(example_genes[1], mb = TRUE), '1:0.069-0.07:+')
     ## round
-    expect_equal(gr.string(example_genes[1], round = 1, mb=TRUE), '1:0.1-0.1+')
+    expect_equal(gr.string(example_genes[1], round = 1, mb=TRUE), '1:0.1-0.1:+')
     ## other.cols
-    expect_equal(gr.string(example_genes[1], other.cols='name'), '1:69090-70008+  OR4F5')
+    expect_equal(gr.string(example_genes[1], other.cols='name'), '1:69090-70008:+  OR4F5')
     ## pretty
-    expect_equal(gr.string(example_genes, pretty=TRUE)[1], '1:69,090-70,008+')
+    expect_equal(gr.string(example_genes, pretty=TRUE)[1], '1:69,090-70,008:+')
 
 })
 
@@ -387,12 +387,12 @@ test_that("grl.string", {
     expect_that(nchar(names(grl.string(grl.hiC[1:5])[1])) > 0, is_true())
     expect_that(grepl(",", grl.string(grl.hiC[1:5])[1]), is_true())
     ## check 'if (class(grl) == "GRanges"){'
-    expect_equal(grl.string(example_genes[1]), '1:69090-70008+')
+    expect_equal(grl.string(example_genes[1]), '1:69090-70008:+')
     ## check 'error handling'
     expect_error(grl.string('foo')) ##  Error: Input must be GRangesList (or GRanges, which is sent to gr.string)
     ## check 'else{ nm = 1:length(grl) ! 1138 }'
     names(grl1) = NULL
-    expect_equal(as.character(grl.string(grl1[2])), '9:140100229-140100229-,19:24309057-24309057-')
+    expect_equal(as.character(grl.string(grl1[2])), '9:140100229-140100229:-,19:24309057-24309057:-')
 
 })
 
