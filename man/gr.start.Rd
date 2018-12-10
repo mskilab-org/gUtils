@@ -4,7 +4,8 @@
 \alias{gr.start}
 \title{Get GRanges corresponding to beginning of range}
 \usage{
-gr.start(x, width = 1, force = FALSE, ignore.strand = TRUE, clip = TRUE)
+gr.start(x, width = 1, force = FALSE, ignore.strand = TRUE,
+  clip = TRUE)
 }
 \arguments{
 \item{x}{\code{GRanges} object to operate on}

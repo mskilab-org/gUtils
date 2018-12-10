@@ -4,7 +4,8 @@
 \alias{ra.overlaps}
 \title{ra.overlaps}
 \usage{
-ra.overlaps(ra1, ra2, pad = 0, arr.ind = TRUE, ignore.strand = FALSE, ...)
+ra.overlaps(ra1, ra2, pad = 0, arr.ind = TRUE, ignore.strand = FALSE,
+  ...)
 }
 \arguments{
 \item{ra1}{\code{GRangesList} with rearrangement set 1}

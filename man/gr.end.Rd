@@ -4,7 +4,8 @@
 \alias{gr.end}
 \title{Get the right ends of a \code{GRanges}}
 \usage{
-gr.end(x, width = 1, force = FALSE, ignore.strand = TRUE, clip = TRUE)
+gr.end(x, width = 1, force = FALSE, ignore.strand = TRUE,
+  clip = TRUE)
 }
 \arguments{
 \item{x}{\code{GRanges} object to operate on}

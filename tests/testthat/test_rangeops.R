@@ -2,7 +2,7 @@ library(gUtils)
 library(testthat)
 
 GENOME = "http://mskilab.com/gUtils/hg19/hg19.chrom.sizes"
-Sys.setenv(DEFAULT_BSGENOME = GENOME)
+Sys.setenv(DEFAULT_GENOME = GENOME)
 
 context("unit testing gUtils operations")
 
@@ -11,14 +11,15 @@ gr2 = GRanges(1, IRanges(c(1,9), c(6,14)), strand=c('+','-'), seqinfo=Seqinfo("1
 dt = data.table(seqnames=1, start=c(2,5,10), end=c(3,8,15))
 
 test_that("hg_seqlengths()", {    
-    Sys.setenv(DEFAULT_BSGENOME = "")
-    expect_warning(hg_seqlengths(genome=NULL))
-    ## throw error with incorrect DEFAULT_BSGENOME 
-    Sys.setenv(DEFAULT_BSGENOME = "incorrect")
-    expect_error(hg_seqlengths())
-    Sys.setenv(DEFAULT_BSGENOME = GENOME)
-    ## set DEFAULT_BSGENOME as hg19
-    expect_equal(as.numeric(length(hg_seqlengths())), 25)
+  Sys.setenv(DEFAULT_GENOME = "")
+  Sys.setenv(DEFAULT_BSGENOME = "")
+  expect_warning(hg_seqlengths(genome=NULL))
+  ## throw error with incorrect DEFAULT_GENOME 
+  Sys.setenv(DEFAULT_GENOME = "incorrect")
+  expect_error(hg_seqlengths())
+  Sys.setenv(DEFAULT_GENOME = GENOME)
+  ## set DEFAULT_GENOME as hg19
+  expect_equal(as.numeric(length(hg_seqlengths())), 25)
 })
 
 
@@ -70,7 +71,7 @@ test_that("gr.start", {
 
 test_that("dt2gr", {
 
-    Sys.setenv(DEFAULT_BSGENOME = GENOME)
+    Sys.setenv(DEFAULT_GENOME = GENOME)
     dt <- data.table(seqnames=1, start=1, end=10, strand='+', name="A")
     expect_equal(as.character(strand(dt2gr(dt))), '+')
     expect_equal(start(dt2gr(dt)), 1)
@@ -1413,8 +1414,7 @@ test_that("gr.simplify", {
 
 
 test_that("parse.gr", {
-
-    gr_example = parse.gr(c('1:1e6-5e6+', '2:2e6-5e6-'))
+    gr_example = parse.gr(c('chr1:1e6-5e6+', 'chr2:2e6-5e6-'))
     expect_equal(width(gr_example[1]), 4000001)
     expect_equal(width(gr_example[2]), 3000001)
 
@@ -1423,7 +1423,7 @@ test_that("parse.gr", {
 
 test_that("parse.grl", {
 
-    grl_example = parse.grl(c('1:1e6-5e6+;5:10-2000', '2:2e6-5e6-;10:100231321-100231399'))
+    grl_example = parse.grl(c('chr1:1e6-5e6+;5:10-2000', 'chr2:2e6-5e6-;chr10:100231321-100231399'))
     expect_equal(width(grl_example[[1]][1]), 4000001)
     expect_equal(width(grl_example[[1]][2]), 1991)
     expect_equal(width(grl_example[[2]][1]), 3000001)
@@ -1467,7 +1467,7 @@ test_that('anchorlift', {
 
 ## hg_seqlengths()
 test_that('hg_seqlengths()', {
-  expect_equal(hg_seqlengths(), c("1"=249250621, "2"=243199373, "3"=198022430, "4"=191154276, "5"=180915260, "6"=171115067, "7"=159138663, "X"=155270560, "8"=146364022, "9"=141213431, "10"=135534747, "11"=135006516, "12"=133851895, "13"=115169878, "14"=107349540, "15"=102531392, "16"=90354753, "17"=81195210, "18"=78077248, "20"=63025520, "Y"=59373566, "19"=59128983, "22"=51304566, "21"=48129895, "M"=16571))
+  expect_equal(hg_seqlengths(), c("chr1"=249250621, "chr2"=243199373, "chr3"=198022430, "chr4"=191154276, "chr5"=180915260, "chr6"=171115067, "chr7"=159138663, "chrX"=155270560, "chr8"=146364022, "chr9"=141213431, "chr10"=135534747, "chr11"=135006516, "chr12"=133851895, "chr13"=115169878, "chr14"=107349540, "chr15"=102531392, "chr16"=90354753, "chr17"=81195210, "chr18"=78077248, "chr20"=63025520, "chrY"=59373566, "chr19"=59128983, "chr22"=51304566, "chr21"=48129895, "chrM"=16571))
 })
 
 

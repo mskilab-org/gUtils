@@ -75,8 +75,8 @@ NULL
 #'
 #' Outputs a standard seqlengths for human genome +/- "chr".
 #'
-#' @note A default genome can be set with the environment variable DEFAULT_BSGENOME. This
-#' can be the full namespace of the genome  e.g.: \code{DEFAULT_BSGENOME=BSgenome.Hsapiens.UCSC.hg19::Hsapiens} OR  a URL / file path pointing to a chrom.sizes text file (e.g. http://genome.ucsc.edu/goldenpath/help/hg19.chrom.sizes) specifying a genome definition
+#' @note A default genome can be set with the environment variable DEFAULT_GENOME. This
+#' can be the full namespace of the genome  e.g.: \code{DEFAULT_GENOME=BSgenome.Hsapiens.UCSC.hg19::Hsapiens} OR  a URL / file path pointing to a chrom.sizes text file (e.g. http://genome.ucsc.edu/goldenpath/help/hg19.chrom.sizes) specifying a genome definition
 #' @param genome A \code{BSgenome} or object with a \code{seqlengths} accessor. Default is hg19, but loads with warning unless explicitly provided
 #' @param chr boolean Flag for whether to keep "chr". (default = FALSE)
 #' @param include.junk boolean Flag for whether to not trim to only 1-22, X, Y, M. (default = FALSE)
@@ -84,7 +84,7 @@ NULL
 #' @importFrom utils read.delim
 #' @author Marcin Imielinski
 #' @export
-hg_seqlengths = function(genome = NULL, chr = FALSE, include.junk = FALSE)
+hg_seqlengths = function(genome = NULL, chr = TRUE, include.junk = FALSE)
 {
   sl = NULL
   dbs = ''
@@ -109,7 +109,7 @@ hg_seqlengths = function(genome = NULL, chr = FALSE, include.junk = FALSE)
     {
       genome = tryCatch(eval(parse(text=dbs)), error = function(e) NULL)
       if (is.null(genome)){
-        stop(sprintf("Error loading %s as BSGenome library ...\nPlease check DEFAULT_BSGENOME setting and set to either an R library BSGenome object or a valid http URL or filepath pointing to a chrom.sizes tab delimited text file.", dbs))
+        stop(sprintf("Error loading %s as chrom.sizes or BSGenome library ...\nPlease check DEFAULT_GENOME setting and set to either an R library BSGenome object or a valid http URL or filepath pointing to a chrom.sizes tab delimited text file.", dbs))
                 }
     }else{
       sl = structure(tmp[,2], names = as.character(tmp[,1]))
@@ -877,50 +877,58 @@ grbind = function(x, ...)
 #' @importFrom GenomicRanges mcols<- mcols split
 grl.bind = function(...)
 {
-    ## TODO: make this work for when underlying grs do not have matching features
-    ## currently will loose gr level features
-    grls = list(...)
+  ## TODO: make this work for when underlying grs do not have matching features
+  ## currently will loose gr level features
+  grls = list(...)
 
-    ## check the input
+  ## check the input
 
-    if(any(sapply(grls, function(x) !inherits(x, "GRangesList")))){
-        stop("Error: All inputs must inherit GRangesList")
+  if(any(sapply(grls, function(x) !inherits(x, "GRangesList")))){
+    stop("Error: All inputs must inherit GRangesList")
+  }
+
+  ## annoying acrobatics to reconcile gr and grl level features for heterogenous input gr / grls
+  grls.ul = lapply(grls, grl.unlist)
+  grls.ul.rb = do.call('grbind', grls.ul)
+
+  if (length(grls.ul.rb)==0)
+    {
+      out = GRangesList()
+      seqinfo(out) = seqinfo(grls[[1]])
+      return(out)
     }
 
-    ## annoying acrobatics to reconcile gr and grl level features for heterogenous input gr / grls
-    grls.ul = lapply(grls, grl.unlist)
-    grls.ul.rb = do.call('grbind', grls.ul)
-    sp = base::unlist(lapply(1:length(grls), function(x) rep(x, length(grls.ul[[x]]))))
-    gix = base::split(grls.ul.rb$grl.ix, sp)
-    gjx = base::split(1:length(grls.ul.rb), sp)
-    grls.ul.rb$grl.iix = grls.ul.rb$grl.ix = NULL
+  sp = base::unlist(lapply(1:length(grls), function(x) rep(x, length(grls.ul[[x]]))))
+  gix = base::split(grls.ul.rb$grl.ix, sp)
+  gjx = base::split(1:length(grls.ul.rb), sp)
+  grls.ul.rb$grl.iix = grls.ul.rb$grl.ix = NULL
 
-    grls.vals = lapply(grls, function(x){
-        if (ncol(mcols(x))>0){
-            return(as.data.frame(mcols(x)))
-        } else{
-            return(data.frame(dummy241421 = rep(NA, length(x))))
-        }
-    })
-
-    grls.new = mapply(function(x,y) GenomicRanges::split(grls.ul.rb[x],y), gjx, gix)
-
-    ## do.call('c', grls.new) is not working for some reason (gives back list again, not GRangesList)
-    ## have to do this instead, not ideal
-    if (length(grls.new) > 1) {
-        out = grls.new[[1]]
-        for (i in 2:length(grls.new)){
-            out = c(out, grls.new[[i]])
-        }
-    } else {
-        out = grls.new[[1]]
+  grls.vals = lapply(grls, function(x){
+    if (ncol(mcols(x))>0){
+      return(as.data.frame(mcols(x)))
+    } else{
+      return(data.frame(dummy241421 = rep(NA, length(x))))
     }
+  })
 
-    out.val = do.call('rrbind', grls.vals)
-    out.val$dummy241421 = NULL
-    GenomicRanges::mcols(out) <- out.val
+  grls.new = mapply(function(x,y) GenomicRanges::split(grls.ul.rb[x],y), gjx, gix)
 
-    return(out)
+  ## do.call('c', grls.new) is not working for some reason (gives back list again, not GRangesList)
+  ## have to do this instead, not ideal
+  if (length(grls.new) > 1) {
+    out = grls.new[[1]]
+    for (i in 2:length(grls.new)){
+      out = c(out, grls.new[[i]])
+    }
+  } else {
+    out = grls.new[[1]]
+  }
+
+  out.val = do.call('rrbind', grls.vals)
+  out.val$dummy241421 = NULL
+  GenomicRanges::mcols(out) <- out.val
+
+  return(out)
 }
 
 
@@ -2997,7 +3005,7 @@ gr.in = function(query, subject, ...)
 #' @export
 gr.sum = function(gr, field = NULL, mean = FALSE)
 {
-    SHIFT = pmax(0, pmin(0, abs(min(start(gr))-1)))
+    SHIFT = pmax(0, -min(start(gr))-1)
 
     if (is.null(field)){
         weight = rep(1, length(gr))
@@ -3008,15 +3016,15 @@ gr.sum = function(gr, field = NULL, mean = FALSE)
     }
 
     ## in case we go "off the seqlengths" we recreate a GR with adjusted seqlengths so coverage will process correctly
-    tmp.gr = shift(gr[, c()], SHIFT)
+    tmp.gr = GenomicRanges::shift(gr[, c()], SHIFT)
     tmp.gr = gr.fix(tmp.gr)
-    out = shift(as(coverage(tmp.gr, weight = weight), 'GRanges'), -SHIFT)
+    out = GenomicRanges::shift(as(coverage(tmp.gr, weight = weight), 'GRanges'), -SHIFT)
 
     if (!is.null(field))
     {
         if (mean)
         {
-            count = shift(as(coverage(tmp.gr, weight = 1), 'GRanges'), -SHIFT)
+            count = GenomicRanges::shift(as(coverage(tmp.gr, weight = 1), 'GRanges'), -SHIFT)
             out$score = out$score/count$score[gr.match(out, count)] ## divide by total count at each location
         }
         names(values(out))[length(names(values(out)))] = field
@@ -3890,7 +3898,7 @@ parse.grl = function(x, seqlengths = hg_seqlengths())
     tmp.u = gsub('\\,', '', tmp.u)
     tmp.id = rep(1:length(tmp), sapply(tmp, length))
     str = gsub('.*([\\+\\-])$','\\1', tmp.u)
-    spl = strsplit(tmp.u, '[\\:\\-\\−\\+]', perl = T)
+    spl = strsplit(tmp.u, "[\\-\\+\\:]", perl = T)
 
     if (any(ix <- sapply(spl, length)==2)){
         spl[ix] = lapply(which(ix), function(x) spl[[x]][c(1:2,2)])
@@ -3901,8 +3909,24 @@ parse.grl = function(x, seqlengths = hg_seqlengths())
         if (is.null(seqlengths)){
             stop('Error: Need to define genome boundaries to use chromosome only coordinate strings')
         }
-        spl[ix] = strsplit(gUtils::gr.string(gUtils::si2gr(seqlengths)[sapply(spl[ix], function(x) x[[1]])], mb = F), '[\\:\\-\\+]', perl = T)
+
+        tmp.sigr = gUtils::si2gr(seqlengths)
+        tmp.chrnames = sapply(spl[ix], function(x) x[[1]])
+        ix.present = tmp.chrnames %in% names(tmp.sigr)
+
+        if (any(ix.present))
+        {
+          key = tmp.chrnames[ix.present]
+          tmp.grs = gUtils::gr.string(tmp.sigr[key], mb = F)
+          spl[ix[ix.present]] = strsplit(tmp.grs, '[\\:\\-\\+]', perl = T)
+        }
+        
+        if (any(!ix.present))
+          spl = spl[!ix[!ix.present]]
     }
+
+    if (length(spl)==0)
+      return(c())
 
     if (any(ix <- !str %in% c('+', '-'))){
         str[ix] = '*'

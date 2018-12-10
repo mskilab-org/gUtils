@@ -2,7 +2,6 @@
 % Please edit documentation in R/gUtils.R
 \name{gr.flipstrand}
 \alias{gr.flipstrand}
-\alias{gr.flipstrand}
 \title{Flip strand on \code{GRanges}}
 \usage{
 gr.flipstrand(gr)

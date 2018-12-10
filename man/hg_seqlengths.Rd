@@ -4,7 +4,7 @@
 \alias{hg_seqlengths}
 \title{Output standard human genome seqlengths}
 \usage{
-hg_seqlengths(genome = NULL, chr = FALSE, include.junk = FALSE)
+hg_seqlengths(genome = NULL, chr = TRUE, include.junk = FALSE)
 }
 \arguments{
 \item{genome}{A \code{BSgenome} or object with a \code{seqlengths} accessor. Default is hg19, but loads with warning unless explicitly provided}
