@@ -12,16 +12,18 @@ Set of utility functions for use with `GenomicRanges`
 Installation
 ------------
 
-1. Install devtools
+1. Install R-3.5
+
+2. Install devtools
 
 ```{r}
 install.packages('devtools')
 install.packages('testthat')
 ```
-2. Install gGnome and dependent packages
+3. Install gUtils and dependent packages
 
 ```{r}
-## set this for R-3.5.2 
+## allows dependencies that throw warnings to install
 Sys.setenv(R_REMOTES_NO_ERRORS_FROM_WARNINGS = TRUE)
 
 devtools::install_github('mskilab/gUtils)
