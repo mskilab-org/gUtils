@@ -20,8 +20,8 @@ Named integer vector with elements corresponding to the genome seqlengths
 Outputs a standard seqlengths for human genome +/- "chr".
 }
 \note{
-A default genome can be set with the environment variable DEFAULT_BSGENOME. This
-can be the full namespace of the genome  e.g.: \code{DEFAULT_BSGENOME=BSgenome.Hsapiens.UCSC.hg19::Hsapiens} OR  a URL / file path pointing to a chrom.sizes text file (e.g. http://genome.ucsc.edu/goldenpath/help/hg19.chrom.sizes) specifying a genome definition
+A default genome can be set with the environment variable DEFAULT_GENOME. This
+can be the full namespace of the genome  e.g.: \code{DEFAULT_GENOME=BSgenome.Hsapiens.UCSC.hg19::Hsapiens} OR  a URL / file path pointing to a chrom.sizes text file (e.g. http://genome.ucsc.edu/goldenpath/help/hg19.chrom.sizes) specifying a genome definition
 }
 \author{
 Marcin Imielinski

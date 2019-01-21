@@ -3777,21 +3777,45 @@ setMethod("%^^%", signature(x = "GRanges"), function(x, y) {
 gr.setdiff = function(query, subject, ignore.strand = TRUE, by = NULL, ...)
 {
     ## in this case need to be careful about setdiffing only within the "by" level
-    if (!is.null(by)){
-        tmp = gr2dt(subject)
-        tmp$strand = factor(tmp$strand, c('+', '-', '*'))
-        sl = seqlengths(subject)
-        gp = seg2gr(tmp[, as.data.frame(gaps(IRanges(start, end), 1, sl[seqnames][1])), by = c('seqnames', 'strand', by)], seqinfo = seqinfo(subject))
-    } else {
-        ## otherwise easier
-        if (ignore.strand){
-            gp = gaps(gr.stripstrand(subject)) %Q% (strand == '*')
-        } else{
-            gp = gaps(subject)
-        }
+  if (!is.null(by)){
+    if (ignore.strand)
+    {
+      query = gr.stripstrand(query)
+      subject = gr.stripstrand(subject)
+    }
+    tmp = gr2dt(subject)
+    tmp$strand = factor(tmp$strand, c('+', '-', '*'))
+    sl = seqlengths(query)
+    gp = dt2gr( ## gaps using by
+      tmp[,
+          as.data.frame(
+            gaps(GRanges(seqnames,             
+                         IRanges(start, end),
+                         seqlengths = sl,
+                         strand = strand))),
+          , by = by],      
+      seqinfo = seqinfo(query))
+    
+    ## if any other bydiff need these gaps
+    if (length(bydiff <- setdiff(values(query)[[by]],
+                values(subject)[[by]]))>0)
+    {
+      gp = grbind(gp, query[values(query)[[by]] %in% bydiff])
     }
 
-    out = gr.findoverlaps(query, gp, qcol = names(values(query)), ignore.strand = ignore.strand, by = by, ...)
+    if (ignore.strand)
+      gp = gp %Q% (strand == '*')
+
+  } else {
+    ## otherwise easier
+    if (ignore.strand){
+      gp = gaps(gr.stripstrand(subject)) %Q% (strand == '*')
+    } else{
+      gp = gaps(subject)
+    }
+  }
+  
+  out = gr.findoverlaps(query, gp, qcol = names(values(query)), ignore.strand = ignore.strand, by = by, ...)
     return(out)
 }
 

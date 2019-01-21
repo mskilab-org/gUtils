@@ -12,29 +12,26 @@ Set of utility functions for use with `GenomicRanges`
 Installation
 ------------
 
-1. Install dependent packages and latest Bioconductor (if you haven't already)
-
-```{r}
-source("https://bioconductor.org/biocLite.R")
-biocLite("GenomicRanges")
-```
-
-2. Install devtools from CRAN (if you don't have it already)
+1. Install devtools
 
 ```{r}
 install.packages('devtools')
-```
+install.packages('testthat')
 
-3. Install gUtils
+```
+2. Install gGnome and dependent packages
 
 ```{r}
-devtools::install_github('mskilab/gUtils')
+## set this for R-3.5.2 
+Sys.setenv(R_REMOTES_NO_ERRORS_FROM_WARNINGS = TRUE)
+
+devtools::install_github('mskilab/gUtils)
 ```
 
 gUtils cheat sheet 
 ------------------
 
-One feature of gUtils is syntactic sugar on top of basic `GenomicRanges` functionality, enabling easy piping of interval operations as part of interactive "genomic data science" exploration in R. In all these examples `a` and `b` are `GRanges` (e.g `a` are gene territories and `b` might be copy number segments or Chip-Seq peaks). 
+Among other features, `gUtils` provides syntactic sugar on top of basic `GenomicRanges` functionality, enabling easy piping of interval operations as part of interactive "genomic data science" exploration in R. In all these examples `a` and `b` are `GRanges` (e.g `a` are gene territories and `b` might be copy number segments or Chip-Seq peaks). 
 
 ### `%Q%`
 
