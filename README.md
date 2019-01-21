@@ -17,7 +17,6 @@ Installation
 ```{r}
 install.packages('devtools')
 install.packages('testthat')
-
 ```
 2. Install gGnome and dependent packages
 
