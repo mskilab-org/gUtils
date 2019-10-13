@@ -5,13 +5,19 @@
 \alias{\%&\%}
 \alias{\%&\%,}
 \alias{GRanges-method}
+\alias{GRangesList-method}
+\alias{CompressedGRangesList-method}
 \alias{\%^\%}
 \alias{\%^\%,GRanges-method}
 \alias{\%^^\%}
 \alias{\%^^\%,GRanges-method}
 \title{subset x on y ranges while ignoring strand (strand-agnostic)}
 \usage{
-x \%&\% ...
+x \%&\% y
+
+\S4method{\%&\%}{GRangesList}(x, y)
+
+\S4method{\%&\%}{CompressedGRangesList}(x, y)
 
 x \%^\% ...
 
@@ -33,11 +39,23 @@ x \%^^\% ...
 \value{
 subset of gr1 that overlaps gr2
 
+subset of gr1 that overlaps gr2
+
+subset of gr1 that overlaps gr2
+
 logical vector of length gr1 which is TRUE at entry i only if gr1[i] intersects at least one interval in gr2 (strand agnostic)
 
 logical vector of length gr1 which is TRUE at entry i only if gr1[i] intersects at least one interval in gr2
 }
 \description{
+shortcut for x[gr.in(x,y)]
+
+gr1 %&% gr2 returns the subsets of gr1 that overlaps gr2
+
+shortcut for x[gr.in(x,y)]
+
+gr1 %&% gr2 returns the subsets of gr1 that overlaps gr2
+
 shortcut for x[gr.in(x,y)]
 
 gr1 %&% gr2 returns the subsets of gr1 that overlaps gr2
@@ -51,6 +69,10 @@ Shortcut for gr.in
 gr1 %^^% gr2
 }
 \author{
+Marcin Imielinski
+
+Marcin Imielinski
+
 Marcin Imielinski
 
 Marcin Imielinski

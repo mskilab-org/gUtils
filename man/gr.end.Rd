@@ -2,10 +2,26 @@
 % Please edit documentation in R/gUtils.R
 \name{gr.end}
 \alias{gr.end}
+\alias{\%)\%}
+\alias{\%)\%,GRanges-method}
+\alias{\%))\%}
+\alias{\%))\%,GRanges-method}
+\alias{\%(\%}
+\alias{\%(\%,GRanges-method}
+\alias{\%((\%}
+\alias{\%((\%,GRanges-method}
 \title{Get the right ends of a \code{GRanges}}
 \usage{
 gr.end(x, width = 1, force = FALSE, ignore.strand = TRUE,
   clip = TRUE)
+
+x \%)\% ...
+
+x \%))\% ...
+
+x \%(\% ...
+
+x \%((\% ...
 }
 \arguments{
 \item{x}{\code{GRanges} object to operate on}
@@ -17,16 +33,68 @@ gr.end(x, width = 1, force = FALSE, ignore.strand = TRUE,
 \item{ignore.strand}{boolean If set to \code{FALSE}, will extend '-' strands from the other direction. (default = TRUE)}
 
 \item{clip}{boolean Trims returned \code{GRanges} so that it does not extend beyond bounds of the input (default = TRUE)}
+
+\item{x}{\code{GRanges} object}
+
+\item{y}{num bases to get from right side of interval}
+
+\item{x}{\code{GRanges} object}
+
+\item{y}{num bases to get from right side of interval}
+
+\item{x}{\code{GRanges} object}
+
+\item{y}{num bases to get from left side of interval}
+
+\item{x}{\code{GRanges} object}
+
+\item{y}{num bases to get from left side of interval}
 }
 \value{
 GRanges object of width = \code{width} ranges representing end of each genomic range in the input.
+
+\code{GRanges} right sides of input intervals
+
+\code{GRanges} 3' sides of input intervals
+
+\code{GRanges} left sides of input intervals
+
+\code{GRanges} 5' sides of input intervals
 }
 \description{
 Alternative to \code{GenomicRanges::flank} that will provide end positions *within* intervals
+
+Shortcut for \code{gr.end}
+
+gr1 <- GRanges(1, IRanges(10,20), strand="+")
+gr1 %)% 5 # right 5 bases of gr1
+
+Shortcut for \code{gr.end}
+
+gr1 <- GRanges(1, IRanges(10,20), strand="+")
+gr1 %))% 5 # get three prime 5 bases of gr1
+
+Shortcut for \code{gr.end}
+
+gr1 <- GRanges(1, IRanges(10,20), strand="+")
+gr1 %(% 5 # left 5 bases of gr1
+
+Shortcut for \code{gr.end}
+
+gr1 <- GRanges(1, IRanges(10,20), strand="+")
+gr1 %((% 5 # get three prime 5 bases of gr1
 }
 \examples{
 gr.end(example_dnase, width=200, clip=TRUE)
 }
 \author{
+Marcin Imielinski
+
+Marcin Imielinski
+
+Marcin Imielinski
+
+Marcin Imielinski
+
 Marcin Imielinski
 }

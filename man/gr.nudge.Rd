@@ -4,7 +4,7 @@
 \alias{\%-\%}
 \title{Shift GRanges left}
 \usage{
-gr \%-\% ...
+gr \%-\% x
 }
 \value{
 shifted GRanges
