@@ -3183,6 +3183,7 @@ gr.match = function(query, subject, max.slice = Inf, verbose = FALSE, ...)
 
 
 
+setGeneric('%+%', function(gr, x) standardGeneric('%+%'))
 
 #' @name %+%
 #' @title Nudge GRanges right
@@ -3196,13 +3197,14 @@ gr.match = function(query, subject, max.slice = Inf, verbose = FALSE, ...)
 #' @aliases %+%,GRanges-method
 #' @author Marcin Imielinski
 #' @export
-setGeneric('%+%', function(gr, x) standardGeneric('%+%'))
 setMethod("%+%", signature(gr = 'GRanges'), function(gr, x) {
   end(gr) = end(gr)+x
   start(gr) = start(gr)+x
   return(gr)
 })
 
+
+setGeneric('%-%', function(gr, x) standardGeneric('%-%'))
 
 #' @name %-%
 #' @title Shift GRanges left
@@ -3216,7 +3218,6 @@ setMethod("%+%", signature(gr = 'GRanges'), function(gr, x) {
 #' @rdname gr.nudge
 #' @export
 #' @author Marcin Imielinski
-setGeneric('%-%', function(gr, x, ...) standardGeneric('%-%'))
 setMethod("%-%", signature(gr = 'GRanges'), function(gr, x) {
     start(gr) = start(gr)-x
     end(gr) = end(gr)-x
@@ -3224,7 +3225,7 @@ setMethod("%-%", signature(gr = 'GRanges'), function(gr, x) {
 })
 
 
-
+setGeneric('%&%', function(x, y) standardGeneric('%&%'))
 
 #' @name %&%
 #' @title subset x on y ranges while ignoring strand (strand-agnostic)
@@ -3239,7 +3240,6 @@ setMethod("%-%", signature(gr = 'GRanges'), function(gr, x) {
 #' @exportMethod %&%
 #' @aliases %&%, GRanges-method
 #' @author Marcin Imielinski
-setGeneric('%&%', function(x, y) standardGeneric('%&%'))
 setMethod("%&%", signature(x = 'GRanges'), function(x, y) {
     if (is.character(y)){
         y = parse.gr(y)
@@ -3268,7 +3268,7 @@ setMethod("%&%", signature(x = 'GRanges'), function(x, y) {
 }
 
 
-#' @name %&%
+#' @name %&%.GRangesList
 #' @title subset x on y ranges while ignoring strand (strand-agnostic)
 #' @description
 #'
@@ -3283,7 +3283,7 @@ setMethod("%&%", signature(x = 'GRanges'), function(x, y) {
 #' @author Marcin Imielinski
 setMethod("%&%", signature(x = 'GRangesList'), .grlandfun)
 
-#' @name %&%
+#' @name %&%.CompressedGRangesList
 #' @title subset x on y ranges while ignoring strand (strand-agnostic)
 #' @description
 #'
@@ -3299,6 +3299,8 @@ setMethod("%&%", signature(x = 'GRangesList'), .grlandfun)
 setMethod("%&%", signature(x = 'CompressedGRangesList'), .grlandfun)
 
 
+setGeneric('%&&%', function(x, y) standardGeneric('%&&%'))
+
 #' @name %&&%
 #' @title Subset x on y ranges, strand-specific
 #' @description
@@ -3312,7 +3314,6 @@ setMethod("%&%", signature(x = 'CompressedGRangesList'), .grlandfun)
 #' @exportMethod %&&%
 #' @aliases %&&%,GRanges-method
 #' @author Marcin Imielinski
-setGeneric('%&&%', function(x, y) standardGeneric('%&&%'))
 setMethod("%&&%", signature(x = "GRanges"), function(x, y) {
     if (is.character(y)){
         y = parse.gr(y)
@@ -3337,7 +3338,7 @@ setMethod("%&&%", signature(x = "GRanges"), function(x, y) {
     return(ret_grl)
 }
 
-#' @name %&&%
+#' @name %&&%.GRangesList
 #' @title Subset x on y ranges, strand-specific
 #' @description
 #'
@@ -3352,7 +3353,7 @@ setMethod("%&&%", signature(x = "GRanges"), function(x, y) {
 #' @author Marcin Imielinski
 setMethod("%&&%", signature(x = 'GRangesList'), .grlandfunsign)
 
-#' @name %&&%
+#' @name %&&%.CompressedGRangesList
 #' @title Subset x on y ranges, strand-specific
 #' @description
 #'
@@ -3368,6 +3369,7 @@ setMethod("%&&%", signature(x = 'GRangesList'), .grlandfunsign)
 setMethod("%&&%", signature(x = 'CompressedGRangesList'), .grlandfunsign)
 
 
+setGeneric('%O%', function(x, ...) standardGeneric('%O%'))
 
 #' @name %O%
 #' @title gr.val shortcut to get fractional overlap of gr1 by gr2, strand-agnostic
@@ -3384,7 +3386,6 @@ setMethod("%&&%", signature(x = 'CompressedGRangesList'), .grlandfunsign)
 #' @author Marcin Imielinski
 #' @param x See \link{gr.val}
 #' @param ... See \link{gr.val}
-setGeneric('%O%', function(x, ...) standardGeneric('%O%'))
 setMethod("%O%", signature(x = "GRanges"), function(x, y) {
 
     query.id = NULL; ## NOTE fix
@@ -3793,7 +3794,7 @@ setMethod("%^%", signature(x = "GRanges"), function(x, y) {
 
 
 
-#' @name %^%
+#' @name %^^%
 #' @title grl.in shortcut
 #' @description
 #'
@@ -3901,6 +3902,7 @@ setMethod("%$$%", signature(x = "GRanges"), function(x, y) {
 #' @examples
 #' example_genes %*% example_dnase
 ## setGeneric('%*%', function(...) standardGeneric('%*%'))
+## setGeneric('%*%')
 setMethod("%*%", signature(x = "GRanges"), function(x, y) {
     gr = gr.findoverlaps(x, y, qcol = names(values(x)), scol = names(values(y)))
     return(gr)

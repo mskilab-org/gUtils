@@ -4,11 +4,13 @@
 \name{\%&&\%}
 \alias{\%&&\%}
 \alias{\%&&\%,GRanges-method}
+\alias{\%&&\%.GRangesList}
 \alias{\%&&\%,GRangesList-method}
+\alias{\%&&\%.CompressedGRangesList}
 \alias{\%&&\%,CompressedGRangesList-method}
 \title{Subset x on y ranges, strand-specific}
 \usage{
-x \%&&\% y
+\S4method{\%&&\%}{GRanges}(x, y)
 
 \S4method{\%&&\%}{GRangesList}(x, y)
 

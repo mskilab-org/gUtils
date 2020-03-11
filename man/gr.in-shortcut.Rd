@@ -5,7 +5,9 @@
 \alias{\%&\%}
 \alias{\%&\%,}
 \alias{GRanges-method}
+\alias{\%&\%.GRangesList}
 \alias{GRangesList-method}
+\alias{\%&\%.CompressedGRangesList}
 \alias{CompressedGRangesList-method}
 \alias{\%^\%}
 \alias{\%^\%,GRanges-method}
@@ -13,7 +15,7 @@
 \alias{\%^^\%,GRanges-method}
 \title{subset x on y ranges while ignoring strand (strand-agnostic)}
 \usage{
-x \%&\% y
+\S4method{\%&\%}{GRanges}(x, y)
 
 \S4method{\%&\%}{GRangesList}(x, y)
 
