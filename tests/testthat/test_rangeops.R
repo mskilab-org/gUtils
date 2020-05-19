@@ -725,7 +725,7 @@ test_that('standardize_segs', {
 test_that("gr.nochr", {
 
     example_genes = GRanges(2, IRanges(c(233101, 233101, 231023, 231023, 229966), c(233229, 233229, 231191, 231191, 230044)), strand = c("-"), type = c("exon", "CDS", "exon", "CDS", "exon"))
-    expect_identical(gr.nochr(gr.chr(example_genes)), example_genes)
+    expect_identical(gr2dt(gr.nochr(gr.chr(example_genes))), gr2dt(example_genes))
 
 })
 

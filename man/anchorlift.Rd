@@ -28,7 +28,8 @@ anchorlifted GRanges
 i.e. puts the queries into subject-centric coordinates, which is a new genome with label "Anchor" (default)
 
 Respects strand of subject (i.e. if subject strand gr is "-" then will lift all queries to the left of it
-into positive subject-centric coordinates). Keeps track of subject and query id for later deconvolution if need be.
+into positive subject-centric coordinates). Keeps
+track of subject and query id for later deconvolution if need be.
 }
 \author{
 Marcin Imielinski

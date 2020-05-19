@@ -4,7 +4,7 @@
 \alias{parse.grl}
 \title{parse.grl}
 \usage{
-parse.grl(x, seqlengths = hg_seqlengths())
+parse.grl(x, seqlengths = hg_seqlengths(), meta = NULL)
 }
 \arguments{
 \item{x}{character vector representing a GRangesList with UCSC style coordinates (chr:start-end[+-]) representing a [signed] Granges and  ";" separators within each item of x separating individaul each GRAnges}
