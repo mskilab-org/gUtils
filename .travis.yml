@@ -1,9 +1,8 @@
 language: r
 warnings_are_errors: false
 sudo: false
-dist: trusty
 cache: packages
-r: 3.5.1
+r: 3.6.1
 r_packages:
 - covr
 - devtools
@@ -25,3 +24,6 @@ after_failure:
 - "./travis-tool.sh dump_logs"
 after_success:
 - travis_wait Rscript -e 'covr::codecov()'
+env:
+  global:
+    - _R_CHECK_FORCE_SUGGESTS_=false
