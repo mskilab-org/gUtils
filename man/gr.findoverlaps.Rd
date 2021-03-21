@@ -18,6 +18,7 @@ gr.findoverlaps(
   verbose = FALSE,
   mc.cores = 1,
   maxgap = -1L,
+  new.by = TRUE,
   ...
 )
 }

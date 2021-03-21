@@ -4,7 +4,7 @@
 \alias{gr.in}
 \title{Versatile implementation of \code{GenomicRanges::findOverlaps}}
 \usage{
-gr.in(query, subject, by = NULL, ...)
+gr.in(query, subject, ...)
 }
 \arguments{
 \item{query}{GRanges Set of GRanges to query. Refer to gr.findoverlaps() and GenomicRanges::findOverlaps()}

@@ -2624,7 +2624,7 @@ gr.nochr = function(gr) {
 #' @param ... Additional arguments sent to \code{IRanges::findOverlaps}.
 #' @return \code{GRanges} pile of the intersection regions, with \code{query.id} and \code{subject.id} marking sources
 #' @export
-gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE, qcol = NULL, scol = NULL, type = 'any', by = NULL, return.type = 'same', max.chunk = 1e13, verbose = FALSE, mc.cores = 1, maxgap = -1L, ...)
+gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE, qcol = NULL, scol = NULL, type = 'any', by = NULL, return.type = 'same', max.chunk = 1e13, verbose = FALSE, mc.cores = 1, maxgap = -1L, new.by = TRUE, ...)
 {
 
     subject.id = query.id = i.start = i.end = NULL ## for NOTE
@@ -2666,6 +2666,16 @@ gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE, 
     }
     if (is.data.table(subject)){
        subject = dt2gr(subject)
+    }
+
+    ## storing for later
+    query.si = GenomeInfoDb::seqinfo(query)
+    subject.si = GenomeInfoDb::seqinfo(subject)
+    query.sn = seqnames(query)
+    
+    if (!is.null(by) && isTRUE(new.by)) {
+        query = gr_construct_by(query, by = by)
+        subject = gr_construct_by(subject, by = by)
     }
 
     ss <- seqinfo(query)
@@ -2732,29 +2742,32 @@ gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE, 
     ## r <- ranges(h, ranges(query), ranges(subject))
     r <- overlapsRanges(GenomicRanges::ranges(query), GenomicRanges::ranges(subject), h)
     h.df <- data.table(start = start(r), end = end(r), query.id = queryHits(h),
-                     subject.id = subjectHits(h), seqnames = as.character(seqnames(query)[queryHits(h)]))
+                     subject.id = subjectHits(h), seqnames = as.character(query.sn[queryHits(h)]))
 
     ## add the seqnames, and subset if have a "by"
     if (nrow(h.df) > 0) {
-      if (!is.null(by)) {
-            by.query <- values(query)[h.df$query.id, by]
-            by.subject <- values(subject)[h.df$subject.id, by]
+        if (!is.null(by)) {
+            if (!isTRUE(new.by))  {
+                by.query <- values(query)[h.df$query.id, by]
+                by.subject <- values(subject)[h.df$subject.id, by]
 
-            if (length(by)==1){
-                keep.ix = by.query == by.subject
-            }
-            else{
-                keep.ix = apply(do.call(cbind, by.query == by.subject), 1, all)
-            }
+                if (length(by)==1){
+                    keep.ix = by.query == by.subject
+                }
+                else{
+                    ## keep.ix = apply(do.call(cbind, by.query == by.subject), 1, all)
+                    keep.ix = apply(do.call(cbind, as.list(as(by.query, "List") == as(by.subject, "List"))), 1, all)
+                }
 
-        h.df = h.df[keep.ix, ]
+                h.df = h.df[keep.ix, ]
+            }
         }
     }
 
     ## if empty, return now
     if (nrow(h.df) == 0) {
         if (return.type == "GRanges"){
-            return(GRanges(seqlengths = seqlengths(query)))
+            return(GRanges(seqlengths = seqlengths(query.si)))
         } else{
             return(data.table())
         }
@@ -2774,7 +2787,7 @@ gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE, 
 
     ## format into correct output format
   if (return.type=='GRanges') {
-        out.gr = dt2gr(h.df, seqlengths = seqlengths(query))
+        out.gr = dt2gr(h.df, seqlengths = seqlengths(query.si))
 
         if (!is.null(qcol)){
           new.cols = as.data.frame(values(query)[out.gr$query.id, qcol, drop = FALSE])
@@ -3077,7 +3090,7 @@ gr.disjoin = function(x, ..., ignore.strand = TRUE)
 #' @param ... Arguments to be passed to \code{\link{gr.findoverlaps}}
 #' @return boolean vector whereby TRUE is if query range i is found in any range in subject
 #' @export
-gr.in = function(query, subject, by = NULL, ...)
+gr.in = function(query, subject, ...)
 {
 
   if (is(query, 'character'))
@@ -3087,8 +3100,8 @@ gr.in = function(query, subject, by = NULL, ...)
       subject = parse.gr(subject)
 
 
-  query = gr_construct_by(query, by = by)
-  subject = gr_construct_by(subject, by = by)
+  ## query = gr_construct_by(query, by = by)
+  ## subject = gr_construct_by(subject, by = by)
     
   tmp = gr.findoverlaps(query, subject, ...)
   out = rep(FALSE, length(query))
