@@ -5083,9 +5083,9 @@ gr.spreduce = function(gr,  ..., ignore.strand = FALSE, pad = 0, return.grl = FA
   }
   if (!all(vars %in% colnames(mcols(gr))))
     stop("Must specify valid metadata columns in gr")
-  tmpix = do.call(
+  tmpix = S4Vectors::do.call(
     function(...) paste(..., sep = sep),
-    as.list(mcols(gr)[,vars, drop = F]))
+    (mcols(gr)[,vars, drop = F]))
   unix = which(!duplicated(tmpix))
   tmpix = factor(tmpix, levels = tmpix[unix])
   grl = unname(GenomicRanges::split(gr.noval(gr), tmpix))
