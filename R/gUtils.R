@@ -5182,3 +5182,54 @@ gr.genome = function(si, onlystandard = TRUE, genome = NULL) {
     if (onlystandard) gr = keepStandardChromosomes(gr, pruning.mode = "coarse")
     gr.sort(gr)
 }
+
+
+
+#' @name gr.resize
+#' @title Resize granges without running into negative width error
+#' @description
+#'
+#' lower size limit of window is 0
+#'
+#' @return GRanges
+#' @author Kevin Hadi
+#' @export gr.resize
+gr.resize = function (gr, width, pad = TRUE, minwid = 0, each = TRUE, ignore.strand = FALSE,
+    fix = "center", reduce = FALSE)
+{
+    wid = width
+    if (pad) {
+        if (isTRUE(each)) {
+            wid = wid * 2
+        }
+        width.arg = pmax(width(gr) + wid, minwid)
+    }
+    else width.arg = pmax(wid, minwid)
+    if (reduce) {
+        ## gr = GenomicRanges::reduce(gr + width.arg, ignore.strand = ignore.strand) -
+        ##     width.arg
+        out = gr.resize(gr, width, pad = pad, minwid = minwid, each = each, ignore.strand = ignore.strand, fix = fix, reduce = FALSE)
+        out = GenomicRanges::reduce(out, ignore.strand = ignore.strand)
+        out = gr.resize(out, width, pad = pad, minwid = minwid, each = each, ignore.strand = ignore.strand, fix = fix, reduce = FALSE)
+        return(out)
+    }
+    return(GenomicRanges::resize(gr, width = width.arg, fix = fix,
+        ignore.strand = ignore.strand))
+}
+
+#' @name rand.string
+#' @title make a random string
+#'
+#' @return random string
+#' @author Someone from Stackoverflow
+rand.string <- function(n=1, length=12)
+{
+    randomString <- c(1:n)                  # initialize vector
+    for (i in 1:n)
+    {
+        randomString[i] <- paste(sample(c(0:9, letters, LETTERS),
+                                        length, replace=TRUE),
+                                 collapse="")
+    }
+    return(randomString)
+}
