@@ -4,8 +4,17 @@
 \alias{gr.merge}
 \title{merge GRanges by using coordinates as primary key}
 \usage{
-gr.merge(query, subject, by = NULL, all = FALSE, all.query = all,
-  all.subject = all, ignore.strand = TRUE, verbose = FALSE, ...)
+gr.merge(
+  query,
+  subject,
+  by = NULL,
+  all = FALSE,
+  all.query = all,
+  all.subject = all,
+  ignore.strand = TRUE,
+  verbose = FALSE,
+  ...
+)
 }
 \arguments{
 \item{query}{GRanges Set of GRanges to query. Refer to gr.findoverlaps() and GenomicRanges::findOverlaps()}

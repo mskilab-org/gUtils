@@ -4,8 +4,7 @@
 \alias{gr.fix}
 \title{"Fixes" \code{seqlengths} / \code{seqlevels}}
 \usage{
-gr.fix(gr, genome = NULL, gname = NULL, drop = FALSE,
-  pruning.mode = "coarse")
+gr.fix(gr, genome = NULL, gname = NULL, drop = FALSE, pruning.mode = "coarse")
 }
 \arguments{
 \item{gr}{\code{GRanges} object to fix}

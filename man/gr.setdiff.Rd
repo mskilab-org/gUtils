@@ -13,7 +13,7 @@ gr.setdiff(query, subject, ignore.strand = TRUE, by = NULL, ...)
 \arguments{
 \item{x}{\code{GRanges} object to to}
 
-\item{...}{A \code{GRanges} or a character to be parsed into a \code{GRanges}}
+\item{...}{arguments to be passed to \link{gr.findoverlaps}}
 
 \item{query}{\code{GRanges} object as query}
 
@@ -22,8 +22,6 @@ gr.setdiff(query, subject, ignore.strand = TRUE, by = NULL, ...)
 \item{ignore.strand}{boolean Flag to ignore strands. Refer to 'gr.findoverlaps()'. (default = TRUE)}
 
 \item{by}{vector Meta-data column to consider when performing overlaps. Refer to 'gr.findoverlaps()' documentation (default = NULL)}
-
-\item{...}{arguments to be passed to \link{gr.findoverlaps}}
 }
 \value{
 \code{GRanges} representing setdiff of input interval
