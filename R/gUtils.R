@@ -3763,13 +3763,13 @@ setMethod("%Q%", signature(x = "GRanges"), function(x, y) {
     condition_call  = substitute(y)
     ## serious R voodoo gymnastics .. but I think finally hacked it to remove ghosts
     ## create environment that combines the calling env with the granges env
-    env = as(c(as.list(parent.frame(2)), as.list(as.data.frame(x))), 'environment')
+    env = as(c(as.list(parent.frame(2)), as.list(as.data.frame(unname(x)))), 'environment')
     parent.env(env) = parent.frame()
     ix = tryCatch(eval(condition_call, env), error = function(e) NULL)
     if (is.null(ix))
     {
         condition_call  = substitute(y)
-        ix = eval(condition_call, GenomicRanges::as.data.frame(x))
+        ix = eval(condition_call, GenomicRanges::as.data.frame(unname(x)))
     }
     return(x[ix])
 })
@@ -3778,13 +3778,13 @@ setMethod("%Q%", signature(x = "GRanges"), function(x, y) {
     condition_call  = substitute(y)
     ## serious R voodoo gymnastics .. but I think finally hacked it to remove ghosts
     ## create environment that combines the calling env with the granges env
-    env = as(c(as.list(parent.frame(2)), as.list(mcols(x))), 'environment')
+    env = as(c(as.list(parent.frame(2)), as.list(unname(mcols(x)))), 'environment')
     parent.env(env) = parent.frame()
     ix = tryCatch(eval(condition_call, env), error = function(e) NULL)
     if (is.null(ix))
     {
         condition_call  = substitute(y)
-        ix = eval(condition_call, GenomicRanges::as.data.frame(x))
+        ix = eval(condition_call, GenomicRanges::as.data.frame(unname(x)))
     }
     return(x[ix])
 }
@@ -3799,13 +3799,13 @@ setMethod("%Q%", signature(x = "CompressedGRangesList"), .qgrlfun)
     tmp_gr = setNames(tmp_gr, NULL)
     mcols(tmp_gr)[["split_by"]] = rep(1:length(x), times = elementNROWS(x))
     condition_call  = substitute(y)
-    env = as(c(as.list(parent.frame(2)), as.list(as.data.frame(tmp_gr))), 'environment')
+    env = as(c(as.list(parent.frame(2)), as.list(as.data.frame(unname(tmp_gr)))), 'environment')
     parent.env(env) = parent.frame()
     ix = tryCatch(eval(condition_call, env), error = function(e) NULL)
     if (is.null(ix))
     {
         condition_call  = substitute(y)
-        ix = eval(condition_call, GenomicRanges::as.data.frame(tmp_gr))
+        ix = eval(condition_call, GenomicRanges::as.data.frame(unname(tmp_gr)))
     }
     tmp_gr = tmp_gr[ix]
     split_by = rep(1:length(x), times = elementNROWS(x))[ix]
