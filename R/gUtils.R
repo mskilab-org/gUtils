@@ -3817,6 +3817,7 @@ setMethod("%Q%", signature(x = "CompressedGRangesList"), .qgrlfun)
     return(ret_grl)
 }
 
+
 #' @name %QQ%
 #' @title query ranges by applying an expression to GRanges metadata within a GRangesList
 #' @description
