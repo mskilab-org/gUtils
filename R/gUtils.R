@@ -2801,7 +2801,7 @@ gr.findoverlaps = function(query, subject, ignore.strand = TRUE, first = FALSE, 
           values(out.gr) = cbind(as.data.frame(values(out.gr)), new.cols)
         }
 
-        out.gr <- gr.fix(out.gr, ss)
+        out.gr <- gr.fix(out.gr, query.si)
         if (ncol(values(out.gr)))
           values(out.gr) = as.data.frame(values(out.gr))
 
@@ -4311,7 +4311,7 @@ anchorlift = function(query, subject, window = 1e9, by = NULL, seqname = "Anchor
 
     
     tmp.dt = as.data.table(cbind(start(nov)*flip, end(nov)*flip))[, rowid := 1:.N]
-    tmp.dt = melt(tmp.dt, id.vars = "rowid")
+    tmp.dt = data.table::melt(tmp.dt, id.vars = "rowid")
     setkeyv(tmp.dt, c("rowid", "value"))
     tmp.dt[, colid := rep(1:2, length(nov))]
     tmp = matrix(NA, ncol = 2, nrow = length(nov))
