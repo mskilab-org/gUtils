@@ -1415,7 +1415,7 @@ gr.flipstrand= function(gr)
 gr.pairflip = function(gr)
 {
     strand(gr)[strand(gr) =='*'] = '+';
-    return(split(c(gr.flipstrand(gr)), rep(c(1:length(gr)), 2)))
+    return(split(c(gr, gr.flipstrand(gr)), rep(c(1:length(gr)), 2)))
 }
 
 
@@ -2277,8 +2277,8 @@ rrbind = function (..., union = TRUE, as.data.table = FALSE)
     dfs = dfs[!sapply(dfs, is.null)]
     dfs = dfs[sapply(dfs, ncol) > 0]
 
-    if (any(mix <- sapply(dfs, class) == 'matrix')){
-        dfs[mix] = lapply(dfs, as.data.frame)
+    if (any(mix <- sapply(dfs, inherits, "matrix"))){
+        dfs[mix] = lapply(dfs[mix], as.data.frame)
     }
 
     names.list = lapply(dfs, names)

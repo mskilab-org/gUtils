@@ -458,6 +458,7 @@ test_that('gr.stripstrand', {
 
 test_that('gr.pairflip', {
 
+    gr = GRanges(1, IRanges(c(1, 1, 1)), strand = c("+", "-", "-"))
     expect_identical(as.character(strand(gr.pairflip(gr)[[1]])), c('+', '-'))
     expect_identical(as.character(strand(gr.pairflip(gr)[[2]])), c('-', '+'))
     expect_identical(as.character(strand(gr.pairflip(gr)[[3]])), c('-', '+'))
@@ -679,8 +680,8 @@ test_that("rrbind", {
     expect_that(ncol(rrbind(mcols(gr), mcols(gr2))) > 0, is_true())
     expect_equal(ncol(rrbind(mcols(gr), mcols(gr2), union=FALSE)), 0)
     ## check 'if (any(mix <- sapply(dfs, class) == 'matrix')){'
-    expect_equal(dim(rrbind( mcols(gr), matrix(gr2dt(gr2))))[1], 6)
-    expect_equal(dim(rrbind( mcols(gr), matrix(gr2dt(gr2))))[2], 1)
+    expect_equal(dim(rrbind( mcols(gr), as.matrix(gr2dt(gr2))))[1], 5)
+    expect_equal(dim(rrbind( mcols(gr), as.matrix(gr2dt(gr2))))[2], 7)
     ## check 'if (is.null(rout)){'
     expect_equal(rrbind(mcols(GRanges()), mcols(GRanges()), mcols(GRanges())), data.frame())
 
