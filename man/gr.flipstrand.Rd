@@ -10,8 +10,6 @@ gr.flipstrand(gr)
 }
 \arguments{
 \item{gr}{\code{GRanges} pile with strands to be flipped}
-
-\item{gr}{\code{GRanges} pile with strands to be flipped}
 }
 \value{
 \code{GRanges} with flipped strands (+ to -, * to *, - to *)

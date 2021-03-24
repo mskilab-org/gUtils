@@ -4,8 +4,14 @@
 \alias{gr.simplify}
 \title{Calculates pairwise distance for rearrangements represented by \code{GRangesList} objects}
 \usage{
-gr.simplify(gr, field = NULL, val = NULL, include.val = TRUE,
-  split = FALSE, pad = 1)
+gr.simplify(
+  gr,
+  field = NULL,
+  val = NULL,
+  include.val = TRUE,
+  split = FALSE,
+  pad = 1
+)
 }
 \arguments{
 \item{gr}{GRanges or GRangesList input}

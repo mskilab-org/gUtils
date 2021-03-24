@@ -4,10 +4,23 @@
 \alias{gr.findoverlaps}
 \title{Wrapper to \code{GenomicRanges::findOverlaps} with added functionality}
 \usage{
-gr.findoverlaps(query, subject, ignore.strand = TRUE, first = FALSE,
-  qcol = NULL, scol = NULL, type = "any", by = NULL,
-  return.type = "same", max.chunk = 1e+13, verbose = FALSE,
-  mc.cores = 1, maxgap = -1L, ...)
+gr.findoverlaps(
+  query,
+  subject,
+  ignore.strand = TRUE,
+  first = FALSE,
+  qcol = NULL,
+  scol = NULL,
+  type = "any",
+  by = NULL,
+  return.type = "same",
+  max.chunk = 1e+13,
+  verbose = FALSE,
+  mc.cores = 1,
+  maxgap = -1L,
+  new.by = TRUE,
+  ...
+)
 }
 \arguments{
 \item{query}{Query \code{GRanges} pile}

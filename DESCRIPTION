@@ -36,4 +36,4 @@ Suggests:
 License: GPL-2
 BugReports: http://github.com/mskilab/gUtils/issues
 LazyData: true
-RoxygenNote: 7.0.2
+RoxygenNote: 7.1.1

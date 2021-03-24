@@ -4,7 +4,9 @@
 \name{example_genes}
 \alias{example_genes}
 \title{RefSeq genes for hg19}
-\format{\code{GRanges}}
+\format{
+\code{GRanges}
+}
 \description{
 RefSeq genes with exon count and name
 }

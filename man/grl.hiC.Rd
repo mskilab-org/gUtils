@@ -5,7 +5,9 @@
 \alias{grl.hiC}
 \title{HiC data for chr14 from Lieberman-Aiden 2009 (in hg19), subsampled
 to 10,000 interactions}
-\format{\code{GRangesList}}
+\format{
+\code{GRangesList}
+}
 \description{
 HiC data for chr14 from Lieberman-Aiden 2009 (in hg19), subsampled
 to 10,000 interactions

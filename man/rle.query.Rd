@@ -4,8 +4,13 @@
 \alias{rle.query}
 \title{Queries an \code{\link{RleList}} representing genomic data}
 \usage{
-rle.query(subject.rle, query.gr, chunksize = 1e+09, mc.cores = 1,
-  verbose = FALSE)
+rle.query(
+  subject.rle,
+  query.gr,
+  chunksize = 1e+09,
+  mc.cores = 1,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{subject.rle}{\code{Rle}}

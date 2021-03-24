@@ -4,7 +4,9 @@
 \name{si}
 \alias{si}
 \title{\code{Seqinfo} object for hg19}
-\format{\code{Seqinfo}}
+\format{
+\code{Seqinfo}
+}
 \description{
 \code{Seqinfo} object for hg19
 }
