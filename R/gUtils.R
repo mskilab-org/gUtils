@@ -1750,7 +1750,9 @@ gr.val = function(query, target, val = NULL, mean = TRUE, weighted = mean, na.rm
                         tmp = hits[, list(val = do.call(FUN, list(val.vec[subject.id], width, na.rm = na.rm))), by = query.id]
                     } else{
                       tmp = rbind(hits[N==1, list(val = {val.vec[subject.id]}), by = query.id],
-                                  hits[N>1, list(val = paste(setdiff(val.vec[subject.id], NA)[1], collapse = sep)), by = query.id])
+                                  ## hits[N>1, list(val = paste(setdiff(val.vec[subject.id], NA)[1], collapse = sep)), by = query.id])
+                                  hits[N>1, list(val = paste(setdiff(val.vec[subject.id], NA), collapse = sep)), by = query.id])
+                      
                       ##tmp = hits[, list(val = paste(setdiff(val.vec[subject.id], NA)[1], collapse = sep)), by = query.id]
                     }
                     if (!is.na(default.val)){
