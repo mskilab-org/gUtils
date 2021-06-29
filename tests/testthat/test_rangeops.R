@@ -1628,3 +1628,16 @@ test_that("ra.overlaps handles wrong signs", {
     expect_equal(ra.overlaps(grl3, grl2)[1], as.double(NA))
  
 })
+
+test_that("rebin", {
+
+    gr = gr.tile(GRanges("1:1-1e4"), 1e2)
+    rebinned_gr = rebin(gr, 1e3, 'tile.id')
+    expect_equal(unique(width(rebinned_gr)), 1e3)
+    expect_equal(rebinned_gr[1]$tile.id, 5.5)
+
+    rebinned_gr_max = rebin(gr, 1e3, 'tile.id', max)
+    expect_equal(unique(width(rebinned_gr_max)), 1e3)
+    expect_equal(rebinned_gr_max[1]$tile.id, 10)
+    
+})

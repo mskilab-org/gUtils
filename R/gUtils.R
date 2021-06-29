@@ -4711,3 +4711,30 @@ grl.end = function(grl, width = 1, force = FALSE, ignore.strand = TRUE, clip = T
 }
 
 
+#' @name rebin
+#' @title reaggregate WGS bins around a new target value
+#' @description 
+#' 
+#' Given GRanges of bins will aggregate around new bin width. 
+#' 
+#' @param cov GRanges of binned genome-wide coverage
+#' @param binwidth new binwidth
+#' @return GRanges of binned genome-wide coverage at new bin
+#' @export
+#' @author Marcin Imielinski
+rebin = function(cov, binwidth, field = names(values(cov))[1], FUN = mean, na.rm = TRUE)
+{
+  tmp = as.data.table(cov[, c()])
+  tmp$value =  values(cov)[[field]]
+  outdt = tmp[
+    , FUN(value, na.rm = na.rm),
+      by = .(seqnames, start = floor(start/binwidth)*binwidth + 1)]
+  ## xtYao update:
+  ## by = .(seqnames, start = ceiling(start/binwidth)*binwidth)]
+  outdt[, end := start + binwidth -1]
+  out = dt2gr(outdt)
+  names(values(out)) = field
+  return(out)
+}
+
+
