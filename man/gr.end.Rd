@@ -12,8 +12,7 @@
 \alias{\%((\%,GRanges-method}
 \title{Get the right ends of a \code{GRanges}}
 \usage{
-gr.end(x, width = 1, force = FALSE, ignore.strand = TRUE,
-  clip = TRUE)
+gr.end(x, width = 1, force = FALSE, ignore.strand = TRUE, clip = TRUE)
 
 x \%)\% ...
 
@@ -24,7 +23,7 @@ x \%(\% ...
 x \%((\% ...
 }
 \arguments{
-\item{x}{\code{GRanges} object to operate on}
+\item{x}{\code{GRanges} object}
 
 \item{width}{integer Specify subranges of greater width including the start of the range. (default = 1)}
 
@@ -33,20 +32,6 @@ x \%((\% ...
 \item{ignore.strand}{boolean If set to \code{FALSE}, will extend '-' strands from the other direction. (default = TRUE)}
 
 \item{clip}{boolean Trims returned \code{GRanges} so that it does not extend beyond bounds of the input (default = TRUE)}
-
-\item{x}{\code{GRanges} object}
-
-\item{y}{num bases to get from right side of interval}
-
-\item{x}{\code{GRanges} object}
-
-\item{y}{num bases to get from right side of interval}
-
-\item{x}{\code{GRanges} object}
-
-\item{y}{num bases to get from left side of interval}
-
-\item{x}{\code{GRanges} object}
 
 \item{y}{num bases to get from left side of interval}
 }

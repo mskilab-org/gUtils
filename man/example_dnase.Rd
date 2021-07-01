@@ -4,7 +4,9 @@
 \name{example_dnase}
 \alias{example_dnase}
 \title{DNAaseI hypersensitivity sites for hg19A}
-\format{\code{GRanges}}
+\format{
+\code{GRanges}
+}
 \description{
 DNAaseI hypersensitivity sites from UCSC Table Browser hg19,
 subsampled to 10,000 sites

@@ -26,14 +26,6 @@ x \%^\% ...
 x \%^^\% ...
 }
 \arguments{
-\item{x}{\code{GRanges} object}
-
-\item{...}{additional arguments to gr.in}
-
-\item{x}{See \link{gr.in}}
-
-\item{...}{See \link{gr.in}}
-
 \item{x}{See \link{gr.in}}
 
 \item{...}{See \link{gr.in}}

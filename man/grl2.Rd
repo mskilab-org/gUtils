@@ -4,7 +4,9 @@
 \name{grl2}
 \alias{grl2}
 \title{Fake rearrangement data (set 2)}
-\format{\code{GRangesList}}
+\format{
+\code{GRangesList}
+}
 \description{
 Fake rearrangement data (set 2)
 }

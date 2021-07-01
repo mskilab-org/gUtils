@@ -13,11 +13,9 @@ x \%N\% ...
 x \%$\% ...
 }
 \arguments{
-\item{x}{See \link{gr.val}}
+\item{x}{\code{GRanges} object}
 
 \item{...}{See \link{gr.val}}
-
-\item{x}{\code{GRanges} object}
 }
 \value{
 bases overlap of gr1 with gr2

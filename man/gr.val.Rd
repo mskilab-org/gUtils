@@ -4,10 +4,24 @@
 \alias{gr.val}
 \title{Annotate \code{GRanges} with values from another \code{GRanges}}
 \usage{
-gr.val(query, target, val = NULL, mean = TRUE, weighted = mean,
-  na.rm = FALSE, by = NULL, by.prefix = val, merge = FALSE,
-  FUN = NULL, default.val = NA, max.slice = Inf, mc.cores = 1,
-  sep = ", ", verbose = FALSE, ...)
+gr.val(
+  query,
+  target,
+  val = NULL,
+  mean = TRUE,
+  weighted = mean,
+  na.rm = FALSE,
+  by = NULL,
+  by.prefix = val,
+  merge = FALSE,
+  FUN = NULL,
+  default.val = NA,
+  max.slice = Inf,
+  mc.cores = 1,
+  sep = ", ",
+  verbose = FALSE,
+  ...
+)
 }
 \arguments{
 \item{query}{\code{GRanges} of query ranges whose \code{val} column we will populate with aggregated values of \code{target}}
