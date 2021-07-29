@@ -2138,13 +2138,14 @@ grl.in = function(grl, windows, some = FALSE, only = FALSE, logical = TRUE, exac
 #'
 #' @importFrom BiocGenerics unlist
 #' @param grl \code{GRangeList} object to unlist
+#' @param use.group \code{logical} force grl.unlist to use the "group" field for setting grl.ix. By default, grl.unlist would first try to use the "element", but if the input GRangesList contains a GRanges with a field that starts with the substring "element" then grl.unlist would fail.
 #' @return \code{GRanges} with added metadata fields \code{grl.ix} and \code{grl.iix}.
 #' @examples
 #'
 #' grl.unlist(grl.hiC)
 #'
 #' @export
-grl.unlist = function(grl)
+grl.unlist = function(grl, use.group = FALSE)
 {
     if (length(grl) == 0){
         return(GRanges())
@@ -2159,7 +2160,14 @@ grl.unlist = function(grl)
     names(grl) = NULL
     as.df = as.data.frame(grl)
 
-    el = as.df$group
+    el = NULL
+    if (!use.group == TRUE){
+        el = as.df$element
+    }
+
+    if (is.null(el)){
+        el = as.df$group
+    }
 
     out = BiocGenerics::unlist(grl)
     mcols(out)$grl.ix = el
@@ -2167,7 +2175,16 @@ grl.unlist = function(grl)
 
     nm = setdiff(names(values(grl)), c('grl.ix', 'grl.iix'))
     out$grl.iix = as.integer(unlist(sapply(tmp$lengths, function(x) 1:x)))
-    values(out) = BiocGenerics::cbind(values(grl)[out$grl.ix, nm, drop = FALSE], values(out))
+
+    tryCatch({
+        values(out) = BiocGenerics::cbind(values(grl)[out$grl.ix, nm, drop = FALSE], values(out))
+        },
+        error = function(e){
+            message('An error occured. This could occur if you have a field name in your input GRangesList that starts with "element". If this is indeed the case then please set the flag use.group to TRUE.')
+            message('Here are more details about the error:')
+            message(e)
+        }
+    )
     return(out)
 }
 
