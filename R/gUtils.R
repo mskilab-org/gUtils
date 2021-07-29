@@ -2159,11 +2159,7 @@ grl.unlist = function(grl)
     names(grl) = NULL
     as.df = as.data.frame(grl)
 
-    el = as.df$element
-
-    if (is.null(el)){
-        el = as.df$group
-    }
+    el = as.df$group
 
     out = BiocGenerics::unlist(grl)
     mcols(out)$grl.ix = el
