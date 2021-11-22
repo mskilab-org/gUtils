@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/mskilab/gUtils.svg?branch=master)](https://travis-ci.org/mskilab/gUtils)
+[![Build Status](https://travis-ci.com/mskilab/gUtils.svg?branch=master)](https://travis-ci.com/mskilab/gUtils)
 [![Documentation Status](https://readthedocs.org/projects/gutils/badge/?version=latest)](https://readthedocs.org/projects/gutils/?badge=latest)
 [![codecov.io](https://img.shields.io/codecov/c/github/mskilab/gUtils.svg)](https://codecov.io/github/mskilab/gUtils?branch=master)
 
