@@ -2405,7 +2405,7 @@ seg2gr = function(segs, seqlengths = NULL, seqinfo = Seqinfo())
     }
 
     segs$chr = as.character(segs$chr)
-    sl = as.data.table(segs)[, max(pos2), keyby = chr ]
+    sl = data.table::as.data.table(segs)[, max(pos2), keyby = chr ]
     nms = setdiff(union(sl$chr, names(seqlengths)), NA)
     seqlengths = structure(pmax(sl[nms, V1], seqlengths[nms], na.rm = TRUE), names = nms)
 
