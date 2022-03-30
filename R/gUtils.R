@@ -4236,7 +4236,7 @@ anchorlift = function(query, subject, window = 1e9, by = NULL, seqname = "Anchor
     }
     
     ## new coordinate is query relative to <midpoint> of subject   
-    pad = (start(subject)[ov$subject.id] + round(width(subject)[ov$subject.id]/2) + round(width(query)[ov$query.id]/2))
+    pad = start(subject)[ov$subject.id] + round(width(subject)[ov$subject.id]/2)
     nov = GRanges(seqnames(query)[ov$query.id], IRanges(start(query)[ov$query.id]-pad, end(query)[ov$query.id]-pad),
                   strand = strand(query)[ov$query.id])
 
