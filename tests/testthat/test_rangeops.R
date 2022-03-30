@@ -1599,11 +1599,10 @@ test_that('ra.overlaps', {
     grl2 = GRangesList("gr1"=gr1, "gr2"=gr2)
     foobar = suppressWarnings(grl.bind(grl1, grl2))
     ro = ra.overlaps(grl1, grl2)
-    expect_equal(class(ro), "matrix")
+    expect_true(inherits(ro, 'matrix'))
     expect_equal(nrow(ro), 2)
     expect_equal(ncol(ro), 2)
-    expect_equal(nrow(ra.overlaps(grl2, grl2)), length(grl2))
-
+    expect_equal(nrow(ro), length(grl2))
  })
 
 test_that("ra.overlaps handles empty",{
