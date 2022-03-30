@@ -676,11 +676,11 @@ test_that("rrbind", {
     
     gr  = GRanges(1, IRanges(c(3,7,13), c(5,9,16)), strand=c('+','-','-'), seqinfo=Seqinfo("1", 25), name=c("A","B","C"))
     gr2 = GRanges(1, IRanges(c(1,9), c(6,14)), strand=c('+','-'), seqinfo=Seqinfo("1", 25), field=c(1,2))
-    expect_that(ncol(rrbind(mcols(gr), mcols(gr2))) > 0, is_true())
+    expect_true(ncol(rrbind(mcols(gr), mcols(gr2))) > 0)
     expect_equal(ncol(rrbind(mcols(gr), mcols(gr2), union=FALSE)), 0)
     ## check 'if (any(mix <- sapply(dfs, class) == 'matrix')){'
-    expect_equal(dim(rrbind( mcols(gr), matrix(gr2dt(gr2))))[1], 6)
-    expect_equal(dim(rrbind( mcols(gr), matrix(gr2dt(gr2))))[2], 1)
+    expect_equal(dim(rrbind( mcols(gr), gr2dt(gr2)))[2], 7)
+    expect_equal(dim(rrbind( mcols(gr), mcols(gr2)))[1], 5)
     ## check 'if (is.null(rout)){'
     expect_equal(rrbind(mcols(GRanges()), mcols(GRanges()), mcols(GRanges())), data.frame())
 
@@ -1599,10 +1599,10 @@ test_that('ra.overlaps', {
     grl2 = GRangesList("gr1"=gr1, "gr2"=gr2)
     foobar = suppressWarnings(grl.bind(grl1, grl2))
     ro = ra.overlaps(grl1, grl2)
-    expect_equal(class(ro), "matrix")
+    expect_true(inherits(ro, "matrix"))
     expect_equal(nrow(ro), 2)
     expect_equal(ncol(ro), 2)
-    expect_equal(nrow(ra.overlaps(grl2, grl2)), length(grl2))
+    expect_equal(nrow(ro), length(grl2))
 
  })
 
