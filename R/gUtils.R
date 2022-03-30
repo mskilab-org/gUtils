@@ -3402,7 +3402,7 @@ setGeneric('%O%', function(x, ...) standardGeneric('%O%'))
 setMethod("%O%", signature(x = "GRanges"), function(x, y) {
 
     query.id = NULL; ## NOTE fix
-    ov = gr2dt(gr.findoverlaps(x, reduce(y)))
+    ov = gr2dt(gr.findoverlaps(x, reduce(gr.stripstrand(y))))
     if (nrow(ov) > 0) {
         ov = ov[ , sum(width), keyby = query.id]
         x$width.ov = 0
@@ -3467,7 +3467,7 @@ setMethod("%OO%", signature(x = "GRanges"), function(x, y) {
 setGeneric('%o%', function(x, ...) standardGeneric('%o%'))
 setMethod("%o%", signature(x = "GRanges"), function(x, y) {
     query.id = NULL; ## NOTE fix
-    ov = gr2dt(gr.findoverlaps(x, reduce(y)))
+    ov = gr2dt(gr.findoverlaps(x, reduce(gr.stripstrand(y))))
     if (nrow(ov)>0){
         ov = ov[ , sum(width), keyby = query.id]
         x$width.ov = 0
