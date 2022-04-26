@@ -4252,7 +4252,7 @@ anchorlift = function(query, subject, window = 1e9, by = NULL, seqname = "Anchor
 
     
     tmp.dt = as.data.table(cbind(start(nov)*flip, end(nov)*flip))[, rowid := 1:.N]
-    tmp.dt = melt.data.table(tmp.dt, id.vars = "rowid")
+    tmp.dt = melt(tmp.dt, id.vars = "rowid")
     setkeyv(tmp.dt, c("rowid", "value"))
     tmp.dt[, colid := rep(1:2, length(nov))]
     tmp = matrix(NA, ncol = 2, nrow = length(nov))
