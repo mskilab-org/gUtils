@@ -1,7 +1,12 @@
 library(gUtils)
 library(testthat)
 
-GENOME = "http://mskilab.com/gUtils/hg19/hg19.chrom.sizes"
+##GENOME = "http://mskilab.com/gUtils/hg19/hg19.chrom.sizes"
+GENOME = system.file("extdata", "human_g1k_v37.no.extra.chrom.sizes", package = "gUtils")
+if (nchar(GENOME) == 0) {
+    download.file("http://mskilab.com/gUtils/hg19/hg19.chrom.sizes", "~/hg19.chrom.sizes")
+    GENOME="~/hg19.chrom.sizes"
+}
 Sys.setenv(DEFAULT_GENOME = GENOME)
 
 context("unit testing gUtils operations")
@@ -1465,10 +1470,6 @@ test_that('anchorlift', {
 
 ## tests for data functions
 
-## hg_seqlengths()
-test_that('hg_seqlengths()', {
-  expect_equal(hg_seqlengths(), c("chr1"=249250621, "chr2"=243199373, "chr3"=198022430, "chr4"=191154276, "chr5"=180915260, "chr6"=171115067, "chr7"=159138663, "chrX"=155270560, "chr8"=146364022, "chr9"=141213431, "chr10"=135534747, "chr11"=135006516, "chr12"=133851895, "chr13"=115169878, "chr14"=107349540, "chr15"=102531392, "chr16"=90354753, "chr17"=81195210, "chr18"=78077248, "chr20"=63025520, "chrY"=59373566, "chr19"=59128983, "chr22"=51304566, "chr21"=48129895, "chrM"=16571))
-})
 
 
 
