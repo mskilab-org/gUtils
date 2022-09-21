@@ -4128,18 +4128,22 @@ parse.gr = function(...)
 #'
 #' @param x  character vector representing a GRangesList with UCSC style coordinates (chr:start-end[+-]) representing a [signed] Granges and  ";" separators within each item of x separating individaul each GRAnges
 #' @param seqlengths named integer vector representing genome (default = hg_seqlengths())
+#' @param separator/s charachters used to separate between distinct ranges in each gr (default = c(';')). A single character could be provided or a vector that includes various optional separators
 #' @author Marcin Imielinski
 #' @return GRangesList parsed from IGV-/UCSC-style strings
 #' @export
-parse.grl = function(x, seqlengths = hg_seqlengths(), meta = NULL)
+parse.grl = function(x, seqlengths = hg_seqlengths(), meta = NULL, separators = c(';'))
 {
     nm = names(x)
-    tmp = strsplit(x, '\\s*[;\\,\\|]\\s*')
+    split_chr = paste0('\\s*[\\', paste(separators, collapse = '\\'), ']\\s*')
+    tmp = strsplit(x,split_chr)
     tmp.u = unlist(tmp)
     tmp.u = gsub('\\,', '', tmp.u)
     tmp.id = rep(1:length(tmp), sapply(tmp, length))
     str = gsub('.*([\\+\\-])$','\\1', tmp.u)
-    spl = strsplit(tmp.u, "[\\-\\+\\:]", perl = T)
+    tmp.l = strsplit(tmp.u, ':', perl = T) # treat seqnames and ranges separately in order to work well with seqnames that contain "-"
+    l1 = lapply(tmp.l, function(s){strsplit(s[2], "[\\-\\+]", perl = T)[[1]]}) # split according to "-" and also get rid of the trailing "-" and "+"
+    spl = lapply(seq_along(tmp.l), function(ix){c(tmp.l[[ix]][1], l1[[ix]])})
 
     if (any(ix <- sapply(spl, length)==2)){
         spl[ix] = lapply(which(ix), function(x) spl[[x]][c(1:2,2)])
