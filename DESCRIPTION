@@ -7,7 +7,6 @@ Authors@R: c(
     person("Marcin", "Imielinski", role = c("aut", "cre"), email = "mimielinski@nygenome.org"))
 Description: R package providing additional capabilities and speed for GenomicRanges operations.
 biocViews:
-Remotes:
   bioc::3.10/GenomeInfoDb,
   bioc::3.10/BiocGenerics,   
   bioc::3.10/S4Vectors,
