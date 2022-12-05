@@ -2,7 +2,8 @@ library(gUtils)
 library(testthat)
 
 ##GENOME = "http://mskilab.com/gUtils/hg19/hg19.chrom.sizes"
-GENOME = system.file("extdata", "human_g1k_v37.no.extra.chrom.sizes", package = "gUtils")
+## GENOME = system.file("extdata", "human_g1k_v37.no.extra.chrom.sizes", package = "gUtils")
+GENOME = testthat::test_path("human_g1k_v37.no.extra.chrom.sizes")
 if (nchar(GENOME) == 0) {
     download.file("http://mskilab.com/gUtils/hg19/hg19.chrom.sizes", "~/hg19.chrom.sizes")
     GENOME="~/hg19.chrom.sizes"
