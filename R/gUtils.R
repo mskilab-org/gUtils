@@ -952,19 +952,19 @@ grl.bind = function(...)
 #' gr <- gr.chr(GRanges(c(1,"chrX"), IRanges(c(1,2), 1)))
 #' seqnames(gr)
 #'
+#' @details implementation looks for strings that begin with 0-9, X,Y,M, or Un for
+#' the unmapped chromosome regions/decoys.  
+#' regex pattern: "^([0-9,X, Y, M,x,y,m, Un, {EBV}]+)"
+#' replacement pattern: "chr\\1"
+#' 
 #' @importFrom GenomeInfoDb seqlevels seqlevels<-
+#' @author Max Chao
 #' @export
-gr.chr = function(gr)
-{
-  if (any(ix <- !grepl('^chr', seqlevels(gr))))
-  {    
-    sl = seqlengths(gr)
-    names(sl)[ix] = paste('chr', names(sl)[ix], sep = "")
-
-    dt = as.data.table(gr)
-    dt$seqnames = names(sl)[as.integer(seqnames(gr))]
-
-    gr = dt2gr(dt, seqlengths = sl)
+gr.chr  = function(gr){
+  if (grepl('^chr', seqlevels(gr)[1]) == FALSE){
+    seqlevels(gr) = gsub(seqlevels(gr), 
+                         pattern = "^([0-9,X, Y, M,x,y,m, Un, {EBV}]+)", 
+                         replacement = "chr\\1")
   }
   return(gr)
 }
