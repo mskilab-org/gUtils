@@ -1049,22 +1049,19 @@ gr.string = function(gr, add.chr = FALSE, mb = FALSE, round = 3, other.cols = c(
 
     str = ifelse(as.logical(strand(gr)!='*'), as.character(strand(gr)), '')
 
-    
+    ## XT debug: the lastest GRanges requires an extra ":" in between end and strand
     if (mb){
-        return(paste(sn, ':', round(start(gr)/1e6, round), '-', round(end(gr)/1e6, round), str, other.str, sep = ''))
+        return(paste(sn, ':', round(start(gr)/1e6, round), '-', round(end(gr)/1e6, round), ":", str, other.str, sep = ''))
     }
     else{
         if (pretty){
-            return(paste(sn, ':', stringr::str_trim(format(start(gr), big.mark = ',')), '-', stringr::str_trim(format(end(gr), big.mark = ',')), str, other.str, sep = ''))
+            return(paste(sn, ':', stringr::str_trim(format(start(gr), big.mark = ',')), '-', stringr::str_trim(format(end(gr), big.mark = ',')), ":", str, other.str, sep = ''))
         }
         else{
-            return(paste(sn, ':', start(gr), '-', end(gr), str, other.str, sep = ''))
+            return(paste(sn, ':', start(gr), '-', end(gr), ":", str, other.str, sep = ''))
         }
     }
 }
-
-
-
 
 #' @name grl.reduce
 #' @title grl.reduce
@@ -2417,6 +2414,10 @@ seg2gr = function(segs, seqlengths = NULL, seqinfo = Seqinfo())
         segs$pos1 = as.numeric(segs$pos1)
         segs$pos2 = as.numeric(segs$pos2)
 
+        ## only convert valid ranges
+        valid.ix = which(!is.na(segs$pos1) & !is.na(segs$pos2))
+        segs = segs[valid.ix, , drop=FALSE]
+        
         out = GRanges(seqnames = segs$chr, ranges = IRanges(segs$pos1, segs$pos2),strand = segs$strand, seqlengths = seqlengths)
 
     } else{
