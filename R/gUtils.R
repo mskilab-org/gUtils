@@ -1386,6 +1386,7 @@ gr.pairflip = function(gr)
 #'
 #' @param gr \code{GRanges}, \code{seqlengths} or \code{Seqinfo} range to tile. If has \code{GRanges} has overlaps, will reduce first.
 #' @param width integer Width of each tile (default = 1e3)
+#' @param stranded boolean Whether to reverse order of tiles on negative strand (default = FALSE)
 #' @examples
 #'
 #' ## 10 tiles of width 10
@@ -1396,7 +1397,7 @@ gr.pairflip = function(gr)
 #'
 #' @return GRanges with tiled intervals
 #' @export
-gr.tile = function(gr, width = 1e3)
+gr.tile = function(gr, width = 1e3, stranded = FALSE)
 {
     numw = tile.id = query.id = NULL ## getting past NOTE
     if (is(gr, 'data.table')){
@@ -1419,8 +1420,14 @@ gr.tile = function(gr, width = 1e3)
     st = rep(start(gr), ws)
     en = rep(end(gr), ws)
     strand = rep(as.character(strand(gr)), ws)
-    dt = data.table(query.id = rep(1:length(gr), ws), tile.id = 1:sum(ws))
-    dt[, numw := 0:(length(tile.id)-1), by = query.id]
+    if(stranded){
+        dt = data.table(query.id = rep(1:length(gr), ws), tile.id = 1:sum(ws),strand=strand)
+        dt[strand=='+', numw := 0:(length(tile.id)-1), by = query.id]
+        dt[strand=='-', numw := rev(0:(length(tile.id)-1)), by = query.id]
+    }else{
+        dt = data.table(query.id = rep(1:length(gr), ws), tile.id = 1:sum(ws))
+        dt[, numw := 0:(length(tile.id)-1), by = query.id]
+    }
     start = pmin(st+width*dt$numw, en)
     end = pmin(st+width*(dt$numw+1)-1, en)
 
