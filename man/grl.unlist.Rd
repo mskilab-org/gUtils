@@ -4,10 +4,12 @@
 \alias{grl.unlist}
 \title{Robust unlisting of \code{GRangesList} that keeps track of origin}
 \usage{
-grl.unlist(grl)
+grl.unlist(grl, use.group = FALSE)
 }
 \arguments{
 \item{grl}{\code{GRangeList} object to unlist}
+
+\item{use.group}{\code{logical} force grl.unlist to use the "group" field for setting grl.ix. By default, grl.unlist would first try to use the "element", but if the input GRangesList contains a GRanges with a field that starts with the substring "element" then grl.unlist would fail.}
 }
 \value{
 \code{GRanges} with added metadata fields \code{grl.ix} and \code{grl.iix}.

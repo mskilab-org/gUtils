@@ -82,11 +82,6 @@ NULL
 #' @param chr boolean Flag for whether to keep "chr". (default = FALSE)
 #' @param include.junk boolean Flag for whether to not trim to only 1-22, X, Y, M. (default = FALSE)
 #' @return Named integer vector with elements corresponding to the genome seqlengths
-#' @importFrom utils read.delim
-#' @importFrom stats setNames
-#' @importFrom utils relist
-#' @importFrom methods as is
-#' @importFrom S4Vectors elementNROWS
 #' @author Marcin Imielinski
 #' @export
 hg_seqlengths = function(genome = NULL, chr = TRUE, include.junk = FALSE)
@@ -228,7 +223,6 @@ gr2dt = function(x)
 #' @param ignore.strand boolean If set to \code{FALSE}, will extend '-' strands from the other direction (default = TRUE)
 #' @param clip boolean Trims returned \code{GRanges} so that it does not extend beyond bounds of the input \code{GRanges} (default = TRUE)
 #' @return \code{GRanges} object of width 1 ranges representing start of each genomic range in the input.
-#' @importFrom GenomicRanges GRanges
 #' @examples
 #'
 #' gr.start(example_dnase, width=200)
@@ -319,9 +313,6 @@ gr.start = function(x, width = 1, force = FALSE, ignore.strand = TRUE, clip = TR
 #' @param seqlengths named integer vector representing genome (default = hg_seqlengths())
 #' @param seqinfo seqinfo of output GRanges object
 #' @return \code{GRanges} object of \code{length = nrow(dt)}
-#' @importFrom data.table data.table
-#' @importFrom GenomicRanges GRanges mcols
-#' @importFrom IRanges IRanges
 #' @examples
 #' converted_gr = dt2gr(data.table(start=c(1,2), seqnames=c("X", "1"), end=c(10,20), strand = c('+', '-')))
 #' @export
@@ -400,8 +391,6 @@ dt2gr = function(dt, key = NULL, seqlengths = NULL, seqinfo = Seqinfo()) {
 #' @return GRanges object of width = \code{width} ranges representing end of each genomic range in the input.
 #' @examples
 #' gr.end(example_dnase, width=200, clip=TRUE)
-#' @importFrom GenomeInfoDb seqlengths
-#' @importFrom GenomicRanges strand seqnames values<- values
 #' @author Marcin Imielinski
 #' @export
 gr.end = function(x, width = 1, force = FALSE, ignore.strand = TRUE, clip = TRUE)
@@ -485,7 +474,6 @@ gr.end = function(x, width = 1, force = FALSE, ignore.strand = TRUE, clip = TRUE
 #'
 #' @param x \code{GRanges} object to operate on
 #' @return \code{GRanges} of the midpoint, calculated from \code{floor(width(x)/2)}
-#' @importFrom GenomicRanges start<- end<- start end
 #' @examples
 #' gr.mid(GRanges(1, IRanges(1000,2000), seqinfo=Seqinfo("1", 2000)))
 #' @export
@@ -509,8 +497,6 @@ gr.mid = function(x)
 #' @param genome GRanges, GRangesList, or Seqinfo genome. Default is "hg19" from the \code{BSGenome} package.
 #' @return \code{GRanges} with random intervals on the specifed "chromosomes"
 #' @note This function is currently quite slow, needs optimization
-#' @importFrom GenomeInfoDb seqinfo seqnames<-
-#' @importFrom GenomicRanges gaps ranges ranges<-
 #' @examples
 #'
 #' Sys.setenv(DEFAULT_GENOME = "http://mskilab.com/gUtils/hg19/hg19.chrom.sizes")
@@ -879,7 +865,6 @@ grbind = function(x, ...)
 #'
 #' @export
 #' @author Marcin Imielinski
-#' @importFrom GenomicRanges mcols<- mcols split
 grl.bind = function(...)
 {
   ## TODO: make this work for when underlying grs do not have matching features
@@ -957,7 +942,6 @@ grl.bind = function(...)
 #' regex pattern: "^([0-9,X, Y, M,x,y,m, Un, {EBV}]+)"
 #' replacement pattern: "chr\\1"
 #' 
-#' @importFrom GenomeInfoDb seqlevels seqlevels<-
 #' @author Max Chao
 #' @export
 gr.chr  = function(gr){
@@ -982,7 +966,6 @@ gr.chr  = function(gr){
 #' @param pad integer Expand the input data before reducing. (default = 0)
 #' @param sort boolean Flag to sort the output. (default = TRUE)
 #' @return \code{GRanges} object with no strand information, representing a minimal footprint
-#' @importFrom GenomicRanges reduce
 #' @examples
 #'
 #' streduce(grl.hiC, pad=10)
@@ -1198,6 +1181,47 @@ gr.flipstrand =function(gr){
     return(gr)
 }
 
+#' Get union of seqlengths from multiple GRanges-like objects
+#'
+#' Creates union of seqlengths from arbitrary number of GenomicRanges objects
+#'
+#' @return integer vector
+#' @author Kevin Hadi
+#' @export gr.fixseq
+gr.fixseq = function(...) {
+    list_of_seqlengths = lapply(list(...), GenomeInfoDb::seqlengths)
+    union_of_seqlengths_dfs = Reduce(
+        function(x, y) {
+            if (!inherits(x, "data.frame")) {
+                ## assuming that x is a seqlengths object
+                ## transforming to data.frame
+                x = data.frame(
+                    name = names(x),
+                    value = x
+                )
+                x$ord = seq_along(x$name)
+            }
+            if (!inherits(y, "data.frame")) {
+                y = data.frame(
+                    name = names(y),
+                    value = y
+                )
+            }
+            df = base::merge(x, y, by = "name", all = T)
+            df = df[order(df$ord),]
+            out = data.frame(
+                seqname = df$name,
+                seqlength = pmax(df[['value.x']], df[['value.y']], na.rm = T)
+            )
+            out
+        }, 
+        list_of_seqlengths
+    )
+    union_seqlengths = union_of_seqlengths_dfs$seqlength
+    names(union_seqlengths) = union_of_seqlengths_dfs$seqname
+    return(union_seqlengths)
+}
+
 
 #' @name gr.fix
 #' @title "Fixes" \code{seqlengths} / \code{seqlevels}
@@ -1216,7 +1240,6 @@ gr.flipstrand =function(gr){
 #' @param drop boolean Remove ranges that are not present in the supplied genome (default = FALSE)
 #' @param pruning.mode string Controls how to prune x. Four pruning modes are currently defined: "error", "coarse", "fine", and "tidy". See GenomeInfoDb documentation.
 #' @return \code{GRanges} pile with the fixed \code{Seqinfo}
-#' @importFrom GenomeInfoDb Seqinfo seqinfo keepSeqlevels seqlevels seqlengths seqlevels<- seqlengths<- genome<- seqnames
 #' @export
 gr.fix = function(gr, genome = NULL, gname = NULL, drop = FALSE, pruning.mode = "coarse")
 {
@@ -1244,7 +1267,7 @@ gr.fix = function(gr, genome = NULL, gname = NULL, drop = FALSE, pruning.mode = 
 
         seqlevels(gr, pruning.mode = "coarse") = names(lens)
         seqlengths(gr) = lens;
-    } else{
+    } else {
         if (length(gr)>0){
             if (is(gr, 'GRangesList')){
                 tmp.gr = unlist(gr)
@@ -1289,7 +1312,6 @@ gr.fix = function(gr, genome = NULL, gname = NULL, drop = FALSE, pruning.mode = 
 #' @param gap integer Number of bases between ranges on the new chromosome (default = 0)
 #' @return \code{data.frame} with start and end coordinates, and all of the original metadata
 #' @name gr.flatten
-#' @importFrom GenomicRanges mcols
 #' @export
 gr.flatten = function(gr, gap = 0)
 {
@@ -1863,9 +1885,6 @@ gr.duplicated = function(query, by = NULL, type = 'any')
 #' Dice up \code{GRanges} into \code{width = 1} \code{GRanges} spanning the input (warning can produce a very large object)
 #'
 #' @param gr \code{GRanges} object to dice
-#' @importFrom S4Vectors Rle
-#' @importFrom GenomeInfoDb seqlengths
-#' @importFrom GenomicRanges seqnames width strand values<- values strand<- distance
 #' @return \code{GRangesList} where kth element is a diced pile of \code{GRanges} from kth input \code{GRanges}
 #' @examples
 #' gr.dice(GRanges(c(1,4), IRanges(c(10,10),20)))
@@ -2136,7 +2155,6 @@ grl.in = function(grl, windows, some = FALSE, only = FALSE, logical = TRUE, exac
 #'
 #' In this way, \code{grl.unlist} is reversible, while \code{BiocGenerics::unlist} is not.
 #'
-#' @importFrom BiocGenerics unlist
 #' @param grl \code{GRangeList} object to unlist
 #' @param use.group \code{logical} force grl.unlist to use the "group" field for setting grl.ix. By default, grl.unlist would first try to use the "element", but if the input GRangesList contains a GRanges with a field that starts with the substring "element" then grl.unlist would fail.
 #' @return \code{GRanges} with added metadata fields \code{grl.ix} and \code{grl.iix}.
@@ -2204,7 +2222,6 @@ grl.unlist = function(grl, use.group = FALSE)
 #' Note: Assumes all GRanges in "x" are of equal length
 #'
 #' @param x \code{GRangesList} object to pivot
-#' @importFrom GenomicRanges GRanges GRangesList split
 #' @return GRangesList with inverted 'x' and 'y'
 #' @examples
 #' grl.pivot(grl.hiC)
@@ -2233,7 +2250,6 @@ grl.pivot = function(x)
 #' @param as.data.table Return the binded data as a \code{data.table}. (default = FALSE)
 #' @return \code{data.frame} or \code{data.table} of the \code{rbind} operation
 #' @export
-#' @importFrom data.table data.table rbindlist
 #' @author Marcin Imielinski
 rrbind = function (..., union = TRUE, as.data.table = FALSE)
 {
@@ -2457,7 +2473,6 @@ seg2gr = function(segs, seqlengths = NULL, seqinfo = Seqinfo())
 #' \item s\code{strand} - 'strand', 'str'
 #' }
 #'
-#' @import GenomicRanges
 #' @param seg data.frame or data.table or GRanges of segments with fields denoting chromosome, start, end, and other metadata.
 #' @param chr boolean Flag to force add chromosomes (default = FALSE)
 #' @return data.frame or data.table with standardized segments
@@ -2570,11 +2585,6 @@ gr.nochr = function(gr) {
 #' that will be used to additionally restrict matches, i.e. to pairs of ranges that overlap and also
 #' have the same values of their \code{"by"} fields
 #'
-#' @importFrom GenomeInfoDb seqlengths seqlengths<-
-#' @importFrom GenomicRanges values ranges width strand values<- strand<- seqnames
-#' @importFrom data.table is.data.table := setkeyv
-#' @importFrom IRanges findOverlaps
-#' @importFrom S4Vectors queryHits subjectHits
 #' @param query Query \code{GRanges} pile
 #' @param subject Subject \code{GRanges} pile
 #' @param ignore.strand boolean Strand ignored (default = TRUE)
@@ -3160,7 +3170,6 @@ gr.collapse = function(gr, pad = 1)
 #' @param subject Subject \code{GRanges} pile
 #' @param max.slice max slice of query to match at a time
 #' @param verbose whether to give verbose outputx
-#' @importFrom parallel mclapply
 #' @param ... Additional arguments to be passed along to \code{\link{gr.findoverlaps}}.
 #' @return Vector of length = \code{length(query)} with subject indices of *first* subject in query, or NA if none found.
 #' This behavior is different from \code{\link{gr.findoverlaps}}, which will
@@ -3206,10 +3215,9 @@ setGeneric('%+%', function(gr, x) standardGeneric('%+%'))
 #'
 #' @return shifted granges
 #' @rdname gr.nudge-shortcut
-#' @exportMethod %+%
 #' @aliases %+%,GRanges-method
 #' @author Marcin Imielinski
-#' @export
+#' @exportMethod %+%
 setMethod("%+%", signature(gr = 'GRanges'), function(gr, x) {
   end(gr) = end(gr)+x
   start(gr) = start(gr)+x
@@ -3857,7 +3865,6 @@ setMethod("%^%", signature(x = "CompressedGRangesList"), function(x, y) {
 #' @aliases %$%,GRanges-method
 #' @exportMethod %$%
 #' @author Marcin Imielinski
-
 setGeneric('%$%', function(x, ...) standardGeneric('%$%'))
 setMethod("%$%", signature(x = "GRanges"), function(x, y) {
     return(gr.val(x, y, val = names(values(y))))
@@ -3891,6 +3898,13 @@ setMethod("%$$%", signature(x = "GRanges"), function(x, y) {
 
 
 
+#' %*% in gUtils
+#' 
+#' %*% is not available as an S4 Generic
+#' because it is an R primitive.
+#' 
+#' @export
+`%*%` <- base::`%*%`
 
 #' @name %*%
 #' @title Metadata join with coordinates as keys (wrapper to \code{\link{gr.findoverlaps}})
@@ -3906,16 +3920,11 @@ setMethod("%$$%", signature(x = "GRanges"), function(x, y) {
 #' @param y \code{GRanges}
 #' @return \code{GRanges} containing every pairwise intersection of ranges in \code{x} and \code{y} with a join of the corresponding  metadata
 #' @rdname grfo
-#' @exportMethod %*%
-#' @export
-#' @importFrom methods setMethod
 #' @author Marcin Imielinski
 #' @docType methods
 #' @aliases %*%,GRanges-method
 #' @examples
-#' example_genes %*% example_dnase
-## setGeneric('%*%', function(...) standardGeneric('%*%'))
-## setGeneric('%*%')
+#' @exportMethod %*%
 setMethod("%*%", signature(x = "GRanges"), function(x, y) {
     gr = gr.findoverlaps(x, y, qcol = names(values(x)), scol = names(values(y)))
     return(gr)
@@ -4288,7 +4297,6 @@ anchorlift = function(query, subject, window = 1e9, by = NULL, seqname = "Anchor
 #' "field" 
 #'
 #' @author Marcin Imielinski
-#' @import GenomicRanges
 #' @param gr GRanges
 #' @param qs quantiles ie numeric between 0 and 1
 #' larger than 1, both boundary will be considered individual breakpoints
@@ -4323,7 +4331,6 @@ gr.quantile = function(gr, qs, field = values(gr)[1], na.rm = FALSE)
 #' Break GRanges at given breakpoints into disjoint gr
 #'
 #' @author Xiaotong Yao
-#' @import GenomicRanges
 #' @param bps \code{GRanges} of width 1, locations of the bp; if any element width
 #' larger than 1, both boundary will be considered individual breakpoints
 #' @param query a disjoint \code{GRanges} object to be broken
@@ -4684,7 +4691,6 @@ setMethod(`-`, 'GRangesList', function(e1, e2) {
 #' @param ignore.strand boolean If set to \code{FALSE}, will extend '-' strands from the other direction (default = TRUE)
 #' @param clip boolean Trims returned \code{GRangesList} so that it does not extend beyond bounds of the input \code{GRanges} (default = TRUE)
 #' @return \code{GRangesList} object of width 1 ranges representing start of each genomic range in the input.
-#' @importFrom GenomicRanges GRangesList
 #' @return \code{GRangesList} object of width 1+ ranges representing start of each genomic range in the input.
 #' @export
 grl.start = function(grl, width = 1, force = FALSE, ignore.strand = TRUE, clip = TRUE) {
@@ -4710,8 +4716,6 @@ grl.start = function(grl, width = 1, force = FALSE, ignore.strand = TRUE, clip =
 #' @param ignore.strand boolean If set to \code{FALSE}, will extend '-' strands from the other direction. (default = TRUE)
 #' @param clip boolean Trims returned \code{GRangesList} so that it does not extend beyond bounds of the input (default = TRUE)
 #' @return GRangesList object of width = \code{width} ranges representing end of each genomic range in the input.
-#' @importFrom GenomeInfoDb seqlengths
-#' @importFrom GenomicRanges strand seqnames values<- values
 #' @author Kevin Hadi
 #' @export
 grl.end = function(grl, width = 1, force = FALSE, ignore.strand = TRUE, clip = TRUE) {

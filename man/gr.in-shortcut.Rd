@@ -64,10 +64,4 @@ gr1 %^^% gr2
 }
 \author{
 Marcin Imielinski
-
-Marcin Imielinski
-
-Marcin Imielinski
-
-Marcin Imielinski
 }

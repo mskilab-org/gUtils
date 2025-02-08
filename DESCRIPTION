@@ -17,8 +17,7 @@ biocViews:
   bioc::3.10/VariantAnnotation
 Depends:
     R (>= 3.5.0),
-    GenomicRanges (>= 1.30),
-    data.table (>= 1.10)
+    GenomicRanges (>= 1.30)    
 Imports:
     IRanges (>= 2.12),
     S4Vectors (>= 0.4),
@@ -26,6 +25,7 @@ Imports:
     parallel,
     BiocGenerics(>= 0.24),
     methods,
+    data.table (>= 1.10),
     Matrix,
     stringr
 Suggests:
@@ -35,4 +35,5 @@ Suggests:
 License: GPL-2
 BugReports: http://github.com/mskilab/gUtils/issues
 LazyData: true
-RoxygenNote: 7.1.1
+RoxygenNote: 7.3.2
+Encoding: UTF-8

@@ -15,9 +15,18 @@ Identical \code{GRanges}, but with 'chr' prepended to each seqlevel
 \description{
 Prepend "chr" to \code{GRanges seqlevels}
 }
+\details{
+implementation looks for strings that begin with 0-9, X,Y,M, or Un for
+the unmapped chromosome regions/decoys.  
+regex pattern: "^([0-9,X, Y, M,x,y,m, Un, {EBV}]+)"
+replacement pattern: "chr\\1"
+}
 \examples{
 
 gr <- gr.chr(GRanges(c(1,"chrX"), IRanges(c(1,2), 1)))
 seqnames(gr)
 
+}
+\author{
+Max Chao
 }

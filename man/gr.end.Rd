@@ -74,12 +74,4 @@ gr.end(example_dnase, width=200, clip=TRUE)
 }
 \author{
 Marcin Imielinski
-
-Marcin Imielinski
-
-Marcin Imielinski
-
-Marcin Imielinski
-
-Marcin Imielinski
 }

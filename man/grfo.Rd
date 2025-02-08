@@ -23,9 +23,6 @@ join of the metadata, with genomic coordinates as the keys. \cr
 Example usage: \cr
 x %*% y
 }
-\examples{
-example_genes \%*\% example_dnase
-}
 \author{
 Marcin Imielinski
 }

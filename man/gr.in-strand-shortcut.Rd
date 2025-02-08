@@ -37,8 +37,4 @@ gr1 %&&% gr2 returns the subsets of gr1 that overlaps gr2
 }
 \author{
 Marcin Imielinski
-
-Marcin Imielinski
-
-Marcin Imielinski
 }

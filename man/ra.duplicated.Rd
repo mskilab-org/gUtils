@@ -24,9 +24,6 @@ and will merge those that overlap into single junctions in the output, and then 
 of the input junctions it was "seen in" using logical flag  meta data fields prefixed by "seen.by." and then the argument name
 (or "seen.by.ra" and the argument number)
 }
-\examples{
-
-}
 \author{
 Xiaotong Yao
 }
