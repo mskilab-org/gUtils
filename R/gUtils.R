@@ -358,9 +358,13 @@ dt2gr = function(dt, key = NULL, seqlengths = NULL, seqinfo = Seqinfo()) {
                              drop = FALSE])
     }
 
-    if (nrow(mc)){
-      mcols(out) <- mc
+    if (NROW(out) == NROW(mc) && !is.null(dim(mc)) && NCOL(mc) > 0) {
+        mcols(out) = mc
     }
+
+    ## if (nrow(mc)){
+    ##   mcols(out) <- mc
+    ## }
   }, error = function(e) NULL)
 
   if (is.null(out)){
@@ -1483,6 +1487,84 @@ gr.tile = function(gr, width = 1e3, stranded = FALSE)
     return(out)
 }
 
+order_to_rank <- function(x, ties.method = "average", order_fun = base::order) {
+  o = order_fun(x)
+  ## o <- stringr::str_order(x, numeric = TRUE)
+  xs <- x[o]
+
+  # identify ties under natural comparison
+  is_new <- c(TRUE, xs[-1] != xs[-length(xs)])
+  group <- cumsum(is_new)
+
+  # rank unique groups
+  group_rank <- rank(group, ties.method = ties.method)
+
+  # expand back
+  r <- numeric(length(x))
+  r[o] <- group_rank
+  r
+}
+
+
+
+#' Order GRanges
+gr.order = function(gr, ignore.strand = T, rev = TRUE, do_rank = FALSE) {
+    is_grangeslist = inherits(gr, "GRangesList")
+    sl = GenomeInfoDb::seqlevels(gr)
+    slr = GenomeInfoDb::rankSeqlevels(sl)
+    GenomeInfoDb::seqlevels(gr) = sl[order(slr)]
+    do_rank = identical(do_rank, TRUE)
+    rev = identical(rev, TRUE)
+    ignore.strand = identical(ignore.strand, TRUE)
+    keep_strand = !ignore.strand
+    if (is_grangeslist) {
+        if (do_rank) {
+            .NotYetImplemented()
+        }
+        return(GenomicRanges::order(gr, ignore.strand = ignore.strand, decreasing = rev))
+    }
+    orderfun = function(gr, rev, ignore.strand, keep_strand) {
+        chromrank = GenomeInfoDb::rankSeqlevels(
+            as.character(
+                GenomeInfoDb::seqnames(gr)
+            )
+        )
+        is_forward_and_keep_strand = !rev && keep_strand
+        is_rev_and_keep_strand = rev && keep_strand
+        is_forward_and_ignore_strand = !rev && ignore.strand
+        is_rev_and_ignore_strand = rev && ignore.strand
+        if (keep_strand) {
+            strandix = c("+" = 1, '-' = -1)[as.character(GenomicRanges::strand(gr))]
+        }
+        if (is_forward_and_ignore_strand) {
+            out = order(
+                chromrank,
+                GenomicRanges::start(gr),
+                GenomicRanges::end(gr)
+            )
+        } else if (is_rev_and_ignore_strand) {
+            out = order(
+                chromrank,
+                -as.integer(GenomicRanges::end(gr))
+                -as.integer(GenomicRanges::start(gr))
+            )
+        } else if (keep_strand) {
+            strand_aware_starts = ifelse(strandix == 1, as.integer(GenomicRanges::start(gr)), -as.integer(GenomicRanges::end(gr)))
+            strand_aware_ends = ifelse(strandix == 1, as.integer(GenomicRanges::end(gr)), -as.integer(GenomicRanges::start(gr)))
+            out = order(
+                chromrank,
+                strand_aware_starts,
+                strand_aware_ends
+            )
+        }
+    }
+    if (do_rank) {
+        out = gUtils:::order_to_rank(gr, order_fun = function(x) orderfun(x, rev = rev, ignore.strand = ignore.strand, keep_strand = keep_strand))
+    } else {
+        out = orderfun(gr, rev = rev, ignore.strand = ignore.strand, keep_strand = keep_strand)
+    }
+    return(out)
+}
 
 
 
