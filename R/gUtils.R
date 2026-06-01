@@ -83,14 +83,42 @@ change_seqlevels_style = function(gr, style = "NCBI") {
     if (NROW(sl) == 0) {
         return(gr)
     }
+    si = GenomeInfoDb::seqinfo(gr)
     sl_used_changed = sl_used0 = GenomeInfoDb::seqlevelsInUse(gr)
     sl_other = sl[!sl %in% sl_used0]
+    si_used_changed = si_used0 = si[sl_used0,]
+    si_other = si[
+        GenomeInfoDb::seqnames(si)
+        [!GenomeInfoDb::seqnames(si) %in% GenomeInfoDb::seqnames(si_used0)]
+    ]
     GenomeInfoDb::seqlevels(gr) = sl_used0
+    GenomeInfoDb::seqinfo(gr) = si_used0
+    sn = seqnames(si_used_changed)
+    GenomeInfoDb::seqlevelsStyle(sn) = style
+    GenomeInfoDb::seqnames(si_used_changed) = sn
     GenomeInfoDb::seqlevelsStyle(sl_used_changed) = style
+    newsn = c(
+        GenomeInfoDb::seqnames(si_used_changed),
+        GenomeInfoDb::seqnames(si_other)
+    )
+    sn_to_propagate = which(!duplicated(newsn))
+    newsi = GenomeInfoDb::Seqinfo(
+      seqnames = newsn[sn_to_propagate],
+      seqlengths = c(
+        GenomeInfoDb::seqlengths(si_used_changed),
+        GenomeInfoDb::seqlengths(si_other)
+      )[sn_to_propagate],
+      isCircular = c(
+        GenomeInfoDb::isCircular(si_used_changed),
+        GenomeInfoDb::isCircular(si_other)
+      )[sn_to_propagate]
+    )        
     GenomeInfoDb::seqlevels(gr) = sl_used_changed
     GenomeInfoDb::seqlevels(gr) = unique(c(sl_used_changed, sl_other))
+    GenomeInfoDb::seqinfo(gr) = newsi
     return(gr)
 }
+
 
 #' @name hg_seqlengths
 #' @title Output standard human genome seqlengths
