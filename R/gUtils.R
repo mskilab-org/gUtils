@@ -68,7 +68,29 @@ NULL
 NULL
 
 
-
+#' Change seqlevels
+#'
+#' Change seqlevels style
+#'
+#' Wrapper to GenomeInfoDb functions to
+#' change seqlevels style. "NCBI" = no chr,
+#' "UCSC" = chr prefixed.
+#'
+#' @author Kevin Hadi
+#' @export
+change_seqlevels_style = function(gr, style = "NCBI") {
+    sl = GenomeInfoDb::seqlevels(gr)
+    if (NROW(sl) == 0) {
+        return(gr)
+    }
+    sl_used_changed = sl_used0 = GenomeInfoDb::seqlevelsInUse(gr)
+    sl_other = sl[!sl %in% sl_used0]
+    GenomeInfoDb::seqlevels(gr) = sl_used0
+    GenomeInfoDb::seqlevelsStyle(sl_used_changed) = style
+    GenomeInfoDb::seqlevels(gr) = sl_used_changed
+    GenomeInfoDb::seqlevels(gr) = unique(c(sl_used_changed, sl_other))
+    return(gr)
+}
 
 #' @name hg_seqlengths
 #' @title Output standard human genome seqlengths
@@ -5195,4 +5217,6 @@ rleseq = function (..., clump = TRUE, recurs = FALSE, na.clump = TRUE,
         return(out)
     }
 }
+
+
 
