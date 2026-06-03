@@ -67,6 +67,17 @@ NULL
 #' @format \code{GRangesList}
 NULL
 
+remap_seqlevels = function(x, style = "NCBI") {
+    mapsl = GenomeInfoDb::mapSeqlevels(
+        x,
+        style,
+        drop = FALSE,
+        best.only = FALSE
+    )
+    mapsl = apply(mapsl, 2, function(x) na.omit(x)[1])
+    mapsl = ifelse(!is.na(mapsl), mapsl, names(mapsl))
+    return(mapsl)
+}
 
 #' Change seqlevels
 #'
@@ -94,9 +105,11 @@ change_seqlevels_style = function(gr, style = "NCBI") {
     GenomeInfoDb::seqlevels(gr) = sl_used0
     GenomeInfoDb::seqinfo(gr) = si_used0
     sn = seqnames(si_used_changed)
-    GenomeInfoDb::seqlevelsStyle(sn) = style
+    # GenomeInfoDb::seqlevelsStyle(sn) = style
+    sn = gUtils:::remap_seqlevels(sn, style)
     GenomeInfoDb::seqnames(si_used_changed) = sn
-    GenomeInfoDb::seqlevelsStyle(sl_used_changed) = style
+    # GenomeInfoDb::seqlevelsStyle(sl_used_changed) = style
+    sl_used_changed = gUtils:::remap_seqlevels(sl_used_changed, style)
     newsn = c(
         GenomeInfoDb::seqnames(si_used_changed),
         GenomeInfoDb::seqnames(si_other)
