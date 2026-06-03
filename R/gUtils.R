@@ -68,6 +68,7 @@ NULL
 NULL
 
 remap_seqlevels = function(x, style = "NCBI") {
+    if (!NROW(x) > 0) return(x)
     mapsl = GenomeInfoDb::mapSeqlevels(
         x,
         style,
