@@ -78,7 +78,7 @@ remap_seqlevels = function(x, style = "NCBI") {
     mapsl = data.table::fcase(
       !is.na(mapsl) & !is.na(x), mapsl,
       !nzchar(x), "",
-      default = names(mapsl)
+      rep_len(TRUE, NROW(mapsl)), names(mapsl)
     )
     return(mapsl)
 }
