@@ -67,6 +67,16 @@ NULL
 #' @format \code{GRangesList}
 NULL
 
+#' Remap seqlevels
+#'
+#' Remap seqlevels using GenomeInfoDb
+#'
+#' Wrapper to GenomeInfoDb functions to
+#' remap seqlevels style. "NCBI" = no chr,
+#' "UCSC" = chr prefixed.
+#'
+#' @author Kevin Hadi
+#' @export
 remap_seqlevels = function(x, style = "NCBI") {
     if (!NROW(x) > 0) return(x)
     mapsl = GenomeInfoDb::mapSeqlevels(
