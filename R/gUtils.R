@@ -75,6 +75,11 @@ remap_seqlevels = function(x, style = "NCBI") {
         drop = FALSE,
         best.only = FALSE
     )
+    if (!identical(c(0L, 1L), dim(mapsl))) {
+      score = rowSums(!is.na(mapsl))
+      r = -rank(score, na.last = FALSE, ties.method = "first")
+      mapsl = mapsl[order(r),,drop=FALSE]
+    }
     mapsl = apply(mapsl, 2, function(x) na.omit(x)[1])
     mapsl = as.character(mapsl)
     mapsl = ifelse(!is.na(mapsl) & !is.na(x), mapsl, x)
