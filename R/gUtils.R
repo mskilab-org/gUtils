@@ -77,7 +77,7 @@ NULL
 #'
 #' @author Kevin Hadi
 #' @export
-remap_seqlevels = function(x, style = "NCBI") {
+remap_seqlevels = function(x, style = "NCBI", best_match = FALSE) {
     if (!NROW(x) > 0) return(x)
     mapsl = GenomeInfoDb::mapSeqlevels(
         x,
@@ -85,6 +85,11 @@ remap_seqlevels = function(x, style = "NCBI") {
         drop = FALSE,
         best.only = FALSE
     )
+    if (!identical(c(0L, 1L), dim(mapsl)) && identical(best_match, TRUE)) {
+        score = rowSums(!is.na(mapsl))
+        r = -rank(score, ties.method = "last", na.last = FALSE)
+        mapsl = mapsl[order(r), , drop = FALSE]
+    }
     mapsl = apply(mapsl, 2, function(x) na.omit(x)[1])
     mapsl = as.character(mapsl)
     mapsl = ifelse(!is.na(mapsl) & !is.na(x), mapsl, x)
