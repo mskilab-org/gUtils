@@ -3329,8 +3329,9 @@ gr.collapse = function(gr, pad = 1)
     m[tmp$query.id[tmp$query.id == (tmp$subject.id-1)]] = TRUE
 
     ## will not collapse if two intersecting ranges are in the wrong "order" (ie not increasing (decreasing) on pos (neg) strand
-    m[which((strand(gr)[-length(gr)] == '+' & (start(gr)[-length(gr)] > start(gr)[-1])) |
-            (strand(gr)[-length(gr)] == '-' & (end(gr)[-length(gr)] < end(gr)[-1])))] = FALSE
+    strgr = as.character(strand(gr))
+    m[which((strgr[-length(gr)] == '+' & (start(gr)[-length(gr)] > start(gr)[-1])) |
+            (strgr[-length(gr)] == '-' & (end(gr)[-length(gr)] < end(gr)[-1])))] = FALSE
 
     m = as(m, 'IRanges')
 
