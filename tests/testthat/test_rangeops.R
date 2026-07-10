@@ -1435,6 +1435,12 @@ test_that("parse.grl", {
     expect_equal(width(grl_example[[2]][1]), 3000001)
     expect_equal(width(grl_example[[2]][2]), 79)
 
+    grl_example_alt_sep = parse.grl(c('chr1:1e6-5e6+,5:10-2000', 'chr2:2e6-5e6-|chr10:100231321-100231399'),
+                                    separators = c('|', ','))
+    expect_equal(width(grl_example_alt_sep[[1]][1]), 4000001)
+    expect_equal(width(grl_example_alt_sep[[1]][2]), 1991)
+    expect_equal(width(grl_example_alt_sep[[2]][1]), 3000001)
+    expect_equal(width(grl_example_alt_sep[[2]][2]), 79)
 })
 
 
