@@ -3058,6 +3058,8 @@ gr.reduce = function(..., by = NULL, ignore.strand = TRUE, span = FALSE) {
     input = do.call(grbind, list(...))
     if (length(input)==0)
         return(input)
+    ## gr2dt -> seg2gr loses the Seqinfo, so keep the input's and hand it back in below
+    input.seqinfo = seqinfo(input)
     input.meta = values(input)
     if (is.null(by))
         values(input) = data.frame(i = 1:length(input), bykey = 1)
@@ -3067,19 +3069,31 @@ gr.reduce = function(..., by = NULL, ignore.strand = TRUE, span = FALSE) {
     if (span)
     {
         if (ignore.strand)
-            out = seg2gr(gr2dt(input)[, data.frame(i = i[1], start = min(start), end = max(end)), keyby = list(seqnames, bykey)])
+            out = seg2gr(gr2dt(input)[, data.frame(i = i[1], start = min(start), end = max(end)), keyby = list(seqnames, bykey)], seqinfo = input.seqinfo)
         else
-            out = seg2gr(gr2dt(input)[, data.frame(i = i[1], start = min(start), end = max(end)), keyby = list(seqnames, strand, bykey)])
+            out = seg2gr(gr2dt(input)[, data.frame(i = i[1], start = min(start), end = max(end)), keyby = list(seqnames, strand, bykey)], seqinfo = input.seqinfo)
     }
     else
     {
         if (ignore.strand)
-            out = seg2gr(gr2dt(input)[, cbind(i = i[1], as.data.frame(reduce(IRanges(start, end)))), keyby = list(seqnames, bykey)])
+            out = seg2gr(gr2dt(input)[, cbind(i = i[1], as.data.frame(reduce(IRanges(start, end)))), keyby = list(seqnames, bykey)], seqinfo = input.seqinfo)
         else
-            out = seg2gr(gr2dt(input)[, cbind(i = i[1], as.data.frame(reduce(IRanges(start, end)))), keyby = list(seqnames, strand, bykey)])
+            out = seg2gr(gr2dt(input)[, cbind(i = i[1], as.data.frame(reduce(IRanges(start, end)))), keyby = list(seqnames, strand, bykey)], seqinfo = input.seqinfo)
     }
 
     values(out) = input.meta[out$i, , drop = FALSE]
+
+    ## seg2gr restores the input's seqlevels and seqlengths, but not its circularity flags
+    ## or genome name: carry those over too so the output keeps the input's Seqinfo
+    if (length(input.seqinfo))
+    {
+        out.si = seqinfo(out)
+        ix = match(seqlevels(out.si), seqlevels(input.seqinfo))
+        seqinfo(out) = Seqinfo(seqlevels(out.si),
+                               seqlengths = seqlengths(out.si),
+                               isCircular = isCircular(input.seqinfo)[ix],
+                               genome = genome(input.seqinfo)[ix])
+    }
 
     return(out)
 }
