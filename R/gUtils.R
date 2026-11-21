@@ -4341,8 +4341,16 @@ parse.grl = function(x, seqlengths = hg_seqlengths(), meta = NULL)
     tmp.u = unlist(tmp)
     tmp.u = gsub('\\,', '', tmp.u)
     tmp.id = rep(1:length(tmp), sapply(tmp, length))
+
+    ## strand may be given as a trailing +/- optionally separated from the coordinates by a ':' or
+    ## whitespace ie chr:start-end+, chr:start-end:+ and chr:start-end + are all valid.  Peel the
+    ## strand (and its separator) off before splitting, so that a separating ':' is not mistaken for
+    ## a coordinate separator ie chr1:100-200:+ must split into 3 parts and not into 5
     str = gsub('.*([\\+\\-])$','\\1', tmp.u)
-    spl = strsplit(tmp.u, "[\\-\\+\\:]", perl = T)
+    ix.str = str %in% c('+', '-')
+    coord = tmp.u
+    coord[ix.str] = sub('[\\:\\s]+[\\+\\-]$|[\\+\\-]$', '', tmp.u[ix.str])
+    spl = strsplit(coord, "[\\-\\+\\:]", perl = T)
 
     if (any(ix <- sapply(spl, length)==2)){
         spl[ix] = lapply(which(ix), function(x) spl[[x]][c(1:2,2)])
@@ -4366,7 +4374,15 @@ parse.grl = function(x, seqlengths = hg_seqlengths(), meta = NULL)
         }
         
         if (any(!ix.present))
-          spl = spl[!ix[!ix.present]]
+        {
+          ## drop only the elements on chromosomes absent from seqlengths, ie not their neighbours,
+          ## keeping strand and grl index in sync with the surviving elements
+          drop = rep(FALSE, length(tmp.u))
+          drop[ix] = !ix.present
+          spl = spl[!drop]
+          str = str[!drop]
+          tmp.id = tmp.id[!drop]
+        }
     }
 
     if (length(spl)==0)
@@ -4382,7 +4398,9 @@ parse.grl = function(x, seqlengths = hg_seqlengths(), meta = NULL)
     rownames(df) = NULL
 
     gr = gUtils::seg2gr(df, seqlengths = seqlengths)[, c()]
-    grl = GenomicRanges::split(gr, tmp.id)
+    ## split against the full set of input elements so that an element with no parsable ranges
+    ## (eg dropped above) still yields an (empty) GRangesList element, keeping grl aligned to x
+    grl = GenomicRanges::split(gr, factor(tmp.id, levels = seq_len(length(tmp))))
     names(grl) = nm
     if (!is.null(meta) && nrow(meta) == length(grl))
       values(grl) = meta

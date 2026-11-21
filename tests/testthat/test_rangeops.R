@@ -1438,6 +1438,44 @@ test_that("parse.grl", {
 })
 
 
+test_that("parse.grl strand", {
+
+    ## strand may follow the coordinates directly (chr:start-end+) or be separated by a ':'
+    ## (chr:start-end:+).  The latter used to be misparsed as a whole chromosome (issue #46)
+    seql = c(chr1 = 249250621, chr2 = 243199373)
+
+    expect_equal(as.character(parse.grl('chr1:36568608-36569851:+', seqlengths = seql)[[1]]),
+                 'chr1:36568608-36569851:+')
+    expect_equal(as.character(parse.grl('chr1:36568608-36569851+', seqlengths = seql)[[1]]),
+                 'chr1:36568608-36569851:+')
+    expect_equal(as.character(parse.grl('chr1:36568608-36569851:-', seqlengths = seql)[[1]]),
+                 'chr1:36568608-36569851:-')
+    expect_equal(as.character(parse.grl('chr1:36568608-36569851 +', seqlengths = seql)[[1]]),
+                 'chr1:36568608-36569851:+')
+
+    ## no strand given
+    expect_equal(as.character(parse.grl('chr1:36568608-36569851', seqlengths = seql)[[1]]),
+                 'chr1:36568608-36569851')
+    expect_equal(as.character(strand(parse.grl('chr1:36568608-36569851', seqlengths = seql)[[1]])), '*')
+
+    ## chromosome only, with and without strand
+    expect_equal(as.character(parse.grl('chr1:+', seqlengths = seql)[[1]]), 'chr1:1-249250621:+') 
+    expect_equal(as.character(parse.grl('chr1', seqlengths = seql)[[1]]), 'chr1:1-249250621')
+
+    ## strand parsed for every range of a multi range element
+    expect_equal(as.character(parse.grl('chr1:36568608-36569851:+;chr2:1000-2000:-', seqlengths = seql)[[1]]),
+                 c('chr1:36568608-36569851:+', 'chr2:1000-2000:-'))
+
+    ## an element on a chromosome absent from seqlengths is dropped on its own, without
+    ## taking the ranges of its neighbours (or the grl alignment) with it
+    grl_unknown = parse.grl(c(a = 'chrZ', b = 'chr1:1000-2000'), seqlengths = seql)
+    expect_equal(length(grl_unknown), 2)
+    expect_equal(length(grl_unknown[[1]]), 0)
+    expect_equal(as.character(grl_unknown[[2]]), 'chr1:1000-2000')
+
+})
+
+
 
 
 test_that('anchorlift', {
