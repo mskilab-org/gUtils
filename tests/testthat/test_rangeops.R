@@ -1643,3 +1643,53 @@ test_that("rebin", {
     expect_equal(rebinned_gr_max[1]$tile.id, 10)
     
 })
+
+test_that("gr.reduce keeps the input seqinfo (mskilab-org/gTrack#21)", {
+
+    input = GRanges(c("1", "1", "2"), IRanges(c(100, 300, 50), c(200, 400, 150)),
+                    seqinfo = Seqinfo(c("1", "2", "3"), seqlengths = c(1000, 500, 300)))
+
+    ## plain reduce: seqlengths must not shrink to the observed max end, and seqlevels
+    ## with no ranges (here '3') must not be dropped
+    out = gr.reduce(input)
+    expect_identical(seqlengths(out), seqlengths(input))
+    expect_identical(start(out), c(100L, 300L, 50L))
+    expect_identical(end(out), c(200L, 400L, 150L))
+
+    ## same for span = TRUE (also takes its own round trip through gr2dt/seg2gr)
+    out.span = gr.reduce(input, span = TRUE)
+    expect_identical(seqlengths(out.span), seqlengths(input))
+    expect_identical(width(out.span), c(301L, 101L))
+
+    ## same for the strand-aware path (the two '+' ranges on '1' don't overlap, so 3 rows)
+    input.strand = GRanges(c("1", "1", "2"), IRanges(c(100, 300, 50), c(200, 400, 150)),
+                           strand = c("+", "+", "-"),
+                           seqinfo = seqinfo(input))
+    out.strand = gr.reduce(input.strand, ignore.strand = FALSE)
+    expect_identical(seqlengths(out.strand), seqlengths(input))
+    expect_identical(as.character(strand(out.strand)), c("+", "+", "-"))
+
+    ## same for the 'by' grouped path, and grouping still works
+    input.by = GRanges(c("1", "1", "2"), IRanges(c(100, 300, 50), c(200, 400, 150)),
+                       seqinfo = seqinfo(input), grp = c("a", "b", "a"))
+    out.by = gr.reduce(input.by, by = "grp")
+    expect_identical(seqlengths(out.by), seqlengths(input))
+    expect_identical(out.by$grp, c("a", "b", "a"))
+    expect_identical(start(out.by), c(100L, 300L, 50L))
+
+    ## reducing still merges overlapping ranges (coordinates unchanged by the fix)
+    out.merge = gr.reduce(GRanges("1", IRanges(c(100, 150), c(200, 250)),
+                                  seqinfo = Seqinfo("1", 1000)))
+    expect_identical(start(out.merge), 100L)
+    expect_identical(end(out.merge), 250L)
+    expect_identical(seqlengths(out.merge), c("1" = 1000L))
+
+    ## input without seqlengths still works (nothing to preserve)
+    expect_identical(length(gr.reduce(GRanges("1", IRanges(1, 10)))), 1L)
+
+    ## circularity flags and the genome name survive as well
+    input.genome = GRanges(c("1", "2"), IRanges(c(100, 50), c(200, 150)),
+                           seqinfo = Seqinfo(c("1", "2", "X"), seqlengths = c(1000, 500, 300),
+                                             isCircular = c(FALSE, FALSE, TRUE), genome = "hg19"))
+    expect_identical(seqinfo(gr.reduce(input.genome)), seqinfo(input.genome))
+})
